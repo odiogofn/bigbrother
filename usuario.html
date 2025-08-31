@@ -6,60 +6,112 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 p-6">
+<body class="bg-gray-100 p-6 min-h-screen flex items-center justify-center">
 
-<div class="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-lg">
-  <h1 class="text-2xl font-bold mb-4">Enviar Palpites</h1>
+<div class="max-w-4xl w-full bg-white p-8 rounded-2xl shadow-xl">
 
-  <!-- Login simples -->
-  <div class="mb-6">
-    <label class="block font-medium mb-1">Nome</label>
-    <input type="text" id="usuario" class="w-full border rounded-xl px-3 py-2 mb-2">
-    <label class="block font-medium mb-1">Data de Nascimento (senha)</label>
-    <input type="date" id="senha" class="w-full border rounded-xl px-3 py-2">
+  <h1 class="text-3xl font-bold mb-6 text-center">Grande Irmão - Usuário</h1>
+
+  <!-- CADASTRO / LOGIN -->
+  <div id="cadastroDiv" class="mb-6 p-6 bg-gray-50 rounded-xl shadow-inner">
+    <h2 class="text-xl font-semibold mb-4">Cadastro ou Login</h2>
+    <input type="text" id="usuario" placeholder="Nome" class="border rounded-xl px-4 py-2 w-full mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+    <input type="date" id="senha" placeholder="Data de Nascimento" class="border rounded-xl px-4 py-2 w-full mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+    <button id="btnCadastro" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl transition">Cadastrar / Entrar</button>
+    <p id="msgCadastro" class="mt-3 text-center font-medium"></p>
   </div>
 
-  <div class="mb-4">
-    <label class="block font-medium mb-1">Semana</label>
-    <input type="number" id="semana" class="w-full border rounded-xl px-3 py-2">
+  <!-- ENVIO DE PALPITES -->
+  <div id="palpitesDiv" class="hidden p-6 bg-gray-50 rounded-xl shadow-inner">
+
+    <div class="mb-4">
+      <label class="block font-medium mb-1">Semana</label>
+      <input type="number" id="semana" class="border rounded-xl px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-green-500">
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div>
+        <label class="block font-medium mb-1">Líder</label>
+        <select id="lider" multiple class="border rounded-xl px-4 py-2 w-full"></select>
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Anjo</label>
+        <select id="anjo" multiple class="border rounded-xl px-4 py-2 w-full"></select>
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Emparedados</label>
+        <select id="emparedados" multiple class="border rounded-xl px-4 py-2 w-full"></select>
+      </div>
+      <div>
+        <label class="block font-medium mb-1">Eliminados</label>
+        <select id="eliminados" multiple class="border rounded-xl px-4 py-2 w-full"></select>
+      </div>
+      <div class="md:col-span-2">
+        <label class="block font-medium mb-1">Bate-Volta</label>
+        <select id="bateVolta" multiple class="border rounded-xl px-4 py-2 w-full"></select>
+      </div>
+    </div>
+
+    <button id="enviar" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-xl transition">Enviar Palpites</button>
+    <p id="msg" class="mt-3 text-center font-medium"></p>
   </div>
 
-  <!-- Palpites -->
-  <div class="mb-4">
-    <label class="block font-medium mb-1">Líder</label>
-    <select id="lider" multiple class="w-full border rounded-xl px-3 py-2"></select>
-  </div>
-
-  <div class="mb-4">
-    <label class="block font-medium mb-1">Anjo</label>
-    <select id="anjo" multiple class="w-full border rounded-xl px-3 py-2"></select>
-  </div>
-
-  <div class="mb-4">
-    <label class="block font-medium mb-1">Emparedados</label>
-    <select id="emparedados" multiple class="w-full border rounded-xl px-3 py-2"></select>
-  </div>
-
-  <div class="mb-4">
-    <label class="block font-medium mb-1">Eliminados</label>
-    <select id="eliminados" multiple class="w-full border rounded-xl px-3 py-2"></select>
-  </div>
-
-  <div class="mb-4">
-    <label class="block font-medium mb-1">Bate-Volta</label>
-    <select id="bateVolta" multiple class="w-full border rounded-xl px-3 py-2"></select>
-  </div>
-
-  <button id="enviar" class="bg-green-600 text-white px-4 py-2 rounded-xl">Enviar Palpites</button>
-  <p id="msg" class="mt-3 font-medium"></p>
 </div>
 
 <script>
-const supabaseUrl = "https://SEU_SUPABASE_URL";
-const supabaseKey = "SUA_CHAVE_ANONIMA";
+const supabaseUrl = "https://biojnilbgzozmynemtra.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-// Carregar participantes ativos
+let usuarioAtual = null;
+
+// CADASTRO / LOGIN
+document.getElementById("btnCadastro").addEventListener("click", async () => {
+  const usuario = document.getElementById("usuario").value.trim();
+  const senha = document.getElementById("senha").value;
+  if(!usuario || !senha){ 
+    alert("Preencha todos os campos"); 
+    return; 
+  }
+
+  // Verifica se o usuário já existe
+  const { data: existente, error: err } = await supabase
+    .from("usuarios")
+    .select("*")
+    .eq("nome", usuario)
+    .eq("senha", senha)
+    .single();
+
+  if(err && err.code !== 'PGRST116'){ alert("Erro: " + err.message); return; }
+
+  if(existente){
+    document.getElementById("msgCadastro").textContent = "Login realizado!";
+    document.getElementById("msgCadastro").className = "mt-3 text-green-600 font-medium text-center";
+    usuarioAtual = existente;
+    document.getElementById("cadastroDiv").classList.add("hidden");
+    document.getElementById("palpitesDiv").classList.remove("hidden");
+    preencherSelects();
+  } else {
+    // Cadastra novo usuário
+    const { data, error } = await supabase
+      .from("usuarios")
+      .insert([{ nome: usuario, senha, criado_em: new Date().toISOString() }]);
+
+    if(error){
+      document.getElementById("msgCadastro").textContent = "Erro: " + error.message;
+      document.getElementById("msgCadastro").className = "mt-3 text-red-600 font-medium text-center";
+    } else {
+      document.getElementById("msgCadastro").textContent = "Usuário cadastrado!";
+      document.getElementById("msgCadastro").className = "mt-3 text-green-600 font-medium text-center";
+      usuarioAtual = data[0];
+      document.getElementById("cadastroDiv").classList.add("hidden");
+      document.getElementById("palpitesDiv").classList.remove("hidden");
+      preencherSelects();
+    }
+  }
+});
+
+// CARREGAR PARTICIPANTES ATIVOS
 async function preencherSelects() {
   const { data, error } = await supabase
     .from("participantes")
@@ -81,22 +133,16 @@ async function preencherSelects() {
   });
 }
 
-preencherSelects();
-
-// Enviar palpites
+// ENVIAR PALPITES
 document.getElementById("enviar").addEventListener("click", async () => {
-  const usuario = document.getElementById("usuario").value.trim();
-  const senha = document.getElementById("senha").value;
-  const semana = parseInt(document.getElementById("semana").value);
+  if(!usuarioAtual){ alert("Usuário não logado"); return; }
 
-  if(!usuario || !senha || !semana){ 
-    alert("Preencha todos os campos"); 
-    return; 
-  }
+  const semana = parseInt(document.getElementById("semana").value);
+  if(!semana){ alert("Informe a semana"); return; }
 
   const payload = {
-    usuario,
-    senha, 
+    usuario: usuarioAtual.nome,
+    senha: usuarioAtual.senha,
     semana,
     lider: Array.from(document.getElementById("lider").selectedOptions).map(o=>o.value),
     anjo: Array.from(document.getElementById("anjo").selectedOptions).map(o=>o.value),
@@ -110,12 +156,13 @@ document.getElementById("enviar").addEventListener("click", async () => {
     .from("palpites")
     .insert([payload]);
 
+  const msg = document.getElementById("msg");
   if(error){
-    document.getElementById("msg").textContent = "Erro ao enviar: " + error.message;
-    document.getElementById("msg").className = "mt-3 text-red-600 font-medium";
+    msg.textContent = "Erro ao enviar: " + error.message;
+    msg.className = "mt-3 text-red-600 font-medium text-center";
   } else {
-    document.getElementById("msg").textContent = "Palpite enviado com sucesso!";
-    document.getElementById("msg").className = "mt-3 text-green-600 font-medium";
+    msg.textContent = "Palpite enviado com sucesso!";
+    msg.className = "mt-3 text-green-600 font-medium text-center";
     document.getElementById("semana").value = "";
     ["lider","anjo","emparedados","eliminados","bateVolta"].forEach(id => document.getElementById(id).selectedIndex = -1);
   }

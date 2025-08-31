@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Grande Irmão - Resultados</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-6 min-h-screen">
+
+<div class="max-w-6xl mx-auto">
+
+  <h1 class="text-3xl font-bold mb-6 text-center">Grande Irmão - Resultados</h1>
+
+  <!-- FILTRO DE SEMANA -->
+  <div class="mb-6 flex justify-center">
+    <input type="number" id="filtroSemana" placeholder="Filtrar por semana" class="border rounded-xl px-4 py-2 w-48 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-3">
+    <button id="btnFiltrar" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition font-semibold">Filtrar</button>
+    <button id="btnLimpar" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-xl transition font-semibold ml-2">Limpar</button>
+  </div>
+
+  <!-- LISTA DE RESULTADOS -->
+  <div id="resultadosDiv" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+
+</div>
+
+<script>
+const supabaseUrl = "https://biojnilbgzozmynemtra.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+// CARREGAR RESULTADOS
+async function carregarResultados(semana = null) {
+  let query = supabase.from("resultados").select("*").order("semana", { ascending: true });
+  if(semana) query = query.eq("semana", semana);
+  const { data, error } = await query;
+
+  if(error){ alert("Erro ao carregar resultados: " + error.message); return; }
+
+  const container = document.getElementById("resultadosDiv");
+  container.innerHTML = "";
+
+  if(data.length === 0){
+    container.innerHTML = "<p class='text-center text-gray-600 col-span-full'>Nenhum resultado encontrado.</p>";
+    return;
+  }
+
+  data.forEach(res => {
+    const card = document.createElement("div");
+    card.className = "bg-white p-6 rounded-2xl shadow hover:shadow-lg transition";
+
+    card.innerHTML = `
+      <h2 class="text-xl font-semibold mb-3">Semana ${res.semana}</h2>
+      <p><strong>Líder:</strong> ${res.lider.join(", ")}</p>
+      <p><strong>Anjo:</strong> ${res.anjo.join(", ")}</p>
+      <p><strong>Emparedados:</strong> ${res.emparedados.join(", ")}</p>
+      <p><strong>Eliminados:</strong> ${res.eliminados.join(", ")}</p>
+      <p><strong>Bate-Volta:</strong> ${res.bate_volta.join(", ")}</p>
+      <p class="text-gray-400 text-sm mt-2">Atualizado em: ${new Date(res.criado_em).toLocaleString()}</p>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+// FILTRO DE SEMANA
+document.getElementById("btnFiltrar").addEventListener("click", () => {
+  const semana = parseInt(document.getElementById("filtroSemana").value);
+  if(!semana) return;
+  carregarResultados(semana);
+});
+
+document.getElementById("btnLimpar").addEventListener("click", () => {
+  document.getElementById("filtroSemana").value = "";
+  carregarResultados();
+});
+
+// CARREGA TODOS AO INICIAR
+carregarResultados();
+</script>
+</body>
+</html>
