@@ -84,11 +84,13 @@ button.submit:hover{background:#218838;}
 </section>
 
 <script>
-const SUPABASE_URL='https://biojnilbgzozmynemtra.supabase.co';
-const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
-const supabase = supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let supabase;
 
-function showTab(id){document.querySelectorAll('.card').forEach(c=>c.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
+// Função para mostrar abas
+function showTab(id){
+  document.querySelectorAll('.card').forEach(c=>c.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
 
 // LOGIN ADMIN
 document.getElementById('login-form').addEventListener('submit', e=>{
@@ -98,22 +100,31 @@ document.getElementById('login-form').addEventListener('submit', e=>{
   if(u==='admin' && p==='admin'){
     document.getElementById('login-section').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
-    carregarParticipantes();
-    carregarJogadores();
-  }else alert('Usuário ou senha incorretos!');
+    initAdminDashboard();
+  } else alert('Usuário ou senha incorretos!');
 });
+
+// Inicializa Supabase e carrega dados
+function initAdminDashboard(){
+  const SUPABASE_URL='https://biojnilbgzozmynemtra.supabase.co';
+  const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM';
+  supabase = supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+  carregarParticipantes();
+  carregarJogadores();
+}
 
 // Participantes
 document.getElementById('form-participante').addEventListener('submit', async e=>{
   e.preventDefault();
   const nome=document.getElementById('nome-participante').value.trim();
-  const {error}=await supabase.from('participantes').insert([{nome}]);
+  const {error}=await supabase.from('participantes').insert([{nome, ativo:true}]);
   if(error){console.error(error); alert('Erro!'); return;}
   document.getElementById('form-participante').reset();
   carregarParticipantes();
 });
+
 async function carregarParticipantes(){
-  const {data,error}=await supabase.from('participantes').select('*').order('nome');
+  const {data,error}=await supabase.from('participantes').select('*').eq('ativo',true).order('nome');
   if(error){console.error(error); return;}
   const ul=document.getElementById('lista-participantes'); ul.innerHTML='';
   const tbody=document.querySelector('#tabela-participantes tbody'); tbody.innerHTML='';
@@ -142,6 +153,7 @@ document.getElementById('form-jogador').addEventListener('submit', async e=>{
   document.getElementById('form-jogador').reset();
   carregarJogadores();
 });
+
 async function carregarJogadores(){
   const {data,error}=await supabase.from('jogadores').select('*').order('nome');
   if(error){console.error(error); return;}
