@@ -89,122 +89,121 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-
-  console.log("Script carregado!"); // Teste se JS está rodando
-
-  // Supabase
+  // Inicializa Supabase antes de usar
   const supabaseUrl = "https://biojnilbgzozmynemtra.supabase.co";
   const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  // LOGIN ADMIN
-  document.getElementById("btnLogin").addEventListener("click", () => {
-    const login = document.getElementById("login").value.trim();
-    const senha = document.getElementById("senha").value.trim();
-    const msg = document.getElementById("msgLogin");
+  document.addEventListener("DOMContentLoaded", () => {
+    console.log("Script carregado!");
 
-    console.log("Tentativa de login:", login, senha); // depuração
+    // LOGIN ADMIN
+    document.getElementById("btnLogin").addEventListener("click", async () => {
+      const login = document.getElementById("login").value.trim();
+      const senha = document.getElementById("senha").value.trim();
+      const msg = document.getElementById("msgLogin");
 
-    if(login === "admin" && senha === "admin"){
-      document.getElementById("loginDiv").classList.add("hidden");
-      document.getElementById("adminContent").classList.remove("hidden");
+      console.log("Tentativa de login:", login, senha);
+
+      if(login === "admin" && senha === "admin"){
+        document.getElementById("loginDiv").classList.add("hidden");
+        document.getElementById("adminContent").classList.remove("hidden");
+        document.getElementById("cardParticipantes").classList.remove("hidden");
+        document.getElementById("cardResultados").classList.add("hidden");
+        preencherSelects();
+      } else {
+        msg.textContent = "Login ou senha incorretos";
+        msg.className = "mt-3 text-red-600 text-center font-medium";
+      }
+    });
+
+    // Alternar abas
+    document.getElementById("navParticipantes").addEventListener("click", () => {
       document.getElementById("cardParticipantes").classList.remove("hidden");
       document.getElementById("cardResultados").classList.add("hidden");
-      preencherSelects();
-    } else {
-      msg.textContent = "Login ou senha incorretos";
-      msg.className = "mt-3 text-red-600 text-center font-medium";
-    }
-  });
-
-  // Alternar abas
-  document.getElementById("navParticipantes").addEventListener("click", () => {
-    document.getElementById("cardParticipantes").classList.remove("hidden");
-    document.getElementById("cardResultados").classList.add("hidden");
-  });
-
-  document.getElementById("navResultados").addEventListener("click", () => {
-    document.getElementById("cardParticipantes").classList.add("hidden");
-    document.getElementById("cardResultados").classList.remove("hidden");
-  });
-
-  // CARREGAR PARTICIPANTES
-  async function carregarParticipantes() {
-    const { data, error } = await supabase
-      .from("participantes")
-      .select("nome")
-      .eq("ativo", true)
-      .order("nome");
-    if(error){ alert("Erro: " + error.message); return []; }
-    return data.map(p => p.nome);
-  }
-
-  // PREENCHER SELECTS
-  async function preencherSelects() {
-    const participantes = await carregarParticipantes();
-    ["lider","anjo","emparedados","eliminados","bateVolta"].forEach(id => {
-      const sel = document.getElementById(id);
-      sel.innerHTML = "";
-      participantes.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p;
-        opt.textContent = p;
-        sel.appendChild(opt);
-      });
     });
-  }
 
-  // ADICIONAR PARTICIPANTE
-  document.getElementById("adicionarParticipante").addEventListener("click", async () => {
-    const nome = document.getElementById("novoParticipante").value.trim();
-    if(!nome){ alert("Digite o nome"); return; }
+    document.getElementById("navResultados").addEventListener("click", () => {
+      document.getElementById("cardParticipantes").classList.add("hidden");
+      document.getElementById("cardResultados").classList.remove("hidden");
+    });
 
-    const { data, error } = await supabase
-      .from("participantes")
-      .insert([{ nome, ativo: true, criado_em: new Date().toISOString() }]);
-
-    const msg = document.getElementById("msgParticipante");
-    if(error){
-      msg.textContent = "Erro: " + error.message;
-      msg.className = "mt-3 text-red-600 text-center font-medium";
-    } else {
-      msg.textContent = "Participante adicionado!";
-      msg.className = "mt-3 text-green-600 text-center font-medium";
-      document.getElementById("novoParticipante").value = "";
-      preencherSelects();
+    // CARREGAR PARTICIPANTES
+    async function carregarParticipantes() {
+      const { data, error } = await supabase
+        .from("participantes")
+        .select("nome")
+        .eq("ativo", true)
+        .order("nome");
+      if(error){ alert("Erro: " + error.message); return []; }
+      return data.map(p => p.nome);
     }
-  });
 
-  // SALVAR RESULTADOS
-  document.getElementById("salvar").addEventListener("click", async () => {
-    const semana = parseInt(document.getElementById("semana").value);
-    if(!semana){ alert("Informe a semana"); return; }
-
-    const payload = {
-      semana,
-      lider: Array.from(document.getElementById("lider").selectedOptions).map(o=>o.value),
-      anjo: Array.from(document.getElementById("anjo").selectedOptions).map(o=>o.value),
-      emparedados: Array.from(document.getElementById("emparedados").selectedOptions).map(o=>o.value),
-      eliminados: Array.from(document.getElementById("eliminados").selectedOptions).map(o=>o.value),
-      bate_volta: Array.from(document.getElementById("bateVolta").selectedOptions).map(o=>o.value),
-      criado_em: new Date().toISOString()
-    };
-
-    const { data, error } = await supabase.from("resultados").insert([payload]);
-    const msg = document.getElementById("msg");
-    if(error){
-      msg.textContent = "Erro ao salvar: " + error.message;
-      msg.className = "mt-3 text-red-600 text-center font-medium";
-    } else {
-      msg.textContent = "Resultado salvo com sucesso!";
-      msg.className = "mt-3 text-green-600 text-center font-medium";
-      document.getElementById("semana").value = "";
-      preencherSelects();
+    // PREENCHER SELECTS
+    async function preencherSelects() {
+      const participantes = await carregarParticipantes();
+      ["lider","anjo","emparedados","eliminados","bateVolta"].forEach(id => {
+        const sel = document.getElementById(id);
+        sel.innerHTML = "";
+        participantes.forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p;
+          opt.textContent = p;
+          sel.appendChild(opt);
+        });
+      });
     }
-  });
 
-});
+    // ADICIONAR PARTICIPANTE
+    document.getElementById("adicionarParticipante").addEventListener("click", async () => {
+      const nome = document.getElementById("novoParticipante").value.trim();
+      if(!nome){ alert("Digite o nome"); return; }
+
+      const { data, error } = await supabase
+        .from("participantes")
+        .insert([{ nome, ativo: true, criado_em: new Date().toISOString() }]);
+
+      const msg = document.getElementById("msgParticipante");
+      if(error){
+        msg.textContent = "Erro: " + error.message;
+        msg.className = "mt-3 text-red-600 text-center font-medium";
+      } else {
+        msg.textContent = "Participante adicionado!";
+        msg.className = "mt-3 text-green-600 text-center font-medium";
+        document.getElementById("novoParticipante").value = "";
+        preencherSelects();
+      }
+    });
+
+    // SALVAR RESULTADOS
+    document.getElementById("salvar").addEventListener("click", async () => {
+      const semana = parseInt(document.getElementById("semana").value);
+      if(!semana){ alert("Informe a semana"); return; }
+
+      const payload = {
+        semana,
+        lider: Array.from(document.getElementById("lider").selectedOptions).map(o=>o.value),
+        anjo: Array.from(document.getElementById("anjo").selectedOptions).map(o=>o.value),
+        emparedados: Array.from(document.getElementById("emparedados").selectedOptions).map(o=>o.value),
+        eliminados: Array.from(document.getElementById("eliminados").selectedOptions).map(o=>o.value),
+        bate_volta: Array.from(document.getElementById("bateVolta").selectedOptions).map(o=>o.value),
+        criado_em: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase.from("resultados").insert([payload]);
+      const msg = document.getElementById("msg");
+      if(error){
+        msg.textContent = "Erro ao salvar: " + error.message;
+        msg.className = "mt-3 text-red-600 text-center font-medium";
+      } else {
+        msg.textContent = "Resultado salvo com sucesso!";
+        msg.className = "mt-3 text-green-600 text-center font-medium";
+        document.getElementById("semana").value = "";
+        preencherSelects();
+      }
+    });
+
+  });
 </script>
 </body>
 </html>
