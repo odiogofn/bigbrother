@@ -5,17 +5,18 @@
 <title>Painel Admin - Grande Irmão</title>
 <script src="https://unpkg.com/@supabase/supabase-js"></script>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  .hidden { display: none; }
-  nav { margin-bottom: 20px; }
-  nav button { margin-right: 10px; padding: 10px 15px; border-radius: 5px; border:none; background:#007bff; color:white; cursor:pointer; }
-  nav button:hover { background:#0056b3; }
-  .card { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
-  input, select { padding: 5px; margin-bottom:10px; width:100%; max-width:300px;}
-  table { border-collapse: collapse; margin-top:10px; }
-  th, td { border: 1px solid #ccc; padding: 8px; }
-  th { background:#f0f0f0;}
-  button.submit { background:#28a745; margin-top:10px; }
+body{font-family:Arial,sans-serif;margin:20px;}
+.hidden{display:none;}
+nav{margin-bottom:20px;}
+nav button{margin-right:10px;padding:10px 15px;border-radius:5px;border:none;background:#007bff;color:white;cursor:pointer;}
+nav button:hover{background:#0056b3;}
+.card{border:1px solid #ccc;padding:15px;margin-bottom:20px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+input,select{padding:5px;margin-bottom:10px;width:100%;max-width:300px;}
+table{border-collapse:collapse;margin-top:10px;}
+th,td{border:1px solid #ccc;padding:8px;}
+th{background:#f0f0f0;}
+button.submit{background:#28a745;color:white;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;margin-top:10px;}
+button.submit:hover{background:#218838;}
 </style>
 </head>
 <body>
@@ -35,11 +36,11 @@
   <h2>Painel Admin - Grande Irmão</h2>
   <nav>
     <button onclick="showTab('tab-participantes')">Participantes</button>
-    <button onclick="showTab('tab-gabarito')">Gabarito (Resultados)</button>
+    <button onclick="showTab('tab-gabarito')">Gabarito</button>
     <button onclick="showTab('tab-jogadores')">Jogadores</button>
   </nav>
 
-  <!-- Aba Participantes -->
+  <!-- Participantes -->
   <div id="tab-participantes" class="card">
     <h3>Cadastrar Participante</h3>
     <form id="form-participante">
@@ -51,7 +52,7 @@
     <ul id="lista-participantes"></ul>
   </div>
 
-  <!-- Aba Gabarito -->
+  <!-- Gabarito -->
   <div id="tab-gabarito" class="card hidden">
     <h3>Cadastrar Resultados por Semana</h3>
     <label>Semana:</label>
@@ -72,7 +73,7 @@
     <button id="salvar-gabarito" class="submit">Salvar Resultados</button>
   </div>
 
-  <!-- Aba Jogadores -->
+  <!-- Jogadores -->
   <div id="tab-jogadores" class="card hidden">
     <h3>Cadastrar Jogador</h3>
     <form id="form-jogador">
@@ -91,17 +92,17 @@
 let supabase = null;
 
 function showTab(id){
-  document.querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
+  document.querySelectorAll('.card').forEach(c=>c.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
 }
 
-// Login Admin
+// LOGIN ADMIN
 document.getElementById('login-form').addEventListener('submit', async e=>{
   e.preventDefault();
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
   if(username==='admin' && password==='admin'){
-    supabase = supabaseJs.createClient('https://biojnilbgzozmynemtra.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM');
+    supabase = supabase.createClient('https://biojnilbgzozmynemtra.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM');
     document.getElementById('login-section').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
     carregarParticipantes();
@@ -111,12 +112,12 @@ document.getElementById('login-form').addEventListener('submit', async e=>{
   }
 });
 
-// Cadastro Participante
+// Participantes
 document.getElementById('form-participante').addEventListener('submit', async e=>{
   e.preventDefault();
   const nome = document.getElementById('nome-participante').value.trim();
   const {error} = await supabase.from('participantes').insert([{nome}]);
-  if(error){ console.error(error); alert('Erro!'); return; }
+  if(error){ console.error(error); alert('Erro ao cadastrar participante!'); return; }
   document.getElementById('form-participante').reset();
   carregarParticipantes();
 });
@@ -125,15 +126,10 @@ async function carregarParticipantes(){
   if(error){ console.error(error); return; }
   const ul = document.getElementById('lista-participantes');
   ul.innerHTML='';
-  data.forEach(p=>{
-    const li = document.createElement('li');
-    li.textContent = p.nome;
-    ul.appendChild(li);
-  });
-  // Atualizar tabela de gabarito
   const tbody = document.querySelector('#tabela-participantes tbody');
   tbody.innerHTML='';
   data.forEach(p=>{
+    const li = document.createElement('li'); li.textContent=p.nome; ul.appendChild(li);
     const tr = document.createElement('tr');
     tr.innerHTML=`
       <td>${p.nome}</td>
@@ -147,50 +143,44 @@ async function carregarParticipantes(){
   });
 }
 
-// Cadastro Jogador
+// Jogadores
 document.getElementById('form-jogador').addEventListener('submit', async e=>{
   e.preventDefault();
-  const nome = document.getElementById('nome-jogador').value.trim();
-  const nascimento = document.getElementById('nascimento-jogador').value;
-  const {error} = await supabase.from('jogadores').insert([{nome,nascimento}]);
-  if(error){ console.error(error); alert('Erro!'); return; }
+  const nome=document.getElementById('nome-jogador').value.trim();
+  const nascimento=document.getElementById('nascimento-jogador').value;
+  const {error}=await supabase.from('jogadores').insert([{nome,nascimento}]);
+  if(error){ console.error(error); alert('Erro ao cadastrar jogador!'); return; }
   document.getElementById('form-jogador').reset();
   carregarJogadores();
 });
 async function carregarJogadores(){
-  const {data,error} = await supabase.from('jogadores').select('*').order('nome');
+  const {data,error}=await supabase.from('jogadores').select('*').order('nome');
   if(error){ console.error(error); return; }
-  const ul = document.getElementById('lista-jogadores');
-  ul.innerHTML='';
+  const ul=document.getElementById('lista-jogadores'); ul.innerHTML='';
   data.forEach(j=>{
-    const li = document.createElement('li');
-    li.textContent=`${j.nome} - ${j.nascimento}`;
-    ul.appendChild(li);
+    const li=document.createElement('li'); li.textContent=`${j.nome} - ${j.nascimento}`; ul.appendChild(li);
   });
 }
 
 // Salvar Gabarito
 document.getElementById('salvar-gabarito').addEventListener('click', async ()=>{
-  const semana = parseInt(document.getElementById('semana-gabarito').value);
-  if(isNaN(semana) || semana<1){ alert('Informe semana válida'); return; }
-
-  const tbody = document.querySelector('#tabela-participantes tbody');
-  const resultados = [];
+  const semana=parseInt(document.getElementById('semana-gabarito').value);
+  if(isNaN(semana)||semana<1){ alert('Informe semana válida'); return; }
+  const tbody=document.querySelector('#tabela-participantes tbody');
+  const resultados=[];
   tbody.querySelectorAll('tr').forEach(tr=>{
-    const nome = tr.cells[0].textContent;
-    const lider = tr.querySelector('.lider').checked ? [nome] : [];
-    const anjo = tr.querySelector('.anjo').checked ? [nome] : [];
-    const emparedados = tr.querySelector('.emparedado').checked ? [nome] : [];
-    const eliminados = tr.querySelector('.eliminado').checked ? [nome] : [];
-    const bateVolta = tr.querySelector('.bateVolta').checked ? [nome] : [];
+    const nome=tr.cells[0].textContent;
+    const lider=tr.querySelector('.lider').checked?[nome]:[];
+    const anjo=tr.querySelector('.anjo').checked?[nome]:[];
+    const emparedados=tr.querySelector('.emparedado').checked?[nome]:[];
+    const eliminados=tr.querySelector('.eliminado').checked?[nome]:[];
+    const bateVolta=tr.querySelector('.bateVolta').checked?[nome]:[];
     resultados.push({semana,lider:lider[0]||null,anjo:anjo[0]||null,emparedados,eliminados,bate_volta:bateVolta[0]||null});
   });
-
-  const {error} = await supabase.from('resultados').insert(resultados);
-  if(error){ console.error(error); alert('Erro ao salvar!'); return; }
+  const {error}=await supabase.from('resultados').insert(resultados);
+  if(error){ console.error(error); alert('Erro ao salvar gabarito!'); return; }
   alert('Gabarito salvo!');
 });
-
 </script>
 </body>
 </html>
