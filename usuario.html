@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Usuário - Grande Irmão Bolão</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="supabase.js"></script>
+</head>
+<body>
+  <h2>Meus Palpites</h2>
+  <form id="formPalpite">
+    <input type="number" id="semana" placeholder="Semana" required><br>
+    <input type="text" id="lider" placeholder="Líder" required><br>
+    <input type="text" id="anjo" placeholder="Anjo" required><br>
+    <input type="text" id="eliminados" placeholder="Eliminados (separados por vírgula)" required><br>
+    <input type="text" id="bate_volta" placeholder="Bate-volta" required><br>
+    <button type="submit">Enviar Palpite</button>
+  </form>
+
+  <script type="module">
+    import { supabase } from './supabase.js'
+
+    const usuarioId = localStorage.getItem("usuarioId")
+    if (!usuarioId) {
+      alert("Faça login novamente")
+      window.location.href = "login.html"
+    }
+
+    document.getElementById('formPalpite').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const semana = document.getElementById('semana').value
+      const lider = document.getElementById('lider').value
+      const anjo = document.getElementById('anjo').value
+      const eliminados = document.getElementById('eliminados').value
+      const bate_volta = document.getElementById('bate_volta').value
+
+      const { data, error } = await supabase
+        .from('palpites')
+        .insert([{ usuario_id: usuarioId, semana, lider, anjo, eliminados, bate_volta }])
+
+      if (error) {
+        alert("Erro ao salvar palpite: " + error.message)
+      } else {
+        alert("Palpite enviado!")
+      }
+    })
+  </script>
+</body>
+</html>

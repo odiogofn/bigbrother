@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Grande Irmão Bolão</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="supabase.js"></script>
+</head>
+<body>
+  <h2>Painel Admin</h2>
+  <form id="formResultado">
+    <input type="number" id="semana" placeholder="Semana" required><br>
+    <input type="text" id="lider" placeholder="Líder" required><br>
+    <input type="text" id="anjo" placeholder="Anjo" required><br>
+    <input type="text" id="eliminados" placeholder="Eliminados (separados por vírgula)" required><br>
+    <input type="text" id="bate_volta" placeholder="Bate-volta" required><br>
+    <button type="submit">Salvar Resultado</button>
+  </form>
+
+  <script type="module">
+    import { supabase } from './supabase.js'
+
+    document.getElementById('formResultado').addEventListener('submit', async (e) => {
+      e.preventDefault()
+      const semana = document.getElementById('semana').value
+      const lider = document.getElementById('lider').value
+      const anjo = document.getElementById('anjo').value
+      const eliminados = document.getElementById('eliminados').value
+      const bate_volta = document.getElementById('bate_volta').value
+
+      const { data, error } = await supabase
+        .from('resultados')
+        .insert([{ semana, lider, anjo, eliminados, bate_volta }])
+
+      if (error) {
+        alert("Erro ao salvar resultado: " + error.message)
+      } else {
+        alert("Resultado salvo com sucesso!")
+      }
+    })
+  </script>
+</body>
+</html>
