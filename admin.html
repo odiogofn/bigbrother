@@ -23,7 +23,7 @@
   <main class="flex-1 p-6">
 
     <!-- LOGIN -->
-    <div id="loginDiv" class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl">
+    <div id="loginDiv" class="max-w-md mx-auto bg-white p-8 rounded-2xl shadow-xl mt-20">
       <h2 class="text-2xl font-bold mb-6 text-center text-gray-700">Login Admin</h2>
       <input type="text" id="login" placeholder="Login" class="border rounded-xl px-4 py-3 w-full mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
       <input type="password" id="senha" placeholder="Senha" class="border rounded-xl px-4 py-3 w-full mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -32,10 +32,10 @@
     </div>
 
     <!-- DASHBOARD -->
-    <div id="adminContent" class="hidden space-y-6">
+    <div id="adminContent" class="hidden space-y-6 mt-8">
 
       <!-- CADASTRO DE PARTICIPANTES -->
-      <div id="cardParticipantes" class="bg-white p-6 rounded-2xl shadow hover:shadow-2xl transition">
+      <div id="cardParticipantes" class="hidden bg-white p-6 rounded-2xl shadow hover:shadow-2xl transition">
         <h2 class="text-xl font-semibold mb-4">Cadastrar Participante</h2>
         <div class="flex gap-3 flex-wrap">
           <input type="text" id="novoParticipante" placeholder="Nome do participante" class="flex-1 border rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
@@ -47,7 +47,6 @@
       <!-- LANÇAR RESULTADOS -->
       <div id="cardResultados" class="hidden bg-white p-6 rounded-2xl shadow hover:shadow-2xl transition">
         <h2 class="text-xl font-semibold mb-4">Lançar Resultado da Semana</h2>
-
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           <div class="mb-3">
@@ -81,7 +80,6 @@
           </div>
 
         </div>
-
         <button id="salvar" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl transition">Salvar Resultado</button>
         <p id="msg" class="mt-3 text-center font-medium"></p>
       </div>
@@ -107,100 +105,5 @@ document.addEventListener("DOMContentLoaded", () => {
     if(login === "admin" && senha === "admin"){
       document.getElementById("loginDiv").classList.add("hidden");
       document.getElementById("adminContent").classList.remove("hidden");
-      preencherSelects();
-    } else {
-      msg.textContent = "Login ou senha incorretos";
-      msg.className = "mt-3 text-red-600 text-center font-medium";
-    }
-  });
-
-  // Alternar abas
-  document.getElementById("navParticipantes").addEventListener("click", () => {
-    document.getElementById("cardParticipantes").classList.remove("hidden");
-    document.getElementById("cardResultados").classList.add("hidden");
-  });
-
-  document.getElementById("navResultados").addEventListener("click", () => {
-    document.getElementById("cardParticipantes").classList.add("hidden");
-    document.getElementById("cardResultados").classList.remove("hidden");
-  });
-
-  // CARREGAR PARTICIPANTES
-  async function carregarParticipantes() {
-    const { data, error } = await supabase
-      .from("participantes")
-      .select("nome")
-      .eq("ativo", true)
-      .order("nome");
-    if(error){ alert("Erro: " + error.message); return []; }
-    return data.map(p => p.nome);
-  }
-
-  // PREENCHER SELECTS
-  async function preencherSelects() {
-    const participantes = await carregarParticipantes();
-    ["lider","anjo","emparedados","eliminados","bateVolta"].forEach(id => {
-      const sel = document.getElementById(id);
-      sel.innerHTML = "";
-      participantes.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p;
-        opt.textContent = p;
-        sel.appendChild(opt);
-      });
-    });
-  }
-
-  // ADICIONAR PARTICIPANTE
-  document.getElementById("adicionarParticipante").addEventListener("click", async () => {
-    const nome = document.getElementById("novoParticipante").value.trim();
-    if(!nome){ alert("Digite o nome"); return; }
-
-    const { data, error } = await supabase
-      .from("participantes")
-      .insert([{ nome, ativo: true, criado_em: new Date().toISOString() }]);
-
-    const msg = document.getElementById("msgParticipante");
-    if(error){
-      msg.textContent = "Erro: " + error.message;
-      msg.className = "mt-3 text-red-600 text-center font-medium";
-    } else {
-      msg.textContent = "Participante adicionado!";
-      msg.className = "mt-3 text-green-600 text-center font-medium";
-      document.getElementById("novoParticipante").value = "";
-      preencherSelects();
-    }
-  });
-
-  // SALVAR RESULTADOS
-  document.getElementById("salvar").addEventListener("click", async () => {
-    const semana = parseInt(document.getElementById("semana").value);
-    if(!semana){ alert("Informe a semana"); return; }
-
-    const payload = {
-      semana,
-      lider: Array.from(document.getElementById("lider").selectedOptions).map(o=>o.value),
-      anjo: Array.from(document.getElementById("anjo").selectedOptions).map(o=>o.value),
-      emparedados: Array.from(document.getElementById("emparedados").selectedOptions).map(o=>o.value),
-      eliminados: Array.from(document.getElementById("eliminados").selectedOptions).map(o=>o.value),
-      bate_volta: Array.from(document.getElementById("bateVolta").selectedOptions).map(o=>o.value),
-      criado_em: new Date().toISOString()
-    };
-
-    const { data, error } = await supabase.from("resultados").insert([payload]);
-    const msg = document.getElementById("msg");
-    if(error){
-      msg.textContent = "Erro ao salvar: " + error.message;
-      msg.className = "mt-3 text-red-600 text-center font-medium";
-    } else {
-      msg.textContent = "Resultado salvo com sucesso!";
-      msg.className = "mt-3 text-green-600 text-center font-medium";
-      document.getElementById("semana").value = "";
-      preencherSelects();
-    }
-  });
-
-});
-</script>
-</body>
-</html>
+      document.getElementById("cardParticipantes").classList.remove("hidden");
+      document.getElementById("cardResultados").classList.add("hidden");
