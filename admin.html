@@ -1,76 +1,156 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Painel Admin</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-
+<body class="bg-gray-100">
   <!-- Tela de Login -->
-  <div id="login-container" class="bg-white p-8 rounded-2xl shadow-lg w-96">
-    <h2 class="text-2xl font-bold text-center mb-6">Login Admin</h2>
-    <form id="login-form" class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium">Usuário</label>
-        <input type="text" id="username" class="w-full p-2 border rounded-lg focus:ring focus:ring-blue-300" required>
-      </div>
-      <div>
-        <label class="block text-sm font-medium">Senha</label>
-        <input type="password" id="password" class="w-full p-2 border rounded-lg focus:ring focus:ring-blue-300" required>
-      </div>
-      <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700">Entrar</button>
-    </form>
-    <p id="login-error" class="text-red-500 text-sm mt-4 hidden text-center">Usuário ou senha inválidos.</p>
-  </div>
-
-  <!-- Painel Admin (inicialmente oculto) -->
-  <div id="admin-panel" class="hidden w-full max-w-5xl mx-auto p-6">
-    <h2 class="text-3xl font-bold text-center mb-6">Painel Administrativo</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <a href="usuario.html" class="bg-green-500 text-white p-6 rounded-xl shadow-lg text-center hover:bg-green-600">
-        Participantes
-      </a>
-      <a href="resultados.html" class="bg-purple-500 text-white p-6 rounded-xl shadow-lg text-center hover:bg-purple-600">
-        Resultados
-      </a>
+  <div id="login-section" class="flex items-center justify-center min-h-screen">
+    <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
+      <h2 class="text-2xl font-bold text-center mb-6">Login Admin</h2>
+      <input id="username" type="text" placeholder="Usuário" 
+             class="w-full mb-4 px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300">
+      <input id="password" type="password" placeholder="Senha" 
+             class="w-full mb-6 px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300">
+      <button id="loginBtn" 
+              class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+        Entrar
+      </button>
+      <p id="loginError" class="text-red-500 text-center mt-3 hidden">Usuário ou senha incorretos</p>
     </div>
   </div>
 
-  <script>
-    // LOGIN SIMPLES
-    const loginForm = document.getElementById("login-form");
-    const loginContainer = document.getElementById("login-container");
-    const adminPanel = document.getElementById("admin-panel");
-    const loginError = document.getElementById("login-error");
+  <!-- Painel Admin -->
+  <div id="admin-section" class="hidden min-h-screen flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-blue-700 text-white p-6">
+      <h2 class="text-2xl font-bold mb-8">Painel Admin</h2>
+      <nav class="space-y-4">
+        <button onclick="showPage('participantes')" class="w-full text-left hover:text-gray-300">👥 Participantes</button>
+        <button onclick="showPage('resultados')" class="w-full text-left hover:text-gray-300">📊 Resultados</button>
+        <button onclick="logout()" class="w-full text-left text-red-300 hover:text-red-500 mt-8">🚪 Sair</button>
+      </nav>
+    </aside>
 
-    loginForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const user = document.getElementById("username").value.trim();
-      const pass = document.getElementById("password").value.trim();
+    <!-- Conteúdo -->
+    <main class="flex-1 p-8">
+      <!-- Participantes -->
+      <div id="participantes-page" class="hidden">
+        <h2 class="text-xl font-bold mb-4">Cadastrar Participante</h2>
+        <form id="form-participante" class="space-y-4 bg-white shadow p-6 rounded-lg">
+          <input type="text" id="nomeParticipante" placeholder="Nome do participante"
+                 class="w-full px-4 py-2 border rounded-lg">
+          <button type="submit" 
+                  class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+            Salvar
+          </button>
+        </form>
+
+        <h3 class="text-lg font-bold mt-8 mb-2">Lista de Participantes</h3>
+        <ul id="lista-participantes" class="bg-white shadow rounded-lg divide-y"></ul>
+      </div>
+
+      <!-- Resultados -->
+      <div id="resultados-page" class="hidden">
+        <h2 class="text-xl font-bold">Gerenciar Resultados</h2>
+        <p class="text-gray-500 mt-4">Aqui você poderá cadastrar as semanas, líder, anjo, emparedados, etc.</p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://biojnilbgzozmynemtra.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const loginSection = document.getElementById("login-section");
+    const adminSection = document.getElementById("admin-section");
+    const loginBtn = document.getElementById("loginBtn");
+    const loginError = document.getElementById("loginError");
+
+    loginBtn.addEventListener("click", () => {
+      const user = document.getElementById("username").value;
+      const pass = document.getElementById("password").value;
 
       if (user === "admin" && pass === "admin") {
-        // Login ok → mostra painel
-        loginContainer.classList.add("hidden");
-        adminPanel.classList.remove("hidden");
-
-        // Agora inicializa Supabase
-        initSupabase();
+        loginSection.classList.add("hidden");
+        adminSection.classList.remove("hidden");
+        showPage("participantes");
       } else {
         loginError.classList.remove("hidden");
       }
     });
 
-    // INICIALIZAÇÃO DO SUPABASE (apenas após login)
-    function initSupabase() {
-      const supabaseUrl = "https://biojnilbgzozmynemtra.supabase.co";
-      const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
-      window.supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    function showPage(page) {
+      document.getElementById("participantes-page").classList.add("hidden");
+      document.getElementById("resultados-page").classList.add("hidden");
+      document.getElementById(page + "-page").classList.remove("hidden");
 
-      console.log("✅ Supabase inicializado com sucesso!");
-      // aqui você pode chamar funções que carregam dados
+      if (page === "participantes") loadParticipantes();
+    }
+
+    function logout() {
+      loginSection.classList.remove("hidden");
+      adminSection.classList.add("hidden");
+    }
+
+    // Cadastrar Participante
+    const form = document.getElementById("form-participante");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nome = document.getElementById("nomeParticipante").value;
+      if (!nome) return alert("Digite um nome!");
+
+      const { error } = await supabase
+        .from("participantes")
+        .insert([{ nome, ativo: true, criado_em: new Date() }]);
+
+      if (error) {
+        alert("Erro: " + error.message);
+      } else {
+        document.getElementById("nomeParticipante").value = "";
+        loadParticipantes();
+      }
+    });
+
+    async function loadParticipantes() {
+      const { data, error } = await supabase
+        .from("participantes")
+        .select("*")
+        .order("id", { ascending: true });
+
+      const lista = document.getElementById("lista-participantes");
+      lista.innerHTML = "";
+
+      if (error) {
+        lista.innerHTML = "<li class='p-3 text-red-500'>Erro ao carregar participantes</li>";
+        return;
+      }
+
+      data.forEach(p => {
+        const li = document.createElement("li");
+        li.className = "p-3 flex justify-between items-center";
+        li.innerHTML = `
+          <span>${p.nome} ${!p.ativo ? "(inativo)" : ""}</span>
+          <button onclick="toggleAtivo(${p.id}, ${p.ativo})"
+                  class="px-2 py-1 text-sm rounded ${p.ativo ? 'bg-red-500' : 'bg-green-500'} text-white">
+            ${p.ativo ? 'Desativar' : 'Ativar'}
+          </button>
+        `;
+        lista.appendChild(li);
+      });
+    }
+
+    async function toggleAtivo(id, ativo) {
+      await supabase
+        .from("participantes")
+        .update({ ativo: !ativo })
+        .eq("id", id);
+      loadParticipantes();
     }
   </script>
 </body>
