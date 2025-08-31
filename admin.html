@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Painel Admin - Grande Irmão</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col items-center">
+
+  <div class="bg-white p-6 rounded-xl shadow-lg mt-10 w-full max-w-5xl">
+    <h1 class="text-2xl font-bold text-center mb-6">Painel Administrativo</h1>
+
+    <!-- Login -->
+    <div id="login-container" class="mb-6">
+      <form id="login-form" class="space-y-4">
+        <input type="text" id="admin-usuario" placeholder="Usuário" class="w-full p-2 border rounded" required>
+        <input type="password" id="admin-senha" placeholder="Senha" class="w-full p-2 border rounded" required>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full">Entrar</button>
+      </form>
+      <p id="login-msg" class="mt-2 text-sm"></p>
+    </div>
+
+    <!-- Painel -->
+    <div id="admin-panel" class="hidden">
+      <div class="flex space-x-4 mb-6 border-b">
+        <button class="tab-btn px-4 py-2 border-b-2 border-blue-500 font-semibold" data-tab="participantes">Participantes</button>
+        <button class="tab-btn px-4 py-2" data-tab="palpiteiros">Palpiteiros</button>
+        <button class="tab-btn px-4 py-2" data-tab="gabarito">Gabarito</button>
+        <button class="tab-btn px-4 py-2" data-tab="pontuacao">Pontuação</button>
+      </div>
+
+      <!-- Abas -->
+      <div id="participantes" class="tab-content">
+        <h2 class="font-semibold mb-2">Cadastrar Participante</h2>
+        <form id="participante-form" class="space-y-2">
+          <input type="text" id="participante-nome" placeholder="Nome do participante" class="w-full p-2 border rounded" required>
+          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Salvar</button>
+        </form>
+        <div id="participantes-list" class="mt-4"></div>
+      </div>
+
+      <div id="palpiteiros" class="tab-content hidden">
+        <h2 class="font-semibold mb-2">Cadastrar Palpiteiro</h2>
+        <form id="palpiteiro-form" class="space-y-2">
+          <input type="text" id="palpiteiro-nome" placeholder="Nome" class="w-full p-2 border rounded" required>
+          <input type="date" id="palpiteiro-nascimento" class="w-full p-2 border rounded" required>
+          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Salvar</button>
+        </form>
+        <div id="palpiteiros-list" class="mt-4"></div>
+      </div>
+
+      <div id="gabarito" class="tab-content hidden">
+        <h2 class="font-semibold mb-2">Cadastrar Gabarito</h2>
+        <form id="gabarito-form" class="space-y-2">
+          <input type="number" id="gabarito-semana" placeholder="Semana" class="w-full p-2 border rounded" required>
+          <select id="gabarito-lider" class="w-full p-2 border rounded"></select>
+          <select id="gabarito-anjo" class="w-full p-2 border rounded"></select>
+          <select id="gabarito-emparedados" multiple class="w-full p-2 border rounded"></select>
+          <select id="gabarito-batevolta" class="w-full p-2 border rounded"></select>
+          <select id="gabarito-eliminados" multiple class="w-full p-2 border rounded"></select>
+          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Salvar Gabarito</button>
+        </form>
+      </div>
+
+      <div id="pontuacao" class="tab-content hidden">
+        <h2 class="font-semibold mb-2">Pontuação</h2>
+        <form id="pontuacao-form" class="space-y-2">
+          <input type="number" id="pts-lider" placeholder="Líder" class="w-full p-2 border rounded" required>
+          <input type="number" id="pts-anjo" placeholder="Anjo" class="w-full p-2 border rounded" required>
+          <input type="number" id="pts-emparedado" placeholder="Emparedado" class="w-full p-2 border rounded" required>
+          <input type="number" id="pts-batevolta" placeholder="Bate-Volta" class="w-full p-2 border rounded" required>
+          <input type="number" id="pts-eliminado" placeholder="Eliminado" class="w-full p-2 border rounded" required>
+          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Salvar Pontuação</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://biojnilbgzozmynemtra.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Login Admin
+    const loginForm = document.getElementById("login-form");
+    const loginMsg = document.getElementById("login-msg");
+    const loginContainer = document.getElementById("login-container");
+    const adminPanel = document.getElementById("admin-panel");
+
+    loginForm.addEventListener("submit", async e => {
+      e.preventDefault();
+      const usuario = document.getElementById("admin-usuario").value;
+      const senha = document.getElementById("admin-senha").value;
+
+      const { data, error } = await supabase.from("admin")
+        .select("*")
+        .eq("usuario", usuario)
+        .eq("senha", senha)
+        .limit(1)
+        .single();
+
+      if(error || !data){
+        loginMsg.textContent = "Usuário ou senha incorretos.";
+        loginMsg.className = "text-red-500";
+      } else {
+        loginContainer.classList.add("hidden");
+        adminPanel.classList.remove("hidden");
+        carregarParticipantes();
+        carregarPalpiteiros();
+        carregarGabaritoOptions();
+        carregarPontuacao();
+      }
+    });
+
+    // Tabs
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("border-blue-500", "font-semibold"));
+        btn.classList.add("border-blue-500","font-semibold");
+        const tab = btn.dataset.tab;
+        document.querySelectorAll(".tab-content").forEach(tc => tc.classList.add("hidden"));
+        document.getElementById(tab).classList.remove("hidden");
+      });
+    });
+
+    // Funções CRUD participantes, palpiteiros, gabarito e pontuação...
+    // Carregar participantes
+    async function carregarParticipantes(){
+      const { data } = await supabase.from("participantes").select("*");
+      const list = document.getElementById("participantes-list");
+      list.innerHTML = data.map(p => `<div>${p.nome} - ${p.ativo ? "Ativo" : "Inativo"}</div>`).join("");
+    }
+
+    document.getElementById("participante-form").addEventListener("submit", async e=>{
+      e.preventDefault();
+      const nome = document.getElementById("participante-nome").value;
+      await supabase.from("participantes").insert({nome});
+      document.getElementById("participante-nome").value="";
+      carregarParticipantes();
+    });
+
+    // Carregar palpiteiros
+    async function carregarPalpiteiros(){
+      const { data } = await supabase.from("palpiteiros").select("*");
+      const list = document.getElementById("palpiteiros-list");
+      list.innerHTML = data.map(p => `<div>${p.nome} (${p.data_nascimento})</div>`).join("");
+    }
+
+    document.getElementById("palpiteiro-form").addEventListener("submit", async e=>{
+      e.preventDefault();
+      const nome = document.getElementById("palpiteiro-nome").value;
+      const nascimento = document.getElementById("palpiteiro-nascimento").value;
+      await supabase.from("palpiteiros").insert({nome, data_nascimento:nascimento});
+      document.getElementById("palpiteiro-nome").value="";
+      document.getElementById("palpiteiro-nascimento").value="";
+      carregarPalpiteiros();
+    });
+
+    // Carregar gabarito options
+    async function carregarGabaritoOptions(){
+      const { data } = await supabase.from("participantes").select("*").eq("ativo",true);
+      ["gabarito-lider","gabarito-anjo","gabarito-emparedados","gabarito-batevolta","gabarito-eliminados"].forEach(id=>{
+        const sel = document.getElementById(id);
+        sel.innerHTML = "";
+        data.forEach(p=>{
+          const opt = document.createElement("option");
+          opt.value=p.id;
+          opt.textContent=p.nome;
+          sel.appendChild(opt);
+        });
+      });
+    }
+
+    document.getElementById("gabarito-form").addEventListener("submit", async e=>{
+      e.preventDefault();
+      const semana = parseInt(document.getElementById("gabarito-semana").value);
+      const lider = [document.getElementById("gabarito-lider").value];
+      const anjo = [document.getElementById("gabarito-anjo").value];
+      const emparedados = Array.from(document.getElementById("gabarito-emparedados").selectedOptions).map(o=>o.value);
+      const batevolta = [document.getElementById("gabarito-batevolta").value];
+      const eliminados = Array.from(document.getElementById("gabarito-eliminados").selectedOptions).map(o=>o.value);
+      await supabase.from("gabarito").insert({semana,lider,anjo,emparedados,batevolta,eliminados});
+      document.getElementById("gabarito-semana").value="";
+      alert("Gabarito salvo!");
+    });
+
+    // Carregar pontuação
+    async function carregarPontuacao(){
+      const { data } = await supabase.from("pontuacao").select("*").limit(1).single();
+      if(data){
+        document.getElementById("pts-lider").value = data.lider;
+        document.getElementById("pts-anjo").value = data.anjo;
+        document.getElementById("pts-emparedado").value = data.emparedado;
+        document.getElementById("pts-batevolta").value = data.batevolta;
+        document.getElementById("pts-eliminado").value = data.eliminados;
+      }
+    }
+
+    document.getElementById("pontuacao-form").addEventListener("submit", async e=>{
+      e.preventDefault();
+      const vals = {
+        lider:parseInt(document.getElementById("pts-lider").value),
+        anjo:parseInt(document.getElementById("pts-anjo").value),
+        emparedado:parseInt(document.getElementById("pts-emparedado").value),
+        batevolta:parseInt(document.getElementById("pts-batevolta").value),
+        eliminados:parseInt(document.getElementById("pts-eliminado").value)
+      };
+      const { count } = await supabase.from("pontuacao").select("*");
+      if(count>0){
+        await supabase.from("pontuacao").update(vals);
+      } else {
+        await supabase.from("pontuacao").insert(vals);
+      }
+      alert("Pontuação atualizada!");
+    });
+  </script>
+</body>
+</html>

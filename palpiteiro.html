@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Área do Palpiteiro - Grande Irmão</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+
+  <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
+    <h1 class="text-2xl font-bold text-center mb-6">Área do Palpiteiro</h1>
+
+    <!-- Login Palpiteiro -->
+    <div id="login-container">
+      <form id="login-form" class="space-y-4">
+        <input type="text" id="palpiteiro-nome-login" placeholder="Nome" class="w-full p-2 border rounded" required>
+        <input type="date" id="palpiteiro-nascimento-login" placeholder="Data de Nascimento" class="w-full p-2 border rounded" required>
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full">Entrar</button>
+      </form>
+      <p id="login-msg" class="mt-2 text-sm text-red-500"></p>
+    </div>
+
+    <!-- Painel Palpiteiro -->
+    <div id="palpiteiro-panel" class="hidden">
+      <h2 class="text-xl font-semibold mb-4">Enviar Palpites</h2>
+      <form id="palpite-form" class="space-y-3">
+        <input type="number" id="palpite-semana" placeholder="Semana" class="w-full p-2 border rounded" required>
+
+        <label>Líder:</label>
+        <select id="palpite-lider" class="w-full p-2 border rounded"></select>
+
+        <label>Anjo:</label>
+        <select id="palpite-anjo" class="w-full p-2 border rounded"></select>
+
+        <label>Emparedados (múltiplo):</label>
+        <select id="palpite-emparedados" multiple class="w-full p-2 border rounded"></select>
+
+        <label>Bate-Volta:</label>
+        <select id="palpite-batevolta" class="w-full p-2 border rounded"></select>
+
+        <label>Eliminados (múltiplo):</label>
+        <select id="palpite-eliminados" multiple class="w-full p-2 border rounded"></select>
+
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full">Salvar Palpite</button>
+      </form>
+      <p id="palpite-msg" class="mt-2 text-sm text-green-600"></p>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://biojnilbgzozmynemtra.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let palpiteiroId = null;
+
+    // Login Palpiteiro
+    document.getElementById("login-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const nome = document.getElementById("palpiteiro-nome-login").value;
+      const nascimento = document.getElementById("palpiteiro-nascimento-login").value;
+
+      const { data, error } = await supabase.from("palpiteiros")
+        .select("*")
+        .eq("nome", nome)
+        .eq("data_nascimento", nascimento)
+        .limit(1)
+        .single();
+
+      if(error || !data){
+        document.getElementById("login-msg").textContent = "Nome ou data de nascimento incorretos.";
+      } else {
+        palpiteiroId = data.id;
+        document.getElementById("login-container").classList.add("hidden");
+        document.getElementById("palpiteiro-panel").classList.remove("hidden");
+        carregarParticipantesAtivos();
+      }
+    });
+
+    // Carregar participantes ativos para dropdowns
+    async function carregarParticipantesAtivos(){
+      const { data } = await supabase.from("participantes").select("*").eq("ativo", true);
+
+      ["palpite-lider","palpite-anjo","palpite-emparedados","palpite-batevolta","palpite-eliminados"].forEach(id=>{
+        const sel = document.getElementById(id);
+        sel.innerHTML = "";
+        data.forEach(p=>{
+          const opt = document.createElement("option");
+          opt.value = p.id;
+          opt.textContent = p.nome;
+          sel.appendChild(opt);
+        });
+      });
+    }
+
+    // Salvar palpites
+    document.getElementById("palpite-form").addEventListener("submit", async e => {
+      e.preventDefault();
+      const semana = parseInt(document.getElementById("palpite-semana").value);
+      const lider = [document.getElementById("palpite-lider").value];
+      const anjo = [document.getElementById("palpite-anjo").value];
+      const emparedados = Array.from(document.getElementById("palpite-emparedados").selectedOptions).map(o=>o.value);
+      const batevolta = [document.getElementById("palpite-batevolta").value];
+      const eliminados = Array.from(document.getElementById("palpite-eliminados").selectedOptions).map(o=>o.value);
+
+      await supabase.from("palpites").insert({
+        palpiteiro_id: palpiteiroId,
+        semana,
+        lider,
+        anjo,
+        emparedados,
+        batevolta,
+        eliminados
+      });
+
+      document.getElementById("palpite-msg").textContent = "Palpite salvo com sucesso!";
+      document.getElementById("palpite-form").reset();
+      carregarParticipantesAtivos();
+    });
+  </script>
+</body>
+</html>
