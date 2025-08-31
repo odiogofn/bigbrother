@@ -5,18 +5,18 @@
 <title>Painel Admin - Grande Irmão</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <style>
-body { font-family: Arial, sans-serif; margin: 20px; background:#f9f9f9; }
-.hidden { display: none; }
-nav { margin-bottom: 20px; }
-nav button { margin-right: 10px; padding: 8px 12px; border-radius: 5px; border: none; background:#007bff; color:white; cursor:pointer; }
-nav button:hover { background:#0056b3; }
-.card { background:white; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:20px; }
-input, select { padding:5px; margin-bottom:10px; width:100%; max-width:300px; }
-table { border-collapse: collapse; margin-top:10px; width:100%; max-width:600px; }
-th, td { border:1px solid #ccc; padding:8px; text-align:center; }
-th { background:#eee; }
-button.submit { background:#28a745; color:white; border:none; padding:6px 10px; border-radius:5px; cursor:pointer; }
-button.submit:hover { background:#218838; }
+body{font-family:Arial,sans-serif;margin:20px;background:#f9f9f9;}
+.hidden{display:none;}
+nav{margin-bottom:20px;}
+nav button{margin-right:10px;padding:8px 12px;border-radius:5px;border:none;background:#007bff;color:white;cursor:pointer;}
+nav button:hover{background:#0056b3;}
+.card{background:white;padding:15px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1);margin-bottom:20px;}
+input,select{padding:5px;margin-bottom:10px;width:100%;max-width:300px;}
+table{border-collapse:collapse;margin-top:10px;width:100%;max-width:800px;}
+th,td{border:1px solid #ccc;padding:8px;text-align:center;}
+th{background:#eee;}
+button.submit{background:#28a745;color:white;border:none;padding:6px 10px;border-radius:5px;cursor:pointer;}
+button.submit:hover{background:#218838;}
 </style>
 </head>
 <body>
@@ -33,11 +33,11 @@ button.submit:hover { background:#218838; }
 </section>
 
 <section id="dashboard" class="hidden">
-  <h2>Painel Admin - Grande Irmão</h2>
+  <h2>Painel Admin</h2>
   <nav>
     <button onclick="showTab('tab-participantes')">Participantes</button>
+    <button onclick="showTab('tab-jogadores')">Palpiteiros</button>
     <button onclick="showTab('tab-gabarito')">Gabarito</button>
-    <button onclick="showTab('tab-jogadores')">Jogadores</button>
   </nav>
 
   <!-- Participantes -->
@@ -48,6 +48,17 @@ button.submit:hover { background:#218838; }
       <button type="submit" class="submit">Salvar</button>
     </form>
     <ul id="lista-participantes"></ul>
+  </div>
+
+  <!-- Jogadores / Palpiteiros -->
+  <div id="tab-jogadores" class="card hidden">
+    <h3>Cadastrar Palpiteiro</h3>
+    <form id="form-jogador">
+      <input type="text" id="nome-jogador" placeholder="Nome do jogador" required>
+      <input type="date" id="nascimento-jogador" required>
+      <button type="submit" class="submit">Salvar</button>
+    </form>
+    <ul id="lista-jogadores"></ul>
   </div>
 
   <!-- Gabarito -->
@@ -70,59 +81,42 @@ button.submit:hover { background:#218838; }
     </table>
     <button id="salvar-gabarito" class="submit">Salvar Resultados</button>
   </div>
-
-  <!-- Jogadores -->
-  <div id="tab-jogadores" class="card hidden">
-    <h3>Cadastrar Jogador</h3>
-    <form id="form-jogador">
-      <input type="text" id="nome-jogador" placeholder="Nome do jogador" required>
-      <input type="date" id="nascimento-jogador" required>
-      <button type="submit" class="submit">Salvar</button>
-    </form>
-    <ul id="lista-jogadores"></ul>
-  </div>
 </section>
 
 <script>
-const SUPABASE_URL = 'https://biojnilbgzozmynemtra.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL='https://biojnilbgzozmynemtra.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+const supabase = supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-function showTab(id){
-  document.querySelectorAll('.card').forEach(c=>c.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
+function showTab(id){document.querySelectorAll('.card').forEach(c=>c.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
 
 // LOGIN ADMIN
 document.getElementById('login-form').addEventListener('submit', e=>{
   e.preventDefault();
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value.trim();
-  if(username==='admin' && password==='admin'){
+  const u=document.getElementById('username').value.trim();
+  const p=document.getElementById('password').value.trim();
+  if(u==='admin' && p==='admin'){
     document.getElementById('login-section').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
     carregarParticipantes();
     carregarJogadores();
-  } else {
-    alert('Usuário ou senha incorretos!');
-  }
+  }else alert('Usuário ou senha incorretos!');
 });
 
 // Participantes
 document.getElementById('form-participante').addEventListener('submit', async e=>{
   e.preventDefault();
-  const nome = document.getElementById('nome-participante').value.trim();
-  const {error} = await supabase.from('participantes').insert([{nome}]);
-  if(error){ console.error(error); alert('Erro!'); return; }
+  const nome=document.getElementById('nome-participante').value.trim();
+  const {error}=await supabase.from('participantes').insert([{nome}]);
+  if(error){console.error(error); alert('Erro!'); return;}
   document.getElementById('form-participante').reset();
   carregarParticipantes();
 });
-
 async function carregarParticipantes(){
-  const {data,error} = await supabase.from('participantes').select('*').order('nome');
-  if(error){ console.error(error); return; }
-  const ul = document.getElementById('lista-participantes'); ul.innerHTML='';
-  const tbody = document.querySelector('#tabela-participantes tbody'); tbody.innerHTML='';
+  const {data,error}=await supabase.from('participantes').select('*').order('nome');
+  if(error){console.error(error); return;}
+  const ul=document.getElementById('lista-participantes'); ul.innerHTML='';
+  const tbody=document.querySelector('#tabela-participantes tbody'); tbody.innerHTML='';
   data.forEach(p=>{
     const li=document.createElement('li'); li.textContent=p.nome; ul.appendChild(li);
     const tr=document.createElement('tr');
@@ -144,24 +138,21 @@ document.getElementById('form-jogador').addEventListener('submit', async e=>{
   const nome=document.getElementById('nome-jogador').value.trim();
   const nascimento=document.getElementById('nascimento-jogador').value;
   const {error}=await supabase.from('jogadores').insert([{nome,nascimento}]);
-  if(error){ console.error(error); alert('Erro!'); return; }
+  if(error){console.error(error); alert('Erro!'); return;}
   document.getElementById('form-jogador').reset();
   carregarJogadores();
 });
-
 async function carregarJogadores(){
   const {data,error}=await supabase.from('jogadores').select('*').order('nome');
-  if(error){ console.error(error); return; }
+  if(error){console.error(error); return;}
   const ul=document.getElementById('lista-jogadores'); ul.innerHTML='';
-  data.forEach(j=>{
-    const li=document.createElement('li'); li.textContent=`${j.nome} - ${j.nascimento}`; ul.appendChild(li);
-  });
+  data.forEach(j=>{const li=document.createElement('li'); li.textContent=`${j.nome} - ${j.nascimento}`; ul.appendChild(li);});
 }
 
 // Salvar Gabarito
 document.getElementById('salvar-gabarito').addEventListener('click', async ()=>{
   const semana=parseInt(document.getElementById('semana-gabarito').value);
-  if(isNaN(semana)||semana<1){ alert('Informe semana válida'); return; }
+  if(isNaN(semana)||semana<1){alert('Informe semana válida');return;}
   const tbody=document.querySelector('#tabela-participantes tbody');
   const resultados=[];
   tbody.querySelectorAll('tr').forEach(tr=>{
@@ -174,7 +165,7 @@ document.getElementById('salvar-gabarito').addEventListener('click', async ()=>{
     resultados.push({semana,lider:lider[0]||null,anjo:anjo[0]||null,emparedados,eliminados,bate_volta:bateVolta[0]||null});
   });
   const {error}=await supabase.from('resultados').insert(resultados);
-  if(error){ console.error(error); alert('Erro ao salvar!'); return; }
+  if(error){console.error(error); alert('Erro ao salvar!'); return;}
   alert('Gabarito salvo!');
 });
 </script>

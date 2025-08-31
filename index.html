@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Grande Irmão - Portal</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<title>Grande Irmão - Menu</title>
+<style>
+body { font-family: Arial,sans-serif; background:#f0f2f5; display:flex; justify-content:center; align-items:center; height:100vh; }
+.container { text-align:center; background:white; padding:40px; border-radius:12px; box-shadow:0 3px 8px rgba(0,0,0,0.15); }
+button { margin:10px; padding:12px 20px; border:none; border-radius:6px; background:#007bff; color:white; cursor:pointer; font-size:16px; }
+button:hover { background:#0056b3; }
+</style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="bg-white rounded-3xl shadow-xl p-12 text-center max-w-lg w-full">
-    <h1 class="text-4xl font-bold mb-6 text-gray-800">Grande Irmão</h1>
-    <p class="text-gray-600 mb-8">Escolha sua área:</p>
-    <div class="flex flex-col gap-4">
-      <a href="admin.html" class="block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition">Painel Admin</a>
-      <a href="cadastrar-jogador.html" class="block bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition">Cadastrar Jogador</a>
-      <a href="jogador.html" class="block bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition">Área do Jogador</a>
-      <a href="resultados.html" class="block bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition">Painel Resultados (Admin)</a>
-    </div>
-  </div>
+<body>
+<div class="container">
+  <h1>Grande Irmão</h1>
+  <button onclick="window.location.href='admin.html'">Painel Admin</button>
+  <button onclick="window.location.href='palpiteiro.html'">Área do Palpiteiro</button>
+</div>
 </body>
 </html>
