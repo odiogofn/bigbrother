@@ -1,157 +1,303 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel Admin</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Grande Irmão - Admin</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-gray-100">
-  <!-- Tela de Login -->
-  <div id="login-section" class="flex items-center justify-center min-h-screen">
-    <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
-      <h2 class="text-2xl font-bold text-center mb-6">Login Admin</h2>
-      <input id="username" type="text" placeholder="Usuário" 
-             class="w-full mb-4 px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300">
-      <input id="password" type="password" placeholder="Senha" 
-             class="w-full mb-6 px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300">
-      <button id="loginBtn" 
-              class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
-        Entrar
-      </button>
-      <p id="loginError" class="text-red-500 text-center mt-3 hidden">Usuário ou senha incorretos</p>
-    </div>
-  </div>
+<body class="bg-gray-100 min-h-screen">
+  <div class="min-h-screen flex">
+    <!-- LEFT: login / menu -->
+    <aside class="w-full md:w-72 bg-gradient-to-b from-blue-700 to-blue-800 text-white p-6">
+      <h1 class="text-2xl font-bold mb-6 text-center">Painel Admin</h1>
 
-  <!-- Painel Admin -->
-  <div id="admin-section" class="hidden min-h-screen flex">
-    <!-- Sidebar -->
-    <aside class="w-64 bg-blue-700 text-white p-6">
-      <h2 class="text-2xl font-bold mb-8">Painel Admin</h2>
-      <nav class="space-y-4">
-        <button onclick="showPage('participantes')" class="w-full text-left hover:text-gray-300">👥 Participantes</button>
-        <button onclick="showPage('resultados')" class="w-full text-left hover:text-gray-300">📊 Resultados</button>
-        <button onclick="logout()" class="w-full text-left text-red-300 hover:text-red-500 mt-8">🚪 Sair</button>
-      </nav>
+      <!-- Login box -->
+      <div id="loginBox" class="space-y-3">
+        <input id="adminUser" placeholder="Usuário" class="w-full px-3 py-2 rounded-lg text-black" />
+        <input id="adminPass" placeholder="Senha" type="password" class="w-full px-3 py-2 rounded-lg text-black" />
+        <button id="adminLogin" class="w-full bg-white text-blue-700 font-semibold py-2 rounded-lg">Entrar</button>
+        <p id="loginMsg" class="text-red-200 text-sm mt-2 hidden"></p>
+      </div>
+
+      <!-- Menu (aparece após login) -->
+      <div id="menu" class="mt-6 hidden space-y-3">
+        <button id="btnParticipantes" class="w-full text-left px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500">👥 Participantes</button>
+        <button id="btnResultados" class="w-full text-left px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500">📊 Resultados (gabarito)</button>
+        <button id="btnLogout" class="w-full text-left px-3 py-2 rounded-lg bg-red-500 hover:bg-red-400">Sair</button>
+      </div>
     </aside>
 
-    <!-- Conteúdo -->
+    <!-- RIGHT: content -->
     <main class="flex-1 p-8">
-      <!-- Participantes -->
-      <div id="participantes-page" class="hidden">
-        <h2 class="text-xl font-bold mb-4">Cadastrar Participante</h2>
-        <form id="form-participante" class="space-y-4 bg-white shadow p-6 rounded-lg">
-          <input type="text" id="nomeParticipante" placeholder="Nome do participante"
-                 class="w-full px-4 py-2 border rounded-lg">
-          <button type="submit" 
-                  class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-            Salvar
-          </button>
-        </form>
+      <!-- Participantes (administrar) -->
+      <section id="secParticipantes" class="hidden">
+        <h2 class="text-2xl font-bold mb-4">Gerenciar Participantes</h2>
 
-        <h3 class="text-lg font-bold mt-8 mb-2">Lista de Participantes</h3>
-        <ul id="lista-participantes" class="bg-white shadow rounded-lg divide-y"></ul>
-      </div>
+        <!-- form -->
+        <div class="bg-white rounded-xl shadow p-6 mb-6">
+          <form id="formParticipante" class="flex gap-3">
+            <input id="nomeParticipante" placeholder="Nome do participante (ex: João Silva)" class="flex-1 px-3 py-2 border rounded-lg" />
+            <button class="bg-green-600 text-white px-4 py-2 rounded-lg">Adicionar</button>
+          </form>
+          <p id="msgPart" class="text-sm mt-2"></p>
+        </div>
 
-      <!-- Resultados -->
-      <div id="resultados-page" class="hidden">
-        <h2 class="text-xl font-bold">Gerenciar Resultados</h2>
-        <p class="text-gray-500 mt-4">Aqui você poderá cadastrar as semanas, líder, anjo, emparedados, etc.</p>
-      </div>
+        <!-- lista -->
+        <div class="bg-white rounded-xl shadow p-6">
+          <h3 class="font-semibold mb-3">Participantes cadastrados</h3>
+          <ul id="listaParticipantes" class="divide-y"></ul>
+        </div>
+      </section>
+
+      <!-- Resultados (admin cadastra gabarito por semana) -->
+      <section id="secResultados" class="hidden">
+        <h2 class="text-2xl font-bold mb-4">Cadastrar Resultado (gabarito) - Apenas Admin</h2>
+
+        <div class="bg-white rounded-xl shadow p-6 mb-6">
+          <form id="formResultadoAdmin" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium">Semana</label>
+              <input id="resSemana" type="number" class="w-full px-3 py-2 border rounded-lg" />
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium">Líder (selecione)</label>
+              <select id="resLider" class="w-full px-3 py-2 border rounded-lg"></select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium">Anjo (selecione)</label>
+              <select id="resAnjo" class="w-full px-3 py-2 border rounded-lg"></select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium">Bate-Volta (selecione)</label>
+              <select id="resBateVolta" class="w-full px-3 py-2 border rounded-lg"></select>
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium">Emparedados (selecione múltiplos — Ctrl/Cmd)</label>
+              <select id="resEmparedados" multiple class="w-full h-32 px-3 py-2 border rounded-lg"></select>
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium">Eliminados (selecione múltiplos)</label>
+              <select id="resEliminados" multiple class="w-full h-24 px-3 py-2 border rounded-lg"></select>
+            </div>
+
+            <div class="md:col-span-2 flex justify-end">
+              <button id="btnSalvarResultado" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Salvar Resultado</button>
+            </div>
+          </form>
+          <p id="msgRes" class="text-sm mt-2"></p>
+        </div>
+
+        <!-- list recent -->
+        <div class="bg-white rounded-xl shadow p-6">
+          <h3 class="font-semibold mb-3">Resultados cadastrados</h3>
+          <div id="listaResultadosAdmin" class="space-y-3"></div>
+        </div>
+      </section>
     </main>
   </div>
 
-  <script>
-    const SUPABASE_URL = "https://biojnilbgzozmynemtra.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+<script>
+/* Supabase init (ready but we will only call DB actions after admin login) */
+const SUPABASE_URL = "https://biojnilbgzozmynemtra.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
+const supabase = supabaseJs = supabaseJsLib = window.supabase = window.supabase || supabaseJs; 
+// above line ensures not to break if window.supabase already set by library; we'll create client on first admin success below
 
-    const loginSection = document.getElementById("login-section");
-    const adminSection = document.getElementById("admin-section");
-    const loginBtn = document.getElementById("loginBtn");
-    const loginError = document.getElementById("loginError");
+/* Elements */
+const loginBox = document.getElementById('loginBox');
+const adminMenu = document.getElementById('menu');
+const loginBtn = document.getElementById('adminLogin');
+const loginMsg = document.getElementById('loginMsg');
 
-    loginBtn.addEventListener("click", () => {
-      const user = document.getElementById("username").value;
-      const pass = document.getElementById("password").value;
+const secParticipantes = document.getElementById('secParticipantes');
+const secResultados = document.getElementById('secResultados');
+const btnParticipantes = document.getElementById('btnParticipantes');
+const btnResultados = document.getElementById('btnResultados');
+const logoutBtn = document.getElementById('btnLogout');
 
-      if (user === "admin" && pass === "admin") {
-        loginSection.classList.add("hidden");
-        adminSection.classList.remove("hidden");
-        showPage("participantes");
-      } else {
-        loginError.classList.remove("hidden");
-      }
+/* Forms/elements */
+const formPart = document.getElementById('formParticipante');
+const listaParticipantes = document.getElementById('listaParticipantes');
+const msgPart = document.getElementById('msgPart');
+
+const formRes = document.getElementById('formResultadoAdmin');
+const selLider = document.getElementById('resLider');
+const selAnjo = document.getElementById('resAnjo');
+const selBate = document.getElementById('resBateVolta');
+const selEmp = document.getElementById('resEmparedados');
+const selElim = document.getElementById('resEliminados');
+const listResAdmin = document.getElementById('listaResultadosAdmin');
+const msgRes = document.getElementById('msgRes');
+const btnSalvarRes = document.getElementById('btnSalvarResultado');
+
+/* Admin login (simple) */
+loginBtn.addEventListener('click', async () => {
+  const user = document.getElementById('adminUser').value.trim();
+  const pass = document.getElementById('adminPass').value.trim();
+  if (user === 'admin' && pass === 'admin') {
+    // Mark admin in localStorage (so other pages can check)
+    localStorage.setItem('isAdmin', '1');
+
+    // Create the supabase client now (safe)
+    window.supabase = window.supabase || supabaseJsClient();
+    // show menu
+    loginBox.classList.add('hidden');
+    adminMenu.classList.remove('hidden');
+    document.getElementById('menu').classList.remove('hidden');
+
+    // Show default page: participantes
+    showParticipantes();
+  } else {
+    loginMsg.textContent = 'Usuário ou senha incorretos';
+    loginMsg.classList.remove('hidden');
+  }
+});
+
+function supabaseJsClient(){
+  return window.supabase || window.supabase = window.supabase = window.supabase || (function(){
+    // if @supabase/supabase-js loaded, create client
+    if (window.supabase && typeof window.supabase.createClient === 'function') {
+      return window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+    // else attempt to use imported global (cdn)
+    if (typeof window.createClient === 'function') {
+      return window.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+    // fallback using library object (should not happen if script loaded)
+    if (window.supabase) {
+      return window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+    throw new Error('Supabase library não encontrada.');
+  })();
+}
+
+/* Show pages */
+btnParticipantes.addEventListener('click', showParticipantes);
+btnResultados.addEventListener('click', showResultados);
+logoutBtn.addEventListener('click', () => {
+  localStorage.removeItem('isAdmin');
+  location.reload();
+});
+
+function showParticipantes(){
+  secParticipantes.classList.remove('hidden');
+  secResultados.classList.add('hidden');
+  loadParticipantes();
+}
+
+function showResultados(){
+  secParticipantes.classList.add('hidden');
+  secResultados.classList.remove('hidden');
+  loadParticipantesToSelects(); // populate selects with participants
+  loadResultadosAdmin();
+}
+
+/* PARTICIPANTES CRUD (admin) */
+formPart.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const nome = document.getElementById('nomeParticipante').value.trim();
+  if(!nome){ msgPart.textContent = 'Digite um nome.'; return; }
+  // ensure client exists
+  window.supabase = window.supabase || supabaseJsClient();
+  const { error } = await window.supabase.from('participantes').insert([{ nome, ativo: true, criado_em: new Date() }]);
+  if (error){ msgPart.textContent = 'Erro: ' + error.message; return; }
+  document.getElementById('nomeParticipante').value = '';
+  msgPart.textContent = 'Participante cadastrado.';
+  loadParticipantes();
+});
+
+/* load participants */
+async function loadParticipantes(){
+  window.supabase = window.supabase || supabaseJsClient();
+  const { data, error } = await window.supabase.from('participantes').select('*').order('id', {ascending:true});
+  listaParticipantes.innerHTML = '';
+  if(error){ listaParticipantes.innerHTML = '<li class="p-2 text-red-500">Erro ao carregar</li>'; return; }
+  data.forEach(p => {
+    const li = document.createElement('li');
+    li.className = 'p-3 flex justify-between items-center';
+    li.innerHTML = `<span>${escapeHtml(p.nome)} ${p.ativo ? '' : '(inativo)'}</span>
+      <div class="flex gap-2">
+        <button class="px-2 py-1 rounded text-white ${p.ativo? 'bg-red-500':'bg-green-500'}" onclick="toggleAtivo(${p.id}, ${p.ativo})">
+          ${p.ativo? 'Desativar' : 'Ativar'}
+        </button>
+      </div>`;
+    listaParticipantes.appendChild(li);
+  });
+}
+
+/* toggle ativo */
+window.toggleAtivo = async function(id, ativo){
+  window.supabase = window.supabase || supabaseJsClient();
+  await window.supabase.from('participantes').update({ ativo: !ativo }).eq('id', id);
+  loadParticipantes();
+}
+
+/* populate selects on results page */
+async function loadParticipantesToSelects(){
+  window.supabase = window.supabase || supabaseJsClient();
+  const { data } = await window.supabase.from('participantes').select('nome').eq('ativo', true).order('nome');
+  const nomes = (data || []).map(x => x.nome);
+  [selLider, selAnjo, selBate, selEmp, selElim].forEach(sel => {
+    sel.innerHTML = '';
+    nomes.forEach(n => {
+      const opt = document.createElement('option');
+      opt.value = n;
+      opt.textContent = n;
+      sel.appendChild(opt);
     });
+  });
+}
 
-    function showPage(page) {
-      document.getElementById("participantes-page").classList.add("hidden");
-      document.getElementById("resultados-page").classList.add("hidden");
-      document.getElementById(page + "-page").classList.remove("hidden");
+/* Save admin result (gabarito) */
+btnSalvarRes.addEventListener('click', async (ev) => {
+  ev.preventDefault();
+  const semana = parseInt(document.getElementById('resSemana').value);
+  if(!semana){ msgRes.textContent = 'Informe a semana'; return; }
+  const payload = {
+    semana,
+    lider: selLider.value ? [selLider.value] : [],
+    anjo: selAnjo.value ? [selAnjo.value] : [],
+    emparedados: Array.from(selEmp.selectedOptions).map(o=>o.value),
+    eliminados: Array.from(selElim.selectedOptions).map(o=>o.value),
+    bate_volta: selBate.value ? [selBate.value] : [],
+    criado_em: new Date()
+  };
+  window.supabase = window.supabase || supabaseJsClient();
+  const { error } = await window.supabase.from('resultados').insert([payload]);
+  if(error){ msgRes.textContent = 'Erro: ' + error.message; return; }
+  msgRes.textContent = 'Resultado salvo.';
+  loadResultadosAdmin();
+});
 
-      if (page === "participantes") loadParticipantes();
-    }
+/* load results admin */
+async function loadResultadosAdmin(){
+  window.supabase = window.supabase || supabaseJsClient();
+  const { data, error } = await window.supabase.from('resultados').select('*').order('semana', {ascending:false}).limit(100);
+  listResAdmin.innerHTML = '';
+  if(error){ listResAdmin.innerHTML = '<div class="text-red-500">Erro ao carregar</div>'; return; }
+  data.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'p-3 border rounded';
+    div.innerHTML = `<strong>Semana ${r.semana}</strong>
+      <div class="text-sm">Líder: ${(r.lider||[]).join(', ')}</div>
+      <div class="text-sm">Anjo: ${(r.anjo||[]).join(', ')}</div>
+      <div class="text-sm">Emparedados: ${(r.emparedados||[]).join(', ')}</div>
+      <div class="text-sm">Eliminados: ${(r.eliminados||[]).join(', ')}</div>
+      <div class="text-sm">Bate-volta: ${(r.bate_volta||[]).join(', ')}</div>`;
+    listResAdmin.appendChild(div);
+  });
+}
 
-    function logout() {
-      loginSection.classList.remove("hidden");
-      adminSection.classList.add("hidden");
-    }
+/* small helper */
+function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, s=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[s])); }
 
-    // Cadastrar Participante
-    const form = document.getElementById("form-participante");
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const nome = document.getElementById("nomeParticipante").value;
-      if (!nome) return alert("Digite um nome!");
-
-      const { error } = await supabase
-        .from("participantes")
-        .insert([{ nome, ativo: true, criado_em: new Date() }]);
-
-      if (error) {
-        alert("Erro: " + error.message);
-      } else {
-        document.getElementById("nomeParticipante").value = "";
-        loadParticipantes();
-      }
-    });
-
-    async function loadParticipantes() {
-      const { data, error } = await supabase
-        .from("participantes")
-        .select("*")
-        .order("id", { ascending: true });
-
-      const lista = document.getElementById("lista-participantes");
-      lista.innerHTML = "";
-
-      if (error) {
-        lista.innerHTML = "<li class='p-3 text-red-500'>Erro ao carregar participantes</li>";
-        return;
-      }
-
-      data.forEach(p => {
-        const li = document.createElement("li");
-        li.className = "p-3 flex justify-between items-center";
-        li.innerHTML = `
-          <span>${p.nome} ${!p.ativo ? "(inativo)" : ""}</span>
-          <button onclick="toggleAtivo(${p.id}, ${p.ativo})"
-                  class="px-2 py-1 text-sm rounded ${p.ativo ? 'bg-red-500' : 'bg-green-500'} text-white">
-            ${p.ativo ? 'Desativar' : 'Ativar'}
-          </button>
-        `;
-        lista.appendChild(li);
-      });
-    }
-
-    async function toggleAtivo(id, ativo) {
-      await supabase
-        .from("participantes")
-        .update({ ativo: !ativo })
-        .eq("id", id);
-      loadParticipantes();
-    }
-  </script>
+</script>
 </body>
 </html>
