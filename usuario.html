@@ -2,58 +2,62 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Grande Irmão - Palpites</title>
+<title>Grande Irmão - Usuário</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 p-6 min-h-screen flex items-center justify-center">
+<body class="bg-gray-100 min-h-screen p-6">
 
-<div class="max-w-4xl w-full bg-white p-8 rounded-2xl shadow-xl">
+<div class="max-w-4xl mx-auto">
 
-  <h1 class="text-3xl font-bold mb-6 text-center">Grande Irmão - Usuário</h1>
+  <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Área do Usuário</h1>
 
-  <!-- CADASTRO / LOGIN -->
-  <div id="cadastroDiv" class="mb-6 p-6 bg-gray-50 rounded-xl shadow-inner">
-    <h2 class="text-xl font-semibold mb-4">Cadastro ou Login</h2>
-    <input type="text" id="usuario" placeholder="Nome" class="border rounded-xl px-4 py-2 w-full mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
-    <input type="date" id="senha" placeholder="Data de Nascimento" class="border rounded-xl px-4 py-2 w-full mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
-    <button id="btnCadastro" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-xl transition">Cadastrar / Entrar</button>
-    <p id="msgCadastro" class="mt-3 text-center font-medium"></p>
+  <!-- LOGIN / CADASTRO -->
+  <div id="loginDiv" class="bg-white p-8 rounded-2xl shadow-xl max-w-md mx-auto">
+    <h2 class="text-2xl font-bold mb-6 text-gray-700 text-center">Login / Cadastro</h2>
+    <input type="text" id="loginUsuario" placeholder="Nome do usuário" class="border rounded-xl px-4 py-3 w-full mb-3 focus:outline-none focus:ring-2 focus:ring-green-500">
+    <input type="date" id="senhaUsuario" placeholder="Data de nascimento" class="border rounded-xl px-4 py-3 w-full mb-4 focus:outline-none focus:ring-2 focus:ring-green-500">
+    <button id="btnLoginUsuario" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition mb-3">Entrar / Registrar</button>
+    <p id="msgLoginUsuario" class="mt-3 text-center"></p>
   </div>
 
-  <!-- ENVIO DE PALPITES -->
-  <div id="palpitesDiv" class="hidden p-6 bg-gray-50 rounded-xl shadow-inner">
+  <!-- PALPITES -->
+  <div id="palpitesDiv" class="hidden space-y-6">
 
-    <div class="mb-4">
-      <label class="block font-medium mb-1">Semana</label>
-      <input type="number" id="semana" class="border rounded-xl px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-green-500">
+    <div class="bg-white p-6 rounded-2xl shadow hover:shadow-2xl transition">
+      <h2 class="text-xl font-semibold mb-4">Enviar Palpites da Semana</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block font-medium mb-1">Semana</label>
+          <input type="number" id="semanaPalpite" class="border rounded-xl px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-green-500">
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Líder</label>
+          <select id="palpiteLider" multiple class="border rounded-xl px-4 py-2 w-full"></select>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Anjo</label>
+          <select id="palpiteAnjo" multiple class="border rounded-xl px-4 py-2 w-full"></select>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Emparedados</label>
+          <select id="palpiteEmparedados" multiple class="border rounded-xl px-4 py-2 w-full"></select>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Eliminados</label>
+          <select id="palpiteEliminados" multiple class="border rounded-xl px-4 py-2 w-full"></select>
+        </div>
+        <div>
+          <label class="block font-medium mb-1">Bate-Volta</label>
+          <select id="palpiteBateVolta" multiple class="border rounded-xl px-4 py-2 w-full"></select>
+        </div>
+      </div>
+
+      <button id="btnSalvarPalpite" class="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-xl transition">Enviar Palpites</button>
+      <p id="msgPalpite" class="mt-3 text-center font-medium"></p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-      <div>
-        <label class="block font-medium mb-1">Líder</label>
-        <select id="lider" multiple class="border rounded-xl px-4 py-2 w-full"></select>
-      </div>
-      <div>
-        <label class="block font-medium mb-1">Anjo</label>
-        <select id="anjo" multiple class="border rounded-xl px-4 py-2 w-full"></select>
-      </div>
-      <div>
-        <label class="block font-medium mb-1">Emparedados</label>
-        <select id="emparedados" multiple class="border rounded-xl px-4 py-2 w-full"></select>
-      </div>
-      <div>
-        <label class="block font-medium mb-1">Eliminados</label>
-        <select id="eliminados" multiple class="border rounded-xl px-4 py-2 w-full"></select>
-      </div>
-      <div class="md:col-span-2">
-        <label class="block font-medium mb-1">Bate-Volta</label>
-        <select id="bateVolta" multiple class="border rounded-xl px-4 py-2 w-full"></select>
-      </div>
-    </div>
-
-    <button id="enviar" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-xl transition">Enviar Palpites</button>
-    <p id="msg" class="mt-3 text-center font-medium"></p>
   </div>
 
 </div>
@@ -63,65 +67,42 @@ const supabaseUrl = "https://biojnilbgzozmynemtra.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-let usuarioAtual = null;
+let usuarioLogado = null;
 
-// CADASTRO / LOGIN
-document.getElementById("btnCadastro").addEventListener("click", async () => {
-  const usuario = document.getElementById("usuario").value.trim();
-  const senha = document.getElementById("senha").value;
-  if(!usuario || !senha){ 
-    alert("Preencha todos os campos"); 
-    return; 
-  }
+// LOGIN / CADASTRO
+document.getElementById("btnLoginUsuario").addEventListener("click", async () => {
+  const nome = document.getElementById("loginUsuario").value.trim();
+  const dtNascimento = document.getElementById("senhaUsuario").value;
+  if(!nome || !dtNascimento){ alert("Preencha os campos"); return; }
 
-  // Verifica se o usuário já existe
-  const { data: existente, error: err } = await supabase
-    .from("usuarios")
-    .select("*")
-    .eq("nome", usuario)
-    .eq("senha", senha)
-    .single();
+  // Tenta encontrar usuário
+  let { data, error } = await supabase.from("usuarios").select("*").eq("nome", nome).eq("dt_nascimento", dtNascimento);
+  
+  if(error){ alert("Erro: " + error.message); return; }
 
-  if(err && err.code !== 'PGRST116'){ alert("Erro: " + err.message); return; }
+  if(data.length === 0){
+    // Cria novo usuário
+    const { data: novo, error: err } = await supabase.from("usuarios").insert([{nome, dt_nascimento: dtNascimento}]);
+    if(err){ alert("Erro ao registrar: " + err.message); return; }
+    usuarioLogado = novo[0];
+  } else usuarioLogado = data[0];
 
-  if(existente){
-    document.getElementById("msgCadastro").textContent = "Login realizado!";
-    document.getElementById("msgCadastro").className = "mt-3 text-green-600 font-medium text-center";
-    usuarioAtual = existente;
-    document.getElementById("cadastroDiv").classList.add("hidden");
-    document.getElementById("palpitesDiv").classList.remove("hidden");
-    preencherSelects();
-  } else {
-    // Cadastra novo usuário
-    const { data, error } = await supabase
-      .from("usuarios")
-      .insert([{ nome: usuario, senha, criado_em: new Date().toISOString() }]);
-
-    if(error){
-      document.getElementById("msgCadastro").textContent = "Erro: " + error.message;
-      document.getElementById("msgCadastro").className = "mt-3 text-red-600 font-medium text-center";
-    } else {
-      document.getElementById("msgCadastro").textContent = "Usuário cadastrado!";
-      document.getElementById("msgCadastro").className = "mt-3 text-green-600 font-medium text-center";
-      usuarioAtual = data[0];
-      document.getElementById("cadastroDiv").classList.add("hidden");
-      document.getElementById("palpitesDiv").classList.remove("hidden");
-      preencherSelects();
-    }
-  }
+  document.getElementById("loginDiv").classList.add("hidden");
+  document.getElementById("palpitesDiv").classList.remove("hidden");
+  preencherSelects();
 });
 
-// CARREGAR PARTICIPANTES ATIVOS
-async function preencherSelects() {
-  const { data, error } = await supabase
-    .from("participantes")
-    .select("nome")
-    .eq("ativo", true)
-    .order("nome");
-  if(error){ alert(error.message); return; }
+// CARREGAR PARTICIPANTES
+async function carregarParticipantes() {
+  const { data, error } = await supabase.from("participantes").select("nome").eq("ativo", true).order("nome");
+  if(error){ alert("Erro: " + error.message); return []; }
+  return data.map(p => p.nome);
+}
 
-  const participantes = data.map(p => p.nome);
-  ["lider","anjo","emparedados","eliminados","bateVolta"].forEach(id => {
+// PREENCHER SELECTS
+async function preencherSelects() {
+  const participantes = await carregarParticipantes();
+  ["palpiteLider","palpiteAnjo","palpiteEmparedados","palpiteEliminados","palpiteBateVolta"].forEach(id => {
     const sel = document.getElementById(id);
     sel.innerHTML = "";
     participantes.forEach(p => {
@@ -133,38 +114,29 @@ async function preencherSelects() {
   });
 }
 
-// ENVIAR PALPITES
-document.getElementById("enviar").addEventListener("click", async () => {
-  if(!usuarioAtual){ alert("Usuário não logado"); return; }
-
-  const semana = parseInt(document.getElementById("semana").value);
+// SALVAR PALPITES
+document.getElementById("btnSalvarPalpite").addEventListener("click", async () => {
+  const semana = parseInt(document.getElementById("semanaPalpite").value);
   if(!semana){ alert("Informe a semana"); return; }
 
   const payload = {
-    usuario: usuarioAtual.nome,
-    senha: usuarioAtual.senha,
+    usuario_id: usuarioLogado.id,
     semana,
-    lider: Array.from(document.getElementById("lider").selectedOptions).map(o=>o.value),
-    anjo: Array.from(document.getElementById("anjo").selectedOptions).map(o=>o.value),
-    emparedados: Array.from(document.getElementById("emparedados").selectedOptions).map(o=>o.value),
-    eliminados: Array.from(document.getElementById("eliminados").selectedOptions).map(o=>o.value),
-    bate_volta: Array.from(document.getElementById("bateVolta").selectedOptions).map(o=>o.value),
-    criado_em: new Date().toISOString()
+    lider: Array.from(document.getElementById("palpiteLider").selectedOptions).map(o=>o.value),
+    anjo: Array.from(document.getElementById("palpiteAnjo").selectedOptions).map(o=>o.value),
+    emparedados: Array.from(document.getElementById("palpiteEmparedados").selectedOptions).map(o=>o.value),
+    eliminados: Array.from(document.getElementById("palpiteEliminados").selectedOptions).map(o=>o.value),
+    bate_volta: Array.from(document.getElementById("palpiteBateVolta").selectedOptions).map(o=>o.value)
   };
 
-  const { data, error } = await supabase
-    .from("palpites")
-    .insert([payload]);
-
-  const msg = document.getElementById("msg");
+  const { data, error } = await supabase.from("palpites").insert([payload]);
+  const msg = document.getElementById("msgPalpite");
   if(error){
-    msg.textContent = "Erro ao enviar: " + error.message;
-    msg.className = "mt-3 text-red-600 font-medium text-center";
+    msg.textContent = "Erro: " + error.message;
+    msg.className = "mt-3 text-red-600 text-center font-medium";
   } else {
-    msg.textContent = "Palpite enviado com sucesso!";
-    msg.className = "mt-3 text-green-600 font-medium text-center";
-    document.getElementById("semana").value = "";
-    ["lider","anjo","emparedados","eliminados","bateVolta"].forEach(id => document.getElementById(id).selectedIndex = -1);
+    msg.textContent = "Palpites enviados com sucesso!";
+    msg.className = "mt-3 text-green-600 text-center font-medium";
   }
 });
 </script>

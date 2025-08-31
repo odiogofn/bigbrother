@@ -3,37 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <title>Grande Irmão - Portal</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 min-h-screen flex items-center justify-center">
 
-<div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-
-  <div class="bg-white rounded-2xl shadow-xl p-8 text-center hover:shadow-2xl transition">
-    <h2 class="text-2xl font-bold mb-4">Painel Admin</h2>
-    <p class="text-gray-600 mb-4">Gerencie participantes e resultados.</p>
-    <a href="admin.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition">Acessar</a>
+<div class="bg-white rounded-3xl shadow-xl p-12 text-center max-w-lg w-full">
+  <h1 class="text-4xl font-bold mb-8 text-gray-800">Grande Irmão</h1>
+  <p class="mb-6 text-gray-600">Escolha sua área:</p>
+  <div class="flex flex-col gap-4">
+    <a href="admin.html" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition">Painel Admin</a>
+    <a href="usuario.html" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition">Área do Usuário</a>
+    <a href="resultados.html" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-xl transition">Resultados</a>
   </div>
-
-  <div class="bg-white rounded-2xl shadow-xl p-8 text-center hover:shadow-2xl transition">
-    <h2 class="text-2xl font-bold mb-4">Enviar Palpites</h2>
-    <p class="text-gray-600 mb-4">Cadastre-se e envie seus palpites da semana.</p>
-    <a href="usuario.html" class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition">Acessar</a>
-  </div>
-
-  <div class="bg-white rounded-2xl shadow-xl p-8 text-center hover:shadow-2xl transition">
-    <h2 class="text-2xl font-bold mb-4">Resultados</h2>
-    <p class="text-gray-600 mb-4">Confira os resultados das semanas e líderes.</p>
-    <a href="resultados.html" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-xl transition">Acessar</a>
-  </div>
-
-  <div class="bg-white rounded-2xl shadow-xl p-8 text-center hover:shadow-2xl transition opacity-50 cursor-not-allowed">
-    <h2 class="text-2xl font-bold mb-4">Próximo Recurso</h2>
-    <p class="text-gray-600 mb-4">Em breve você poderá acessar novas funcionalidades.</p>
-  </div>
-
 </div>
 
 </body>
 </html>
-

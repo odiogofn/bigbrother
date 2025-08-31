@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>Grande Irmão - Resultados</title>
+<script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 p-6 min-h-screen">
 
@@ -43,43 +43,33 @@ const supabaseUrl = "https://biojnilbgzozmynemtra.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-// CARREGAR RESULTADOS
 async function carregarResultados(semana = null) {
-  let query = supabase.from("resultados").select("*").order("semana", { ascending: true });
+  let query = supabase.from("resultados").select("*").order("semana", {ascending:true});
   if(semana) query = query.eq("semana", semana);
 
   const { data, error } = await query;
-  if(error){ alert("Erro ao carregar resultados: " + error.message); return; }
+  if(error){ alert("Erro: " + error.message); return; }
 
   const tbody = document.getElementById("corpoTabela");
   tbody.innerHTML = "";
-
   data.forEach(r => {
-    const tr = document.createElement("tr");
-    tr.className = "border-b hover:bg-gray-50 transition";
-
-    const td = (v) => `<td class="py-2 px-4 align-top">${Array.isArray(v) ? v.join(", ") : v || ""}</td>`;
-
-    tr.innerHTML = `
-      ${td(r.semana)}
-      ${td(r.lider)}
-      ${td(r.anjo)}
-      ${td(r.emparedados)}
-      ${td(r.eliminados)}
-      ${td(r.bate_volta)}
-    `;
-
-    tbody.appendChild(tr);
+    tbody.innerHTML += `<tr class="border-b">
+      <td class="py-2 px-4">${r.semana}</td>
+      <td class="py-2 px-4">${r.lider.join(", ")}</td>
+      <td class="py-2 px-4">${r.anjo.join(", ")}</td>
+      <td class="py-2 px-4">${r.emparedados.join(", ")}</td>
+      <td class="py-2 px-4">${r.eliminados.join(", ")}</td>
+      <td class="py-2 px-4">${r.bate_volta.join(", ")}</td>
+    </tr>`;
   });
 }
 
-// FILTRO POR SEMANA
 document.getElementById("btnFiltrar").addEventListener("click", () => {
   const semana = parseInt(document.getElementById("semanaFiltro").value);
-  carregarResultados(semana || null);
+  carregarResultados(semana);
 });
 
-// CARREGA TODOS AO INICIAR
+// Carregar todos ao iniciar
 carregarResultados();
 </script>
 </body>
