@@ -1,76 +1,125 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Grande Irmão - Resultados</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8">
+  <title>Cadastro de Resultados</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
 </head>
-<body class="bg-gray-100 p-6 min-h-screen">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-3xl">
+    <h1 class="text-2xl font-bold text-center text-indigo-600 mb-6">Cadastro de Resultados Semanais</h1>
 
-<div class="max-w-6xl mx-auto">
+    <!-- Formulário -->
+    <form id="formResultado" class="space-y-4">
+      <div>
+        <label class="block text-gray-700">Semana</label>
+        <input type="number" id="semana" class="w-full border rounded-lg p-2" required>
+      </div>
 
-  <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Grande Irmão - Resultados</h1>
+      <div>
+        <label class="block text-gray-700">Líder</label>
+        <input type="text" id="lider" class="w-full border rounded-lg p-2" required>
+      </div>
 
-  <!-- FILTRO POR SEMANA -->
-  <div class="bg-white p-6 rounded-2xl shadow mb-6 flex flex-col md:flex-row items-center gap-4">
-    <label class="font-medium">Semana:</label>
-    <input type="number" id="semanaFiltro" class="border rounded-xl px-4 py-2 w-full md:w-32 focus:outline-none focus:ring-2 focus:ring-blue-500">
-    <button id="btnFiltrar" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-xl transition">Filtrar</button>
+      <div>
+        <label class="block text-gray-700">Anjo</label>
+        <input type="text" id="anjo" class="w-full border rounded-lg p-2">
+      </div>
+
+      <div>
+        <label class="block text-gray-700">Emparedados (separar por vírgula)</label>
+        <input type="text" id="emparedados" class="w-full border rounded-lg p-2">
+      </div>
+
+      <div>
+        <label class="block text-gray-700">Eliminados (separar por vírgula)</label>
+        <input type="text" id="eliminados" class="w-full border rounded-lg p-2">
+      </div>
+
+      <div>
+        <label class="block text-gray-700">Bate-volta</label>
+        <input type="text" id="bate_volta" class="w-full border rounded-lg p-2">
+      </div>
+
+      <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
+        Salvar Resultado
+      </button>
+    </form>
+
+    <!-- Lista de Resultados -->
+    <h2 class="text-xl font-semibold text-gray-700 mt-8">Resultados Cadastrados</h2>
+    <div id="listaResultados" class="mt-4 space-y-2"></div>
   </div>
 
-  <!-- TABELA DE RESULTADOS -->
-  <div id="tabelaResultados" class="overflow-x-auto">
-    <table class="min-w-full bg-white rounded-2xl shadow-lg">
-      <thead class="bg-gray-200">
-        <tr>
-          <th class="py-2 px-4 text-left">Semana</th>
-          <th class="py-2 px-4 text-left">Líder</th>
-          <th class="py-2 px-4 text-left">Anjo</th>
-          <th class="py-2 px-4 text-left">Emparedados</th>
-          <th class="py-2 px-4 text-left">Eliminados</th>
-          <th class="py-2 px-4 text-left">Bate-Volta</th>
-        </tr>
-      </thead>
-      <tbody id="corpoTabela"></tbody>
-    </table>
-  </div>
+  <script>
+    const SUPABASE_URL = "https://biojnilbgzozmynemtra.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
 
-</div>
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-<script>
-const supabaseUrl = "https://biojnilbgzozmynemtra.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    // Salvar resultado
+    document.getElementById("formResultado").addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-async function carregarResultados(semana = null) {
-  let query = supabase.from("resultados").select("*").order("semana", {ascending:true});
-  if(semana) query = query.eq("semana", semana);
+      const semana = document.getElementById("semana").value;
+      const lider = document.getElementById("lider").value;
+      const anjo = document.getElementById("anjo").value;
+      const emparedados = document.getElementById("emparedados").value.split(",").map(s => s.trim());
+      const eliminados = document.getElementById("eliminados").value.split(",").map(s => s.trim());
+      const bate_volta = document.getElementById("bate_volta").value;
 
-  const { data, error } = await query;
-  if(error){ alert("Erro: " + error.message); return; }
+      const { data, error } = await supabase
+        .from("resultados")
+        .insert([{
+          semana,
+          lider,
+          anjo,
+          emparedados,
+          eliminados,
+          bate_volta,
+          criado_em: new Date()
+        }]);
 
-  const tbody = document.getElementById("corpoTabela");
-  tbody.innerHTML = "";
-  data.forEach(r => {
-    tbody.innerHTML += `<tr class="border-b">
-      <td class="py-2 px-4">${r.semana}</td>
-      <td class="py-2 px-4">${r.lider.join(", ")}</td>
-      <td class="py-2 px-4">${r.anjo.join(", ")}</td>
-      <td class="py-2 px-4">${r.emparedados.join(", ")}</td>
-      <td class="py-2 px-4">${r.eliminados.join(", ")}</td>
-      <td class="py-2 px-4">${r.bate_volta.join(", ")}</td>
-    </tr>`;
-  });
-}
+      if (error) {
+        alert("Erro ao salvar: " + error.message);
+      } else {
+        alert("Resultado salvo com sucesso!");
+        carregarResultados();
+        e.target.reset();
+      }
+    });
 
-document.getElementById("btnFiltrar").addEventListener("click", () => {
-  const semana = parseInt(document.getElementById("semanaFiltro").value);
-  carregarResultados(semana);
-});
+    // Carregar lista
+    async function carregarResultados() {
+      const { data, error } = await supabase
+        .from("resultados")
+        .select("*")
+        .order("semana", { ascending: true });
 
-// Carregar todos ao iniciar
-carregarResultados();
-</script>
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      const lista = document.getElementById("listaResultados");
+      lista.innerHTML = "";
+      data.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "p-4 border rounded-lg bg-gray-50";
+        div.innerHTML = `
+          <p><strong>Semana:</strong> ${r.semana}</p>
+          <p><strong>Líder:</strong> ${r.lider}</p>
+          <p><strong>Anjo:</strong> ${r.anjo || "-"}</p>
+          <p><strong>Emparedados:</strong> ${r.emparedados?.join(", ") || "-"}</p>
+          <p><strong>Eliminados:</strong> ${r.eliminados?.join(", ") || "-"}</p>
+          <p><strong>Bate-volta:</strong> ${r.bate_volta || "-"}</p>
+        `;
+        lista.appendChild(div);
+      });
+    }
+
+    carregarResultados();
+  </script>
 </body>
 </html>
