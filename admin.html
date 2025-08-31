@@ -1,43 +1,167 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin - Grande Irmão Bolão</title>
-  <link rel="stylesheet" href="style.css">
-  <script type="module" src="supabase.js"></script>
+<meta charset="UTF-8">
+<title>Grande Irmão - Admin</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-  <h2>Painel Admin</h2>
-  <form id="formResultado">
-    <input type="number" id="semana" placeholder="Semana" required><br>
-    <input type="text" id="lider" placeholder="Líder" required><br>
-    <input type="text" id="anjo" placeholder="Anjo" required><br>
-    <input type="text" id="eliminados" placeholder="Eliminados (separados por vírgula)" required><br>
-    <input type="text" id="bate_volta" placeholder="Bate-volta" required><br>
-    <button type="submit">Salvar Resultado</button>
-  </form>
+<body class="bg-gray-100 p-6">
 
-  <script type="module">
-    import { supabase } from './supabase.js'
+<div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-lg">
 
-    document.getElementById('formResultado').addEventListener('submit', async (e) => {
-      e.preventDefault()
-      const semana = document.getElementById('semana').value
-      const lider = document.getElementById('lider').value
-      const anjo = document.getElementById('anjo').value
-      const eliminados = document.getElementById('eliminados').value
-      const bate_volta = document.getElementById('bate_volta').value
+  <div id="loginDiv">
+    <h1 class="text-2xl font-bold mb-4">Login Admin</h1>
+    <input type="text" id="login" placeholder="Login" class="border rounded-xl px-3 py-2 w-full mb-2">
+    <input type="password" id="senha" placeholder="Senha" class="border rounded-xl px-3 py-2 w-full mb-2">
+    <button id="btnLogin" class="bg-blue-600 text-white px-4 py-2 rounded-xl">Entrar</button>
+    <p id="msgLogin" class="mt-2"></p>
+  </div>
 
-      const { data, error } = await supabase
-        .from('resultados')
-        .insert([{ semana, lider, anjo, eliminados, bate_volta }])
+  <div id="adminContent" class="hidden">
 
-      if (error) {
-        alert("Erro ao salvar resultado: " + error.message)
-      } else {
-        alert("Resultado salvo com sucesso!")
-      }
-    })
-  </script>
+    <h1 class="text-2xl font-bold mb-4">Admin - Participantes & Resultados</h1>
+
+    <!-- Form para cadastrar participante -->
+    <div class="mb-6 p-4 border rounded-xl bg-gray-50">
+      <h2 class="font-semibold mb-2">Cadastrar Participante</h2>
+      <input type="text" id="novoParticipante" placeholder="Nome" class="border rounded-xl px-3 py-2 w-full mb-2">
+      <button id="adicionarParticipante" class="bg-purple-600 text-white px-4 py-2 rounded-xl">Adicionar</button>
+      <p id="msgParticipante" class="mt-2"></p>
+    </div>
+
+    <!-- Form para lançar resultados da semana -->
+    <div>
+      <div class="mb-4">
+        <label class="block font-medium mb-1">Semana</label>
+        <input type="number" id="semana" class="w-full border rounded-xl px-3 py-2">
+      </div>
+
+      <div class="mb-4">
+        <label class="block font-medium mb-1">Líder</label>
+        <select id="lider" multiple class="w-full border rounded-xl px-3 py-2"></select>
+      </div>
+
+      <div class="mb-4">
+        <label class="block font-medium mb-1">Anjo</label>
+        <select id="anjo" multiple class="w-full border rounded-xl px-3 py-2"></select>
+      </div>
+
+      <div class="mb-4">
+        <label class="block font-medium mb-1">Emparedados</label>
+        <select id="emparedados" multiple class="w-full border rounded-xl px-3 py-2"></select>
+      </div>
+
+      <div class="mb-4">
+        <label class="block font-medium mb-1">Eliminados</label>
+        <select id="eliminados" multiple class="w-full border rounded-xl px-3 py-2"></select>
+      </div>
+
+      <div class="mb-4">
+        <label class="block font-medium mb-1">Bate-Volta</label>
+        <select id="bateVolta" multiple class="w-full border rounded-xl px-3 py-2"></select>
+      </div>
+
+      <button id="salvar" class="bg-blue-600 text-white px-4 py-2 rounded-xl">Salvar Resultado</button>
+      <p id="msg" class="mt-3 text-green-600 font-medium"></p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const supabaseUrl = "https://SEU_SUPABASE_URL";
+  const supabaseKey = "SUA_CHAVE_ANONIMA";
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+  // LOGIN ADMIN
+  document.getElementById("btnLogin").addEventListener("click", () => {
+    const login = document.getElementById("login").value;
+    const senha = document.getElementById("senha").value;
+    if(login === "admin" && senha === "admin"){
+      document.getElementById("loginDiv").classList.add("hidden");
+      document.getElementById("adminContent").classList.remove("hidden");
+      preencherSelects();
+    } else {
+      document.getElementById("msgLogin").textContent = "Login ou senha incorretos";
+      document.getElementById("msgLogin").className = "mt-2 text-red-600";
+    }
+  });
+
+  // CARREGAR PARTICIPANTES ATIVOS
+  async function carregarParticipantes() {
+    const { data, error } = await supabase
+      .from("participantes")
+      .select("nome")
+      .eq("ativo", true)
+      .order("nome");
+
+    if(error){ alert("Erro ao carregar participantes: " + error.message); return []; }
+    return data.map(p => p.nome);
+  }
+
+  async function preencherSelects() {
+    const participantes = await carregarParticipantes();
+    ["lider","anjo","emparedados","eliminados","bateVolta"].forEach(id => {
+      const sel = document.getElementById(id);
+      sel.innerHTML = "";
+      participantes.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        sel.appendChild(opt);
+      });
+    });
+  }
+
+  // ADICIONAR PARTICIPANTE
+  document.getElementById("adicionarParticipante").addEventListener("click", async () => {
+    const nome = document.getElementById("novoParticipante").value.trim();
+    if(!nome){ alert("Digite o nome"); return; }
+
+    const { data, error } = await supabase
+      .from("participantes")
+      .insert([{ nome, ativo: true, criado_em: new Date().toISOString() }]);
+
+    if(error){
+      document.getElementById("msgParticipante").textContent = "Erro: " + error.message;
+      document.getElementById("msgParticipante").className = "mt-2 text-red-600";
+    } else {
+      document.getElementById("msgParticipante").textContent = "Participante adicionado!";
+      document.getElementById("msgParticipante").className = "mt-2 text-green-600";
+      document.getElementById("novoParticipante").value = "";
+      preencherSelects();
+    }
+  });
+
+  // SALVAR RESULTADOS
+  document.getElementById("salvar").addEventListener("click", async () => {
+    const semana = parseInt(document.getElementById("semana").value);
+    if(!semana){ alert("Informe a semana"); return; }
+
+    const payload = {
+      semana,
+      lider: Array.from(document.getElementById("lider").selectedOptions).map(o=>o.value),
+      anjo: Array.from(document.getElementById("anjo").selectedOptions).map(o=>o.value),
+      emparedados: Array.from(document.getElementById("emparedados").selectedOptions).map(o=>o.value),
+      eliminados: Array.from(document.getElementById("eliminados").selectedOptions).map(o=>o.value),
+      bate_volta: Array.from(document.getElementById("bateVolta").selectedOptions).map(o=>o.value),
+      criado_em: new Date().toISOString()
+    };
+
+    const { data, error } = await supabase
+      .from("resultados")
+      .insert([payload]);
+
+    if(error){
+      document.getElementById("msg").textContent = "Erro ao salvar: " + error.message;
+      document.getElementById("msg").className = "mt-3 text-red-600 font-medium";
+    } else {
+      document.getElementById("msg").textContent = "Semana salva com sucesso!";
+      document.getElementById("msg").className = "mt-3 text-green-600 font-medium";
+    }
+  });
+
+</script>
 </body>
 </html>
