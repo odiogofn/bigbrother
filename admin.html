@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <title>Painel Admin - Grande Irmão</title>
-<script src="https://unpkg.com/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <style>
-body{font-family:Arial,sans-serif;margin:20px;}
-.hidden{display:none;}
-nav{margin-bottom:20px;}
-nav button{margin-right:10px;padding:10px 15px;border-radius:5px;border:none;background:#007bff;color:white;cursor:pointer;}
-nav button:hover{background:#0056b3;}
-.card{border:1px solid #ccc;padding:15px;margin-bottom:20px;border-radius:8px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
-input,select{padding:5px;margin-bottom:10px;width:100%;max-width:300px;}
-table{border-collapse:collapse;margin-top:10px;}
-th,td{border:1px solid #ccc;padding:8px;}
-th{background:#f0f0f0;}
-button.submit{background:#28a745;color:white;border:none;padding:8px 12px;border-radius:5px;cursor:pointer;margin-top:10px;}
-button.submit:hover{background:#218838;}
+body { font-family: Arial, sans-serif; margin: 20px; background:#f9f9f9; }
+.hidden { display: none; }
+nav { margin-bottom: 20px; }
+nav button { margin-right: 10px; padding: 8px 12px; border-radius: 5px; border: none; background:#007bff; color:white; cursor:pointer; }
+nav button:hover { background:#0056b3; }
+.card { background:white; padding:15px; border-radius:8px; box-shadow:0 2px 5px rgba(0,0,0,0.1); margin-bottom:20px; }
+input, select { padding:5px; margin-bottom:10px; width:100%; max-width:300px; }
+table { border-collapse: collapse; margin-top:10px; width:100%; max-width:600px; }
+th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+th { background:#eee; }
+button.submit { background:#28a745; color:white; border:none; padding:6px 10px; border-radius:5px; cursor:pointer; }
+button.submit:hover { background:#218838; }
 </style>
 </head>
 <body>
@@ -44,19 +44,17 @@ button.submit:hover{background:#218838;}
   <div id="tab-participantes" class="card">
     <h3>Cadastrar Participante</h3>
     <form id="form-participante">
-      <label>Nome:</label>
-      <input type="text" id="nome-participante" required>
+      <input type="text" id="nome-participante" placeholder="Nome do participante" required>
       <button type="submit" class="submit">Salvar</button>
     </form>
-    <h4>Lista de Participantes</h4>
     <ul id="lista-participantes"></ul>
   </div>
 
   <!-- Gabarito -->
   <div id="tab-gabarito" class="card hidden">
-    <h3>Cadastrar Resultados por Semana</h3>
+    <h3>Resultados por Semana</h3>
     <label>Semana:</label>
-    <input type="number" id="semana-gabarito" min="1" value="1"><br><br>
+    <input type="number" id="semana-gabarito" min="1" value="1"><br>
     <table id="tabela-participantes">
       <thead>
         <tr>
@@ -77,19 +75,18 @@ button.submit:hover{background:#218838;}
   <div id="tab-jogadores" class="card hidden">
     <h3>Cadastrar Jogador</h3>
     <form id="form-jogador">
-      <label>Nome:</label>
-      <input type="text" id="nome-jogador" required>
-      <label>Data de Nascimento:</label>
+      <input type="text" id="nome-jogador" placeholder="Nome do jogador" required>
       <input type="date" id="nascimento-jogador" required>
       <button type="submit" class="submit">Salvar</button>
     </form>
-    <h4>Lista de Jogadores</h4>
     <ul id="lista-jogadores"></ul>
   </div>
 </section>
 
 <script>
-let supabase = null;
+const SUPABASE_URL = 'https://biojnilbgzozmynemtra.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function showTab(id){
   document.querySelectorAll('.card').forEach(c=>c.classList.add('hidden'));
@@ -97,12 +94,11 @@ function showTab(id){
 }
 
 // LOGIN ADMIN
-document.getElementById('login-form').addEventListener('submit', async e=>{
+document.getElementById('login-form').addEventListener('submit', e=>{
   e.preventDefault();
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
   if(username==='admin' && password==='admin'){
-    supabase = supabase.createClient('https://biojnilbgzozmynemtra.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM');
     document.getElementById('login-section').classList.add('hidden');
     document.getElementById('dashboard').classList.remove('hidden');
     carregarParticipantes();
@@ -117,20 +113,19 @@ document.getElementById('form-participante').addEventListener('submit', async e=
   e.preventDefault();
   const nome = document.getElementById('nome-participante').value.trim();
   const {error} = await supabase.from('participantes').insert([{nome}]);
-  if(error){ console.error(error); alert('Erro ao cadastrar participante!'); return; }
+  if(error){ console.error(error); alert('Erro!'); return; }
   document.getElementById('form-participante').reset();
   carregarParticipantes();
 });
+
 async function carregarParticipantes(){
   const {data,error} = await supabase.from('participantes').select('*').order('nome');
   if(error){ console.error(error); return; }
-  const ul = document.getElementById('lista-participantes');
-  ul.innerHTML='';
-  const tbody = document.querySelector('#tabela-participantes tbody');
-  tbody.innerHTML='';
+  const ul = document.getElementById('lista-participantes'); ul.innerHTML='';
+  const tbody = document.querySelector('#tabela-participantes tbody'); tbody.innerHTML='';
   data.forEach(p=>{
-    const li = document.createElement('li'); li.textContent=p.nome; ul.appendChild(li);
-    const tr = document.createElement('tr');
+    const li=document.createElement('li'); li.textContent=p.nome; ul.appendChild(li);
+    const tr=document.createElement('tr');
     tr.innerHTML=`
       <td>${p.nome}</td>
       <td><input type="checkbox" class="lider" data-nome="${p.nome}"></td>
@@ -149,10 +144,11 @@ document.getElementById('form-jogador').addEventListener('submit', async e=>{
   const nome=document.getElementById('nome-jogador').value.trim();
   const nascimento=document.getElementById('nascimento-jogador').value;
   const {error}=await supabase.from('jogadores').insert([{nome,nascimento}]);
-  if(error){ console.error(error); alert('Erro ao cadastrar jogador!'); return; }
+  if(error){ console.error(error); alert('Erro!'); return; }
   document.getElementById('form-jogador').reset();
   carregarJogadores();
 });
+
 async function carregarJogadores(){
   const {data,error}=await supabase.from('jogadores').select('*').order('nome');
   if(error){ console.error(error); return; }
@@ -178,7 +174,7 @@ document.getElementById('salvar-gabarito').addEventListener('click', async ()=>{
     resultados.push({semana,lider:lider[0]||null,anjo:anjo[0]||null,emparedados,eliminados,bate_volta:bateVolta[0]||null});
   });
   const {error}=await supabase.from('resultados').insert(resultados);
-  if(error){ console.error(error); alert('Erro ao salvar gabarito!'); return; }
+  if(error){ console.error(error); alert('Erro ao salvar!'); return; }
   alert('Gabarito salvo!');
 });
 </script>
