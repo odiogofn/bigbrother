@@ -1,55 +1,81 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Cadastro de Resultados</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Painel - Resultados Semanais</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-  <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-3xl">
-    <h1 class="text-2xl font-bold text-center text-indigo-600 mb-6">Cadastro de Resultados Semanais</h1>
+<body class="bg-gray-100">
+  <div class="min-h-screen flex flex-col">
+    <!-- Topo -->
+    <header class="bg-purple-700 text-white p-4 shadow-md">
+      <div class="container mx-auto flex justify-between items-center">
+        <h1 class="text-xl font-bold">Painel de Resultados</h1>
+        <nav class="space-x-4">
+          <a href="admin.html" class="hover:underline">🏠 Dashboard</a>
+          <a href="participantes.html" class="hover:underline">👥 Participantes</a>
+          <a href="resultados.html" class="font-semibold underline">📊 Resultados</a>
+        </nav>
+      </div>
+    </header>
 
-    <!-- Formulário -->
-    <form id="formResultado" class="space-y-4">
-      <div>
-        <label class="block text-gray-700">Semana</label>
-        <input type="number" id="semana" class="w-full border rounded-lg p-2" required>
+    <!-- Conteúdo -->
+    <main class="container mx-auto p-6 flex-1">
+      <div class="bg-white rounded-xl shadow-md p-6">
+        <h2 class="text-2xl font-semibold mb-6">Cadastrar Resultado da Semana</h2>
+        <form id="resultadoForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium">Semana</label>
+            <input type="number" id="semana" class="w-full border rounded-lg px-3 py-2 mt-1"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Líder</label>
+            <input type="text" id="lider" class="w-full border rounded-lg px-3 py-2 mt-1"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Anjo</label>
+            <input type="text" id="anjo" class="w-full border rounded-lg px-3 py-2 mt-1"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium">Bate-volta</label>
+            <input type="text" id="bate_volta" class="w-full border rounded-lg px-3 py-2 mt-1"/>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium">Emparedados (separados por vírgula)</label>
+            <input type="text" id="emparedados" class="w-full border rounded-lg px-3 py-2 mt-1"/>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium">Eliminados (separados por vírgula)</label>
+            <input type="text" id="eliminados" class="w-full border rounded-lg px-3 py-2 mt-1"/>
+          </div>
+          <div class="md:col-span-2 flex justify-end">
+            <button type="submit" class="bg-purple-700 hover:bg-purple-800 text-white px-6 py-2 rounded-lg shadow-md">
+              Salvar Resultado
+            </button>
+          </div>
+        </form>
       </div>
 
-      <div>
-        <label class="block text-gray-700">Líder</label>
-        <input type="text" id="lider" class="w-full border rounded-lg p-2" required>
+      <!-- Lista -->
+      <div class="bg-white rounded-xl shadow-md p-6 mt-8">
+        <h2 class="text-2xl font-semibold mb-6">Resultados Cadastrados</h2>
+        <table class="w-full border-collapse">
+          <thead>
+            <tr class="bg-purple-100 text-left">
+              <th class="p-2 border">Semana</th>
+              <th class="p-2 border">Líder</th>
+              <th class="p-2 border">Anjo</th>
+              <th class="p-2 border">Emparedados</th>
+              <th class="p-2 border">Eliminados</th>
+              <th class="p-2 border">Bate-volta</th>
+            </tr>
+          </thead>
+          <tbody id="listaResultados"></tbody>
+        </table>
       </div>
-
-      <div>
-        <label class="block text-gray-700">Anjo</label>
-        <input type="text" id="anjo" class="w-full border rounded-lg p-2">
-      </div>
-
-      <div>
-        <label class="block text-gray-700">Emparedados (separar por vírgula)</label>
-        <input type="text" id="emparedados" class="w-full border rounded-lg p-2">
-      </div>
-
-      <div>
-        <label class="block text-gray-700">Eliminados (separar por vírgula)</label>
-        <input type="text" id="eliminados" class="w-full border rounded-lg p-2">
-      </div>
-
-      <div>
-        <label class="block text-gray-700">Bate-volta</label>
-        <input type="text" id="bate_volta" class="w-full border rounded-lg p-2">
-      </div>
-
-      <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">
-        Salvar Resultado
-      </button>
-    </form>
-
-    <!-- Lista de Resultados -->
-    <h2 class="text-xl font-semibold text-gray-700 mt-8">Resultados Cadastrados</h2>
-    <div id="listaResultados" class="mt-4 space-y-2"></div>
+    </main>
   </div>
 
   <script>
@@ -58,66 +84,52 @@
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Salvar resultado
-    document.getElementById("formResultado").addEventListener("submit", async (e) => {
+    const form = document.getElementById("resultadoForm");
+    const listaResultados = document.getElementById("listaResultados");
+
+    async function carregarResultados() {
+      const { data, error } = await supabase.from("resultados").select("*").order("semana", { ascending: true });
+      if (error) {
+        console.error("Erro ao carregar:", error);
+        return;
+      }
+
+      listaResultados.innerHTML = "";
+      data.forEach(r => {
+        const row = `<tr>
+          <td class="border p-2">${r.semana}</td>
+          <td class="border p-2">${r.lider}</td>
+          <td class="border p-2">${r.anjo}</td>
+          <td class="border p-2">${r.emparedados?.join(", ")}</td>
+          <td class="border p-2">${r.eliminados?.join(", ")}</td>
+          <td class="border p-2">${r.bate_volta}</td>
+        </tr>`;
+        listaResultados.innerHTML += row;
+      });
+    }
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const semana = document.getElementById("semana").value;
       const lider = document.getElementById("lider").value;
       const anjo = document.getElementById("anjo").value;
+      const bate_volta = document.getElementById("bate_volta").value;
       const emparedados = document.getElementById("emparedados").value.split(",").map(s => s.trim());
       const eliminados = document.getElementById("eliminados").value.split(",").map(s => s.trim());
-      const bate_volta = document.getElementById("bate_volta").value;
 
-      const { data, error } = await supabase
-        .from("resultados")
-        .insert([{
-          semana,
-          lider,
-          anjo,
-          emparedados,
-          eliminados,
-          bate_volta,
-          criado_em: new Date()
-        }]);
+      const { error } = await supabase.from("resultados").insert([{
+        semana, lider, anjo, bate_volta, emparedados, eliminados
+      }]);
 
       if (error) {
         alert("Erro ao salvar: " + error.message);
       } else {
-        alert("Resultado salvo com sucesso!");
+        alert("Resultado salvo!");
+        form.reset();
         carregarResultados();
-        e.target.reset();
       }
     });
-
-    // Carregar lista
-    async function carregarResultados() {
-      const { data, error } = await supabase
-        .from("resultados")
-        .select("*")
-        .order("semana", { ascending: true });
-
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      const lista = document.getElementById("listaResultados");
-      lista.innerHTML = "";
-      data.forEach(r => {
-        const div = document.createElement("div");
-        div.className = "p-4 border rounded-lg bg-gray-50";
-        div.innerHTML = `
-          <p><strong>Semana:</strong> ${r.semana}</p>
-          <p><strong>Líder:</strong> ${r.lider}</p>
-          <p><strong>Anjo:</strong> ${r.anjo || "-"}</p>
-          <p><strong>Emparedados:</strong> ${r.emparedados?.join(", ") || "-"}</p>
-          <p><strong>Eliminados:</strong> ${r.eliminados?.join(", ") || "-"}</p>
-          <p><strong>Bate-volta:</strong> ${r.bate_volta || "-"}</p>
-        `;
-        lista.appendChild(div);
-      });
-    }
 
     carregarResultados();
   </script>
