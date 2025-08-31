@@ -78,6 +78,7 @@
 </div>
 
 <script>
+// Substitua pelos seus dados Supabase
 const supabaseUrl = "https://biojnilbgzozmynemtra.supabase.co";
 const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
@@ -97,7 +98,7 @@ document.getElementById("btnLogin").addEventListener("click", () => {
   }
 });
 
-// CARREGAR PARTICIPANTES ATIVOS
+// CARREGAR PARTICIPANTES
 async function carregarParticipantes() {
   const { data, error } = await supabase
     .from("participantes")
@@ -105,7 +106,7 @@ async function carregarParticipantes() {
     .eq("ativo", true)
     .order("nome");
 
-  if(error){ alert("Erro ao carregar participantes: " + error.message); return []; }
+  if(error){ alert("Erro: " + error.message); return []; }
   return data.map(p => p.nome);
 }
 
@@ -159,9 +160,7 @@ document.getElementById("salvar").addEventListener("click", async () => {
     criado_em: new Date().toISOString()
   };
 
-  const { data, error } = await supabase
-    .from("resultados")
-    .insert([payload]);
+  const { data, error } = await supabase.from("resultados").insert([payload]);
 
   const msg = document.getElementById("msg");
   if(error){

@@ -5,19 +5,35 @@
 <title>Grande Irmão - Portal</title>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.3/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
 
-<div class="bg-white p-8 rounded-xl shadow-xl text-center max-w-md w-full">
-  <h1 class="text-3xl font-bold mb-6">Grande Irmão</h1>
+<div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
 
-  <p class="mb-4 text-gray-700">Escolha uma área do jogo:</p>
+  <div class="bg-white rounded-2xl shadow-xl p-8 text-center hover:shadow-2xl transition">
+    <h2 class="text-2xl font-bold mb-4">Painel Admin</h2>
+    <p class="text-gray-600 mb-4">Gerencie participantes e resultados.</p>
+    <a href="admin.html" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition">Acessar</a>
+  </div>
 
-  <a href="admin.html" class="block bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl mb-4 font-semibold transition">Painel Admin</a>
+  <div class="bg-white rounded-2xl shadow-xl p-8 text-center hover:shadow-2xl transition">
+    <h2 class="text-2xl font-bold mb-4">Enviar Palpites</h2>
+    <p class="text-gray-600 mb-4">Cadastre-se e envie seus palpites da semana.</p>
+    <a href="usuario.html" class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition">Acessar</a>
+  </div>
 
-  <a href="usuario.html" class="block bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl mb-4 font-semibold transition">Enviar Palpites</a>
+  <div class="bg-white rounded-2xl shadow-xl p-8 text-center hover:shadow-2xl transition">
+    <h2 class="text-2xl font-bold mb-4">Resultados</h2>
+    <p class="text-gray-600 mb-4">Confira os resultados das semanas e líderes.</p>
+    <a href="resultados.html" class="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-3 rounded-xl transition">Acessar</a>
+  </div>
 
-  <a href="#" class="block bg-gray-500 text-white px-6 py-3 rounded-xl font-semibold transition cursor-not-allowed opacity-50">Ver Resultados (em breve)</a>
+  <div class="bg-white rounded-2xl shadow-xl p-8 text-center hover:shadow-2xl transition opacity-50 cursor-not-allowed">
+    <h2 class="text-2xl font-bold mb-4">Próximo Recurso</h2>
+    <p class="text-gray-600 mb-4">Em breve você poderá acessar novas funcionalidades.</p>
+  </div>
+
 </div>
 
 </body>
 </html>
+
