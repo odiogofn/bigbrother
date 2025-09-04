@@ -2,14 +2,26 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Grande Irmão - Início</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <title>Sistema de Palpites</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://YOUR_PROJECT.supabase.co";
+    const SUPABASE_KEY = "YOUR_PUBLIC_ANON_KEY";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  </script>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f4f6f9; display:flex; justify-content:center; align-items:center; height:100vh; }
+    .container { background:white; padding:40px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); text-align:center; }
+    a { display:block; margin:10px 0; padding:12px; border-radius:8px; background:#007bff; color:white; text-decoration:none; font-weight:bold; }
+    a:hover { background:#0056b3; }
+  </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center">
-  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
-    <h1 class="text-3xl font-bold mb-6">Grande Irmão</h1>
-    <a href="admin.html" class="block mb-4 bg-blue-500 text-white py-2 rounded hover:bg-blue-600">Painel Admin</a>
-    <a href="palpiteiro.html" class="block bg-green-500 text-white py-2 rounded hover:bg-green-600">Área do Palpiteiro</a>
+<body>
+  <div class="container">
+    <h2>Bem-vindo ao Sistema de Palpites</h2>
+    <a href="palpiteiro.html">Área do Palpiteiro</a>
+    <a href="admin.html">Área Administrativa</a>
   </div>
 </body>
 </html>
+
