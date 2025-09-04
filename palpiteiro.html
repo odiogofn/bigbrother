@@ -3,122 +3,119 @@
 <head>
   <meta charset="UTF-8">
   <title>Área do Palpiteiro</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://biojnilbgzozmynemtra.supabase.co"; // troque pelo seu
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM"; // troque pelo seu
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  </script>
-  <style>
-    body { font-family:Arial, sans-serif; background:#f4f6f9; margin:0; padding:20px; }
-    .container { max-width:900px; margin:auto; background:white; padding:30px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
-    h2 { text-align:center; margin-bottom:20px; }
-    form { display:grid; gap:15px; }
-    label { font-weight:bold; }
-    select { padding:10px; border:1px solid #ccc; border-radius:6px; }
-    button { padding:12px; border:none; border-radius:8px; cursor:pointer; background:#007bff; color:white; font-weight:bold; }
-    button:hover { background:#0056b3; }
-    table { width:100%; border-collapse:collapse; margin-top:30px; }
-    th, td { border:1px solid #ddd; padding:10px; text-align:left; }
-    th { background:#f1f3f6; }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
-<body>
-  <div class="container">
-    <h2>Área do Palpiteiro</h2>
-    <form id="formPalpite">
-      <label for="palpiteiro">Selecione seu nome:</label>
-      <select id="palpiteiro" required></select>
+<body class="bg-gray-100 min-h-screen">
 
-      <label>Líder:</label>
-      <select id="lider"></select>
+  <div class="max-w-2xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-center text-green-700 mb-6">Área do Palpiteiro</h1>
 
-      <label>Anjo:</label>
-      <select id="anjo"></select>
+    <!-- Login -->
+    <div id="loginArea" class="bg-white p-6 rounded-lg shadow mb-6">
+      <h2 class="text-xl font-semibold mb-4">Identifique-se</h2>
+      <form id="formLogin" class="grid grid-cols-2 gap-2">
+        <input type="text" id="nomePalpiteiro" placeholder="Nome" class="border px-2 py-1 rounded col-span-2">
+        <input type="date" id="nascimentoPalpiteiro" class="border px-2 py-1 rounded col-span-2">
+        <button type="submit" class="col-span-2 bg-green-600 text-white px-4 py-2 rounded">Entrar</button>
+      </form>
+      <p id="loginMsg" class="text-red-600 mt-2 hidden">Palpiteiro não encontrado!</p>
+    </div>
 
-      <label>Emparedado:</label>
-      <select id="emparedado" multiple></select>
+    <!-- Área de Palpites -->
+    <div id="palpitesArea" class="hidden bg-white p-6 rounded-lg shadow">
+      <h2 class="text-xl font-semibold mb-4">Enviar Palpite</h2>
+      <form id="formPalpite" class="grid grid-cols-2 gap-2">
+        <input type="number" id="semana" placeholder="Semana" class="border px-2 py-1 rounded col-span-2">
 
-      <label>Eliminado:</label>
-      <select id="eliminado"></select>
+        <select id="palpiteLider" class="border px-2 py-1 rounded col-span-2"></select>
+        <select id="palpiteAnjo" class="border px-2 py-1 rounded col-span-2"></select>
+        <select multiple id="palpiteEmp" class="border px-2 py-1 rounded col-span-2"></select>
+        <select id="palpiteElim" class="border px-2 py-1 rounded col-span-2"></select>
+        <select id="palpiteBV" class="border px-2 py-1 rounded col-span-2"></select>
 
-      <label>Bate e Volta:</label>
-      <select id="batevolta"></select>
+        <button type="submit" class="col-span-2 bg-green-600 text-white px-4 py-2 rounded">Salvar Palpite</button>
+      </form>
 
-      <button type="submit">Salvar Palpite</button>
-    </form>
-
-    <h3>Meus Palpites</h3>
-    <table id="tabelaPalpites">
-      <thead>
-        <tr><th>Data</th><th>Líder</th><th>Anjo</th><th>Emparedado</th><th>Eliminado</th><th>Bate e Volta</th></tr>
-      </thead>
-      <tbody></tbody>
-    </table>
+      <h3 class="text-lg font-semibold mt-6">Meus Palpites</h3>
+      <ul id="listaPalpites" class="mt-2 space-y-2"></ul>
+    </div>
   </div>
 
   <script>
-    const palpiteiroSelect = document.getElementById("palpiteiro");
-    const participantesSelects = ["lider","anjo","emparedado","eliminado","batevolta"];
+    const SUPABASE_URL = "https://biojnilbgzozmynemtra.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // carregar palpiteiros
-    async function carregarPalpiteiros(){
-      const { data } = await supabase.from("palpiteiros").select("*");
-      palpiteiroSelect.innerHTML = "<option value=''>Selecione</option>";
-      data.forEach(p => palpiteiroSelect.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
-    }
+    let palpiteiroAtual = null;
 
-    // carregar participantes
-    async function carregarParticipantes(){
-      const { data } = await supabase.from("participantes").select("*");
-      participantesSelects.forEach(id=>{
-        const sel=document.getElementById(id);
-        sel.innerHTML = "<option value=''>Selecione</option>";
-        data.forEach(p=> sel.innerHTML += `<option value="${p.id}">${p.nome}</option>`);
-      });
-    }
-
-    // salvar palpite
-    document.getElementById("formPalpite").addEventListener("submit", async (e)=>{
+    // Login
+    document.getElementById("formLogin").addEventListener("submit", async e => {
       e.preventDefault();
-      const palpiteiro_id = palpiteiroSelect.value;
-      if(!palpiteiro_id) return alert("Selecione o palpiteiro!");
+      const nome = document.getElementById("nomePalpiteiro").value.trim();
+      const nascimento = document.getElementById("nascimentoPalpiteiro").value;
 
-      const lider = document.getElementById("lider").value;
-      const anjo = document.getElementById("anjo").value;
-      const emparedado = Array.from(document.getElementById("emparedado").selectedOptions).map(o=>o.value);
-      const eliminado = document.getElementById("eliminado").value;
-      const batevolta = document.getElementById("batevolta").value;
+      const { data } = await supabase.from("palpiteiros").select("*").eq("nome", nome).eq("data_nascimento", nascimento).maybeSingle();
 
-      await supabase.from("palpites").insert([{
-        palpiteiro_id, lider, anjo, emparedado, eliminado, batevolta, data:new Date().toISOString()
-      }]);
-      carregarPalpites(palpiteiro_id);
+      if (data) {
+        palpiteiroAtual = data;
+        document.getElementById("loginArea").classList.add("hidden");
+        document.getElementById("palpitesArea").classList.remove("hidden");
+        carregarParticipantes();
+        carregarPalpites();
+      } else {
+        document.getElementById("loginMsg").classList.remove("hidden");
+      }
     });
 
-    // carregar palpites do palpiteiro
-    async function carregarPalpites(palpiteiro_id){
-      const { data } = await supabase.from("palpites").select("*").eq("palpiteiro_id", palpiteiro_id);
-      const tbody = document.querySelector("#tabelaPalpites tbody");
-      tbody.innerHTML="";
-      data.forEach(p=>{
-        tbody.innerHTML += `
-          <tr>
-            <td>${new Date(p.data).toLocaleString()}</td>
-            <td>${p.lider||""}</td>
-            <td>${p.anjo||""}</td>
-            <td>${(p.emparedado||[]).join(", ")}</td>
-            <td>${p.eliminado||""}</td>
-            <td>${p.batevolta||""}</td>
-          </tr>`;
+    // Preencher selects com participantes
+    async function carregarParticipantes() {
+      const { data } = await supabase.from("participantes").select("*");
+      ["palpiteLider", "palpiteAnjo", "palpiteEmp", "palpiteElim", "palpiteBV"].forEach(id=>{
+        const sel = document.getElementById(id);
+        sel.innerHTML="";
+        data?.forEach(p=>{
+          const opt=document.createElement("option");
+          opt.value=p.nome;
+          opt.textContent=p.nome;
+          sel.appendChild(opt);
+        });
       });
     }
 
-    palpiteiroSelect.addEventListener("change", ()=>carregarPalpites(palpiteiroSelect.value));
+    // Enviar palpite
+    document.getElementById("formPalpite").addEventListener("submit", async e => {
+      e.preventDefault();
+      if(!palpiteiroAtual) return;
 
-    carregarPalpiteiros();
-    carregarParticipantes();
+      const semana = document.getElementById("semana").value;
+      const lider = document.getElementById("palpiteLider").value;
+      const anjo = document.getElementById("palpiteAnjo").value;
+      const emp = Array.from(document.getElementById("palpiteEmp").selectedOptions).map(o=>o.value);
+      const elim = document.getElementById("palpiteElim").value;
+      const bv = document.getElementById("palpiteBV").value;
+
+      await supabase.from("palpites").insert({
+        semana,
+        palpiteiro_id: palpiteiroAtual.id,
+        lider, anjo, emparedados: emp, eliminado: elim, bate_volta: bv
+      });
+
+      carregarPalpites();
+    });
+
+    // Carregar palpites do palpiteiro logado
+    async function carregarPalpites(){
+      const { data } = await supabase.from("palpites").select("*").eq("palpiteiro_id", palpiteiroAtual.id);
+      const lista=document.getElementById("listaPalpites");
+      lista.innerHTML="";
+      data?.forEach(p=>{
+        const li=document.createElement("li");
+        li.className="p-2 border rounded";
+        li.textContent=`Semana ${p.semana}: Líder=${p.lider}, Anjo=${p.anjo}, Emp=${p.emparedados?.join(",")}, Elim=${p.eliminado}, BV=${p.bate_volta}`;
+        lista.appendChild(li);
+      });
+    }
   </script>
 </body>
 </html>
-

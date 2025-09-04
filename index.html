@@ -2,26 +2,16 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Sistema de Palpites</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://biojnilbgzozmynemtra.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-  </script>
-  <style>
-    body { font-family: Arial, sans-serif; background:#f4f6f9; display:flex; justify-content:center; align-items:center; height:100vh; }
-    .container { background:white; padding:40px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); text-align:center; }
-    a { display:block; margin:10px 0; padding:12px; border-radius:8px; background:#007bff; color:white; text-decoration:none; font-weight:bold; }
-    a:hover { background:#0056b3; }
-  </style>
+  <title>Grande Irmão - Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="container">
-    <h2>Bem-vindo ao Sistema de Palpites</h2>
-    <a href="palpiteiro.html">Área do Palpiteiro</a>
-    <a href="admin.html">Área Administrativa</a>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+  <div class="bg-white p-10 rounded-xl shadow-lg w-96 text-center">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">Grande Irmão</h1>
+    <a href="admin.html" class="block bg-indigo-600 text-white px-4 py-2 rounded-lg mb-4 hover:bg-indigo-700">Área do Admin</a>
+    <a href="palpiteiro.html" class="block bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Área do Palpiteiro</a>
   </div>
 </body>
 </html>
+
 
