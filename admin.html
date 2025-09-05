@@ -2,182 +2,60 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Painel Admin - Grande Irmão</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <title>Admin - Gigant Brother</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script type="module" src="supabase.js"></script>
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100">
 
-  <div class="max-w-4xl mx-auto p-6">
-    <h1 class="text-3xl font-bold text-center text-indigo-700 mb-8">Painel do Admin</h1>
-
-    <!-- Abas -->
-    <div class="flex space-x-4 mb-6">
-      <button onclick="mostrarAba('participantes')" class="aba bg-indigo-600 text-white px-4 py-2 rounded">Participantes</button>
-      <button onclick="mostrarAba('palpiteiros')" class="aba bg-gray-300 px-4 py-2 rounded">Palpiteiros</button>
-      <button onclick="mostrarAba('gabarito')" class="aba bg-gray-300 px-4 py-2 rounded">Gabarito</button>
-      <button onclick="mostrarAba('pontuacao')" class="aba bg-gray-300 px-4 py-2 rounded">Pontuação</button>
-    </div>
-
-    <!-- Participantes -->
-    <div id="participantes" class="aba-conteudo">
-      <h2 class="text-xl font-semibold mb-4">Cadastrar Participante</h2>
-      <form id="formParticipante" class="mb-4 flex space-x-2">
-        <input type="text" id="nomeParticipante" placeholder="Nome" class="flex-1 border px-2 py-1 rounded">
-        <button type="submit" class="bg-indigo-600 text-white px-4 py-1 rounded">Salvar</button>
-      </form>
-      <ul id="listaParticipantes" class="space-y-2"></ul>
-    </div>
-
-    <!-- Palpiteiros -->
-    <div id="palpiteiros" class="aba-conteudo hidden">
-      <h2 class="text-xl font-semibold mb-4">Cadastrar Palpiteiro</h2>
-      <form id="formPalpiteiro" class="mb-4 grid grid-cols-2 gap-2">
-        <input type="text" id="nomePalpiteiro" placeholder="Nome" class="border px-2 py-1 rounded">
-        <input type="date" id="nascimentoPalpiteiro" class="border px-2 py-1 rounded">
-        <button type="submit" class="col-span-2 bg-green-600 text-white px-4 py-1 rounded">Salvar</button>
-      </form>
-      <ul id="listaPalpiteiros" class="space-y-2"></ul>
-    </div>
-
-    <!-- Gabarito -->
-    <div id="gabarito" class="aba-conteudo hidden">
-      <h2 class="text-xl font-semibold mb-4">Cadastrar Gabarito</h2>
-      <form id="formGabarito" class="grid grid-cols-2 gap-2 mb-4">
-        <input type="number" id="semana" placeholder="Semana" class="border px-2 py-1 rounded col-span-2">
-        <select multiple id="lider" class="border px-2 py-1 rounded"></select>
-        <select multiple id="anjo" class="border px-2 py-1 rounded"></select>
-        <select multiple id="emparedados" class="border px-2 py-1 rounded col-span-2"></select>
-        <select multiple id="eliminado" class="border px-2 py-1 rounded"></select>
-        <select multiple id="bate_volta" class="border px-2 py-1 rounded"></select>
-        <button type="submit" class="col-span-2 bg-indigo-600 text-white px-4 py-1 rounded">Salvar</button>
-      </form>
-      <ul id="listaGabarito" class="space-y-2"></ul>
-    </div>
-
-    <!-- Pontuação -->
-    <div id="pontuacao" class="aba-conteudo hidden">
-      <h2 class="text-xl font-semibold mb-4">Configurar Pontuação</h2>
-      <form id="formPontuacao" class="grid grid-cols-2 gap-2 mb-4">
-        <input type="number" id="pLider" placeholder="Pontos Líder" class="border px-2 py-1 rounded">
-        <input type="number" id="pAnjo" placeholder="Pontos Anjo" class="border px-2 py-1 rounded">
-        <input type="number" id="pEmp" placeholder="Pontos Emparedado" class="border px-2 py-1 rounded">
-        <input type="number" id="pElim" placeholder="Pontos Eliminado" class="border px-2 py-1 rounded">
-        <input type="number" id="pBV" placeholder="Pontos Bate-Volta" class="border px-2 py-1 rounded">
-        <button type="submit" class="col-span-2 bg-indigo-600 text-white px-4 py-1 rounded">Salvar</button>
-      </form>
-      <div id="atualPontuacao" class="text-sm text-gray-700"></div>
+  <!-- Tela de Login -->
+  <div id="login" class="h-screen flex items-center justify-center">
+    <div class="bg-white shadow-lg p-8 rounded-lg w-96">
+      <h2 class="text-2xl font-bold mb-4 text-purple-700">Login Admin</h2>
+      <input id="user" type="text" placeholder="Usuário" class="w-full p-2 border rounded mb-3">
+      <input id="pass" type="password" placeholder="Senha" class="w-full p-2 border rounded mb-3">
+      <button id="btnLogin" class="w-full bg-purple-600 text-white p-2 rounded">Entrar</button>
     </div>
   </div>
 
-  <script>
-    const SUPABASE_URL = "https://biojnilbgzozmynemtra.supabase.co";
-    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJpb2puaWxiZ3pvem15bmVtdHJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY2NDM5MzEsImV4cCI6MjA3MjIxOTkzMX0.F8MyL33SdQ7RViOF5RWgoZh8vC6hsyNqmqUXmRcNPDM";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <!-- Painel -->
+  <div id="painel" class="hidden p-6">
+    <h1 class="text-3xl font-bold text-purple-700 mb-6">Painel Admin - Gigant Brother</h1>
+    <div class="flex space-x-4 mb-6">
+      <button class="aba bg-purple-600 text-white px-4 py-2 rounded" data-aba="participantes">Participantes</button>
+      <button class="aba bg-purple-600 text-white px-4 py-2 rounded" data-aba="palpiteiros">Palpiteiros</button>
+      <button class="aba bg-purple-600 text-white px-4 py-2 rounded" data-aba="gabarito">Gabarito</button>
+      <button class="aba bg-purple-600 text-white px-4 py-2 rounded" data-aba="pontuacao">Pontuação</button>
+    </div>
 
-    function mostrarAba(aba) {
-      document.querySelectorAll(".aba-conteudo").forEach(el => el.classList.add("hidden"));
-      document.getElementById(aba).classList.remove("hidden");
-      document.querySelectorAll(".aba").forEach(b => b.classList.remove("bg-indigo-600","text-white"));
-      event.target.classList.add("bg-indigo-600","text-white");
-    }
+    <!-- Abas -->
+    <div id="conteudo"></div>
+  </div>
 
-    // Participantes
-    document.getElementById("formParticipante").addEventListener("submit", async e => {
-      e.preventDefault();
-      const nome = document.getElementById("nomeParticipante").value;
-      await supabase.from("participantes").insert({ nome });
-      carregarParticipantes();
-    });
-    async function carregarParticipantes(){
-      const { data } = await supabase.from("participantes").select("*");
-      const lista = document.getElementById("listaParticipantes");
-      lista.innerHTML = "";
-      data?.forEach(p => {
-        const li = document.createElement("li");
-        li.textContent = p.nome;
-        lista.appendChild(li);
-      });
-      // popular selects de gabarito
-      ["lider","anjo","emparedados","eliminado","bate_volta"].forEach(id=>{
-        const sel = document.getElementById(id);
-        sel.innerHTML="";
-        data?.forEach(p=>{
-          const opt=document.createElement("option");
-          opt.value=p.nome; opt.textContent=p.nome;
-          sel.appendChild(opt);
-        });
-      });
-    }
+  <script type="module">
+    import { supabase } from './supabase.js';
 
-    // Palpiteiros
-    document.getElementById("formPalpiteiro").addEventListener("submit", async e => {
-      e.preventDefault();
-      const nome = document.getElementById("nomePalpiteiro").value;
-      const data_nascimento = document.getElementById("nascimentoPalpiteiro").value;
-      await supabase.from("palpiteiros").insert({ nome, data_nascimento });
-      carregarPalpiteiros();
-    });
-    async function carregarPalpiteiros(){
-      const { data } = await supabase.from("palpiteiros").select("*");
-      const lista = document.getElementById("listaPalpiteiros");
-      lista.innerHTML = "";
-      data?.forEach(p => {
-        const li = document.createElement("li");
-        li.textContent = `${p.nome} (${p.data_nascimento})`;
-        lista.appendChild(li);
-      });
-    }
+    const loginDiv = document.getElementById("login");
+    const painelDiv = document.getElementById("painel");
+    const btnLogin = document.getElementById("btnLogin");
 
-    // Gabarito
-    document.getElementById("formGabarito").addEventListener("submit", async e => {
-      e.preventDefault();
-      const semana = document.getElementById("semana").value;
-      const lider = Array.from(document.getElementById("lider").selectedOptions).map(o=>o.value);
-      const anjo = Array.from(document.getElementById("anjo").selectedOptions).map(o=>o.value);
-      const emparedados = Array.from(document.getElementById("emparedados").selectedOptions).map(o=>o.value);
-      const eliminado = Array.from(document.getElementById("eliminado").selectedOptions).map(o=>o.value);
-      const bate_volta = Array.from(document.getElementById("bate_volta").selectedOptions).map(o=>o.value);
-      await supabase.from("gabarito").insert({ semana, lider, anjo, emparedados, eliminado, bate_volta });
-      carregarGabarito();
-    });
-    async function carregarGabarito(){
-      const { data } = await supabase.from("gabarito").select("*");
-      const lista = document.getElementById("listaGabarito");
-      lista.innerHTML="";
-      data?.forEach(g=>{
-        const li=document.createElement("li");
-        li.textContent=`Semana ${g.semana} | Líder: ${g.lider?.join(",")}`;
-        lista.appendChild(li);
-      });
-    }
-
-    // Pontuação
-    document.getElementById("formPontuacao").addEventListener("submit", async e=>{
-      e.preventDefault();
-      const valores = {
-        lider: +document.getElementById("pLider").value,
-        anjo: +document.getElementById("pAnjo").value,
-        emparedado: +document.getElementById("pEmp").value,
-        eliminado: +document.getElementById("pElim").value,
-        bate_volta: +document.getElementById("pBV").value
-      };
-      await supabase.from("pontuacao").insert(valores);
-      carregarPontuacao();
-    });
-    async function carregarPontuacao(){
-      const { data } = await supabase.from("pontuacao").select("*").order("atualizado_em",{ascending:false}).limit(1);
-      const atual=document.getElementById("atualPontuacao");
-      if(data?.length){
-        const p=data[0];
-        atual.textContent=`Atual: Líder=${p.lider}, Anjo=${p.anjo}, Emp=${p.emparedado}, Elim=${p.eliminado}, BV=${p.bate_volta}`;
+    btnLogin.onclick = async () => {
+      const user = document.getElementById("user").value;
+      const pass = document.getElementById("pass").value;
+      if (user === "admin" && pass === "admin") {
+        loginDiv.classList.add("hidden");
+        painelDiv.classList.remove("hidden");
+      } else {
+        alert("Credenciais inválidas!");
       }
-    }
+    };
 
-    carregarParticipantes();
-    carregarPalpiteiros();
-    carregarGabarito();
-    carregarPontuacao();
+    document.querySelectorAll(".aba").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        document.getElementById("conteudo").innerHTML =
+          `<p class="text-gray-500">Carregando ${btn.dataset.aba}...</p>`;
+      });
+    });
   </script>
 </body>
 </html>
