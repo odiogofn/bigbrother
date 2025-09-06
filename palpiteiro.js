@@ -1,8 +1,9 @@
 import { supabase } from "./supabase.js";
 
 let palpiteiroId = null;
+let participantesMap = {};
 
-// Login
+// LOGIN
 document.getElementById("login-btn").addEventListener("click", async ()=>{
     const nome = document.getElementById("nome").value;
     const senha = document.getElementById("senha").value;
@@ -12,20 +13,24 @@ document.getElementById("login-btn").addEventListener("click", async ()=>{
         .eq("nome", nome)
         .eq("senha", senha)
         .single();
-    
+
     if(error || !data){ alert("Nome ou senha incorretos!"); return; }
 
     palpiteiroId = data.id;
     document.getElementById("login-palpiteiro").style.display="none";
     document.getElementById("painel-palpite").style.display="block";
-    carregarParticipantes();
+    
+    await carregarParticipantes();
     carregarHistorico();
 });
 
-// Carregar participantes para dropdowns
+// CARREGAR PARTICIPANTES
 async function carregarParticipantes(){
     const { data, error } = await supabase.from("participantes").select("*");
     if(error) return console.error(error);
+
+    participantesMap = {};
+    data.forEach(p=>{ participantesMap[p.id] = p.nome; });
 
     const campos = ["lider","anjo","imune","emparedado","batevolta","eliminado","capitao","bonus"];
     campos.forEach(campo=>{
@@ -40,7 +45,7 @@ async function carregarParticipantes(){
     });
 }
 
-// Enviar palpite
+// ENVIAR PALPITE
 document.getElementById("enviar-palpite").addEventListener("click", async ()=>{
     const semana = parseInt(document.getElementById("semana").value);
     if(!semana) return alert("Informe a semana");
@@ -70,7 +75,7 @@ document.getElementById("enviar-palpite").addEventListener("click", async ()=>{
     carregarHistorico();
 });
 
-// Histórico de palpites
+// HISTÓRICO DE PALPITES
 async function carregarHistorico(){
     const { data, error } = await supabase.from("palpites")
         .select("*")
@@ -83,13 +88,21 @@ async function carregarHistorico(){
 
     let html = "<ul>";
     data.forEach(p=>{
-        html += `<li>Semana ${p.semana}: Líder ${p.lider}, Anjo ${p.anjo}, Imune ${p.imune}, Emparedado ${p.emparedado}, Batevolta ${p.batevolta}, Eliminado ${p.eliminado}, Capitão ${p.capitao}, Bonus ${p.bonus}</li>`;
+        html += `<li>Semana ${p.semana}: 
+            Líder: ${participantesMap[p.lider] || '-'}, 
+            Anjo: ${participantesMap[p.anjo] || '-'}, 
+            Imune: ${participantesMap[p.imune] || '-'}, 
+            Emparedado: ${participantesMap[p.emparedado] || '-'}, 
+            Batevolta: ${participantesMap[p.batevolta] || '-'}, 
+            Eliminado: ${participantesMap[p.eliminado] || '-'}, 
+            Capitão: ${participantesMap[p.capitao] || '-'}, 
+            Bonus: ${participantesMap[p.bonus] || '-'}</li>`;
     });
     html += "</ul>";
     div.innerHTML = html;
 }
 
-// Logout
+// LOGOUT
 document.getElementById("logout").addEventListener("click", ()=>{
     document.getElementById("painel-palpite").style.display="none";
     document.getElementById("login-palpiteiro").style.display="block";

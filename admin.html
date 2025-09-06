@@ -9,33 +9,38 @@
 <div class="container">
 <h1>Painel Administrativo</h1>
 
-<div id="admin-login">
-    <label>Usuário: <input type="text" id="usuario"></label>
-    <label>Senha: <input type="password" id="senha"></label>
-    <button id="login-admin">Entrar</button>
+<div id="login-admin">
+    <label>Usuário: <input type="text" id="admin-usuario"></label>
+    <label>Senha: <input type="password" id="admin-senha"></label>
+    <button id="login-btn">Entrar</button>
 </div>
 
-<div id="admin-container" style="display:none;">
-    <section>
-        <h2>Participantes</h2>
-        <button id="add-participante">Adicionar Participante</button>
-        <div id="lista-participantes"></div>
-    </section>
+<div id="painel-admin" style="display:none;">
+    <h2>Participantes</h2>
+    <input type="text" id="nome-participante" placeholder="Nome">
+    <button id="add-participante">Adicionar</button>
+    <div id="lista-participantes"></div>
 
-    <section>
-        <h2>Palpiteiros</h2>
-        <button id="add-palpiteiro">Adicionar Palpiteiro</button>
-        <div id="lista-palpiteiros"></div>
-    </section>
+    <h2>Palpiteiros</h2>
+    <input type="text" id="nome-palpiteiro" placeholder="Nome">
+    <input type="password" id="senha-palpiteiro" placeholder="Senha">
+    <button id="add-palpiteiro">Adicionar</button>
+    <div id="lista-palpiteiros"></div>
 
-    <section>
-        <h2>Gabarito da Semana</h2>
-        <button id="add-gabarito">Adicionar Semana</button>
-        <div id="lista-gabaritos"></div>
-    </section>
+    <h2>Gabarito da Semana</h2>
+    <label>Semana: <input type="number" id="semana-gabarito"></label>
+    <label>Líder: <select id="lider-g"></select></label>
+    <label>Anjo: <select id="anjo-g"></select></label>
+    <label>Imune: <select id="imune-g"></select></label>
+    <label>Emparedado: <select id="emparedado-g"></select></label>
+    <label>Batevolta: <select id="batevolta-g"></select></label>
+    <label>Eliminado: <select id="eliminado-g"></select></label>
+    <label>Capitão: <select id="capitao-g"></select></label>
+    <label>Bonus: <select id="bonus-g"></select></label>
+    <button id="salvar-gabarito">Salvar Gabarito</button>
+    <div id="lista-gabaritos"></div>
 
     <button id="logout">Logout</button>
-</div>
 </div>
 
 <script type="module" src="supabase.js"></script>

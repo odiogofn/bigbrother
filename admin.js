@@ -1,112 +1,163 @@
 import { supabase } from "./supabase.js";
 
-const USUARIO = "admin";
-const SENHA = "12345";
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "12345";
 
-const loginDiv = document.getElementById("admin-login");
-const painelDiv = document.getElementById("admin-container");
-
-document.getElementById("login-admin").addEventListener("click", () => {
-    const usuario = document.getElementById("usuario").value;
-    const senha = document.getElementById("senha").value;
-    if(usuario === USUARIO && senha === SENHA){
-        loginDiv.style.display = "none";
-        painelDiv.style.display = "block";
+// LOGIN
+document.getElementById("login-btn").addEventListener("click", ()=>{
+    const usuario = document.getElementById("admin-usuario").value;
+    const senha = document.getElementById("admin-senha").value;
+    if(usuario===ADMIN_USER && senha===ADMIN_PASS){
+        document.getElementById("login-admin").style.display="none";
+        document.getElementById("painel-admin").style.display="block";
         carregarTudo();
-    } else {
-        alert("Usuário ou senha inválidos!");
-    }
+    } else alert("Usuário ou senha incorretos");
 });
 
-document.getElementById("logout").addEventListener("click", () => {
-    painelDiv.style.display = "none";
-    loginDiv.style.display = "block";
+// LOGOUT
+document.getElementById("logout").addEventListener("click", ()=>{
+    document.getElementById("painel-admin").style.display="none";
+    document.getElementById("login-admin").style.display="block";
 });
 
+// CARREGAR TODOS OS DADOS
 async function carregarTudo(){
     await carregarParticipantes();
     await carregarPalpiteiros();
+    await carregarParticipantesGabarito();
     await carregarGabaritos();
 }
 
-// --- Participantes ---
+// ============================
+// PARTICIPANTES
+// ============================
+document.getElementById("add-participante").addEventListener("click", async ()=>{
+    const nome = document.getElementById("nome-participante").value.trim();
+    if(!nome) return alert("Informe o nome");
+    await supabase.from("participantes").insert([{nome}]);
+    document.getElementById("nome-participante").value="";
+    carregarParticipantes();
+});
+
 async function carregarParticipantes(){
     const { data, error } = await supabase.from("participantes").select("*");
     if(error) return console.error(error);
+
     const div = document.getElementById("lista-participantes");
-    div.innerHTML = data.length ? data.map(p=>`
-        <div>${p.nome} 
-        <button onclick="editar('participantes','${p.id}','${p.nome}')">Editar</button>
-        <button onclick="remover('participantes','${p.id}')">Excluir</button>
-        </div>`).join("") : "<p>Nenhum participante</p>";
+    div.innerHTML="";
+    data.forEach(p=>{
+        const item = document.createElement("div");
+        item.textContent = p.nome;
+        const btnDel = document.createElement("button");
+        btnDel.textContent="Excluir";
+        btnDel.onclick=()=>remover("participantes",p.id);
+        item.appendChild(btnDel);
+        div.appendChild(item);
+    });
 }
 
-// --- Palpiteiros ---
+// ============================
+// PALPITEIROS
+// ============================
+document.getElementById("add-palpiteiro").addEventListener("click", async ()=>{
+    const nome = document.getElementById("nome-palpiteiro").value.trim();
+    const senha = document.getElementById("senha-palpiteiro").value.trim();
+    if(!nome || !senha) return alert("Informe nome e senha");
+    await supabase.from("palpiteiros").insert([{nome,senha}]);
+    document.getElementById("nome-palpiteiro").value="";
+    document.getElementById("senha-palpiteiro").value="";
+    carregarPalpiteiros();
+});
+
 async function carregarPalpiteiros(){
     const { data, error } = await supabase.from("palpiteiros").select("*");
     if(error) return console.error(error);
+
     const div = document.getElementById("lista-palpiteiros");
-    div.innerHTML = data.length ? data.map(p=>`
-        <div>${p.nome} 
-        <button onclick="editar('palpiteiros','${p.id}','${p.nome}','${p.senha}')">Editar</button>
-        <button onclick="remover('palpiteiros','${p.id}')">Excluir</button>
-        </div>`).join("") : "<p>Nenhum palpiteiro</p>";
+    div.innerHTML="";
+    data.forEach(p=>{
+        const item = document.createElement("div");
+        item.textContent = p.nome;
+        const btnDel = document.createElement("button");
+        btnDel.textContent="Excluir";
+        btnDel.onclick=()=>remover("palpiteiros",p.id);
+        item.appendChild(btnDel);
+        div.appendChild(item);
+    });
 }
 
-// --- Gabaritos ---
-async function carregarGabaritos(){
-    const { data, error } = await supabase.from("gabaritos").select("*");
-    if(error) return console.error(error);
-    const div = document.getElementById("lista-gabaritos");
-    div.innerHTML = data.length ? data.map(g=>`
-        <div>Semana ${g.semana} 
-        <button onclick="editar('gabaritos','${g.id}','${g.semana}')">Editar</button>
-        <button onclick="remover('gabaritos','${g.id}')">Excluir</button>
-        </div>`).join("") : "<p>Nenhum gabarito</p>";
-}
-
-// --- Funções gerais ---
+// ============================
+// REMOVER
+// ============================
 window.remover = async (tabela,id)=>{
-    const { error } = await supabase.from(tabela).delete().eq("id", id);
+    const { error } = await supabase.from(tabela).delete().eq("id",id);
+    if(error){ console.error(error); alert("Erro ao remover: "+error.message); return; }
+    carregarTudo();
+}
+
+// ============================
+// GABARITOS
+// ============================
+async function carregarParticipantesGabarito(){
+    const { data, error } = await supabase.from("participantes").select("*");
     if(error) return console.error(error);
-    carregarTudo();
+
+    const campos = ["lider-g","anjo-g","imune-g","emparedado-g","batevolta-g","eliminado-g","capitao-g","bonus-g"];
+    campos.forEach(campo=>{
+        const sel = document.getElementById(campo);
+        sel.innerHTML="<option value=''>--Selecione--</option>";
+        data.forEach(p=>{
+            const opt=document.createElement("option");
+            opt.value=p.id;
+            opt.textContent=p.nome;
+            sel.appendChild(opt);
+        });
+    });
 }
 
-window.editar = async (tabela,id,nome,senha)=>{
-    if(tabela==="participantes"){
-        const novoNome = prompt("Novo nome:", nome);
-        if(!novoNome) return;
-        await supabase.from("participantes").update({nome:novoNome}).eq("id",id);
-    } else if(tabela==="palpiteiros"){
-        const novoNome = prompt("Nome:", nome);
-        const novaSenha = prompt("Senha:", senha);
-        if(!novoNome || !novaSenha) return;
-        await supabase.from("palpiteiros").update({nome:novoNome,senha:novaSenha}).eq("id",id);
-    } else if(tabela==="gabaritos"){
-        const novaSemana = parseInt(prompt("Semana:", nome));
-        if(!novaSemana) return;
-        await supabase.from("gabaritos").update({semana:novaSemana}).eq("id",id);
+document.getElementById("salvar-gabarito").addEventListener("click", async ()=>{
+    const semana = parseInt(document.getElementById("semana-gabarito").value);
+    if(!semana) return alert("Informe a semana");
+
+    const gabarito = {
+        semana,
+        lider: document.getElementById("lider-g").value,
+        anjo: document.getElementById("anjo-g").value,
+        imune: document.getElementById("imune-g").value,
+        emparedado: document.getElementById("emparedado-g").value,
+        batevolta: document.getElementById("batevolta-g").value,
+        eliminado: document.getElementById("eliminado-g").value,
+        capitao: document.getElementById("capitao-g").value,
+        bonus: document.getElementById("bonus-g").value
+    };
+
+    const { data: existe } = await supabase.from("gabaritos").select("*").eq("semana",semana).single();
+    if(existe){
+        await supabase.from("gabaritos").update(gabarito).eq("id",existe.id);
+        alert("Gabarito atualizado!");
+    } else {
+        await supabase.from("gabaritos").insert([gabarito]);
+        alert("Gabarito salvo!");
     }
-    carregarTudo();
-}
 
-// --- Adicionar ---
-document.getElementById("add-participante").addEventListener("click", async ()=>{
-    const nome = prompt("Nome do participante:");
-    if(!nome) return;
-    await supabase.from("participantes").insert({nome});
-    carregarParticipantes();
-});
-document.getElementById("add-palpiteiro").addEventListener("click", async ()=>{
-    const nome = prompt("Nome do palpiteiro:");
-    const senha = prompt("Senha:");
-    if(!nome || !senha) return;
-    await supabase.from("palpiteiros").insert({nome,senha});
-    carregarPalpiteiros();
-});
-document.getElementById("add-gabarito").addEventListener("click", async ()=>{
-    const semana = parseInt(prompt("Semana:"));
-    if(!semana) return;
-    await supabase.from("gabaritos").insert({semana});
     carregarGabaritos();
 });
+
+async function carregarGabaritos(){
+    const { data, error } = await supabase.from("gabaritos").select("*").order("semana",{ascending:true});
+    if(error) return console.error(error);
+
+    const div = document.getElementById("lista-gabaritos");
+    if(!data.length){ div.innerHTML="<p>Nenhum gabarito cadastrado</p>"; return; }
+
+    div.innerHTML="";
+    data.forEach(g=>{
+        const item=document.createElement("div");
+        item.textContent=`Semana ${g.semana}`;
+        const btnDel=document.createElement("button");
+        btnDel.textContent="Excluir";
+        btnDel.onclick=()=>remover("gabaritos",g.id);
+        item.appendChild(btnDel);
+        div.appendChild(item);
+    });
+}

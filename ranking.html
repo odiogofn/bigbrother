@@ -4,15 +4,16 @@
 <meta charset="UTF-8">
 <title>Ranking</title>
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <div class="container">
 <h1>Ranking do Jogo</h1>
 
 <section>
-    <label>Semana: <input type="number" id="semana" min="1"></label>
-    <label>Palpiteiro: <input type="text" id="palpiteiro-filtro"></label>
-    <label>Acumulativo: <input type="checkbox" id="acumulativo"></label>
+    <label>Semana: <input type="number" id="filtro-semana" min="1"></label>
+    <label>Palpiteiro: <select id="filtro-palpiteiro"><option value="">Todos</option></select></label>
+    <label>Acumulativo: <input type="checkbox" id="filtro-acumulativo"></label>
     <button id="filtrar">Filtrar</button>
 </section>
 
@@ -23,11 +24,11 @@
 
 <section>
     <h2>Gráfico Semana x Palpiteiro</h2>
-    <canvas id="grafico-ranking" width="600" height="400"></canvas>
+    <canvas id="grafico-ranking" width="800" height="400"></canvas>
 </section>
 
 <script type="module" src="supabase.js"></script>
 <script type="module" src="ranking.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</div>
 </body>
 </html>
