@@ -1,46 +1,48 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ranking</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Ranking - Jogo Grande Irmão</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="ranking.js" defer></script>
 </head>
 <body>
-  <div class="container">
-    <h1>Ranking do Jogo</h1>
+    <h1>Ranking Geral</h1>
 
-    <!-- FILTROS -->
-    <div id="ranking-filtros">
-      <label>Semana: <input type="number" id="ranking-semana" min="1" /></label>
-      <label>Palpiteiro:
-        <select id="ranking-palpiteiro">
-          <option value="">Todos</option>
+    <div class="filtros">
+        <label for="semana">Semana:</label>
+        <select id="semana">
+            <option value="0">Todas</option>
+            <option value="1">Semana 1</option>
+            <option value="2">Semana 2</option>
+            <option value="3">Semana 3</option>
+            <option value="4">Semana 4</option>
+            <option value="5">Semana 5</option>
         </select>
-      </label>
-      <label>
-        <input type="checkbox" id="ranking-acumulativo"> Acumulativo
-      </label>
-      <button id="ranking-btn">Atualizar</button>
+
+        <label for="palpiteiro">Palpiteiro:</label>
+        <select id="palpiteiro">
+            <option value="">Todos</option>
+            <!-- JS preenche os palpiteiros -->
+        </select>
+
+        <label for="acumulativo">Acumulativo:</label>
+        <input type="checkbox" id="acumulativo">
+
+        <button id="filtrarBtn">Filtrar</button>
     </div>
 
-    <!-- TABELA -->
-    <table id="ranking-tabela" border="1">
-      <thead>
-        <tr>
-          <th>Palpiteiro</th>
-          <th>Pontuação</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
+    <table>
+        <thead>
+            <tr>
+                <th>Posição</th>
+                <th>Palpiteiro</th>
+                <th>Pontos</th>
+            </tr>
+        </thead>
+        <tbody id="ranking-body">
+            <!-- Ranking será preenchido pelo JS -->
+        </tbody>
     </table>
-
-    <!-- GRÁFICO -->
-    <canvas id="ranking-grafico" width="600" height="400"></canvas>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script type="module" src="supabase.js"></script>
-  <script type="module" src="ranking.js"></script>
 </body>
 </html>
