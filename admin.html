@@ -1,67 +1,83 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Painel Administrativo</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Painel Administrativo</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="supabase.js"></script>
+  <script defer src="admin.js"></script>
 </head>
 <body>
-<div class="container">
-<h1>Painel Administrativo</h1>
+  <div class="container">
+    <h1>Painel Administrativo</h1>
 
-<div id="login-admin">
-    <label>Usuário: <input type="text" id="admin-usuario"></label>
-    <label>Senha: <input type="password" id="admin-senha"></label>
-    <button id="login-btn">Entrar</button>
-</div>
-
-<div id="painel-admin" style="display:none;">
-
-    <div class="abas">
-        <button class="aba-btn" data-target="participantes">Participantes</button>
-        <button class="aba-btn" data-target="palpiteiros">Palpiteiros</button>
-        <button class="aba-btn" data-target="gabarito">Gabarito</button>
+    <div class="tabs">
+      <button class="tab-button" onclick="openTab('participantes')">Participantes</button>
+      <button class="tab-button" onclick="openTab('palpiteiros')">Palpiteiros</button>
+      <button class="tab-button" onclick="openTab('gabarito')">Gabarito</button>
+      <button class="tab-button" onclick="openTab('palpites')">Palpites Enviados</button>
+      <button class="tab-button" onclick="openTab('pontuacao')">Pontuação</button>
+      <button class="tab-button" onclick="openTab('config')">Configurações</button>
     </div>
 
-    <div id="conteudo-abas">
-        <!-- PARTICIPANTES -->
-        <div class="aba" id="participantes">
-            <h2>Participantes</h2>
-            <input type="text" id="nome-participante" placeholder="Nome">
-            <button id="add-participante">Adicionar</button>
-            <div id="lista-participantes"></div>
-        </div>
-
-        <!-- PALPITEIROS -->
-        <div class="aba" id="palpiteiros" style="display:none">
-            <h2>Palpiteiros</h2>
-            <input type="text" id="nome-palpiteiro" placeholder="Nome">
-            <input type="password" id="senha-palpiteiro" placeholder="Senha">
-            <button id="add-palpiteiro">Adicionar</button>
-            <div id="lista-palpiteiros"></div>
-        </div>
-
-        <!-- GABARITO -->
-        <div class="aba" id="gabarito" style="display:none">
-            <h2>Gabarito da Semana</h2>
-            <label>Semana: <input type="number" id="semana-gabarito" min="1"></label>
-            <label>Líder: <select id="lider-g"></select></label>
-            <label>Anjo: <select id="anjo-g"></select></label>
-            <label>Imune: <select id="imune-g"></select></label>
-            <label>Emparedado: <select id="emparedado-g"></select></label>
-            <label>Batevolta: <select id="batevolta-g"></select></label>
-            <label>Eliminado: <select id="eliminado-g"></select></label>
-            <label>Capitão: <select id="capitao-g"></select></label>
-            <label>Bonus: <select id="bonus-g"></select></label>
-            <button id="salvar-gabarito">Salvar Gabarito</button>
-            <div id="lista-gabaritos"></div>
-        </div>
+    <!-- Participantes -->
+    <div id="participantes" class="tab-content">
+      <h2>Gerenciar Participantes</h2>
+      <input type="text" id="novoParticipante" placeholder="Nome do participante">
+      <button onclick="adicionarParticipante()">Adicionar</button>
+      <ul id="listaParticipantes"></ul>
     </div>
 
-    <button id="logout">Logout</button>
-</div>
+    <!-- Palpiteiros -->
+    <div id="palpiteiros" class="tab-content">
+      <h2>Gerenciar Palpiteiros</h2>
+      <input type="text" id="nomePalpiteiro" placeholder="Nome">
+      <input type="password" id="senhaPalpiteiro" placeholder="Senha">
+      <button onclick="adicionarPalpiteiro()">Adicionar</button>
+      <ul id="listaPalpiteiros"></ul>
+    </div>
 
-<script type="module" src="supabase.js"></script>
-<script type="module" src="admin.js"></script>
+    <!-- Gabarito -->
+    <div id="gabarito" class="tab-content">
+      <h2>Definir Gabarito por Semana</h2>
+      <input type="number" id="semanaGabarito" placeholder="Semana">
+      <div class="campos-gabarito">
+        <select id="gabaritoLider"></select>
+        <select id="gabaritoAnjo"></select>
+        <select id="gabaritoImune"></select>
+        <select id="gabaritoEmparedado"></select>
+        <select id="gabaritoBatevolta"></select>
+        <select id="gabaritoEliminado"></select>
+        <select id="gabaritoCapitao"></select>
+        <select id="gabaritoBonus"></select>
+      </div>
+      <button onclick="salvarGabarito()">Salvar</button>
+      <ul id="listaGabarito"></ul>
+    </div>
+
+    <!-- Palpites -->
+    <div id="palpites" class="tab-content">
+      <h2>Palpites Enviados</h2>
+      <ul id="listaPalpites"></ul>
+    </div>
+
+    <!-- Pontuação -->
+    <div id="pontuacao" class="tab-content">
+      <h2>Gerenciar Pontuação</h2>
+      <input type="text" id="eventoPontuacao" placeholder="Evento (ex: LIDER)">
+      <input type="number" id="valorPontuacao" placeholder="Valor">
+      <button onclick="adicionarPontuacao()">Adicionar</button>
+      <ul id="listaPontuacao"></ul>
+    </div>
+
+    <!-- Configuração -->
+    <div id="config" class="tab-content">
+      <h2>Configurações</h2>
+      <button onclick="liberarPalpites(true)">Liberar Envio de Palpites</button>
+      <button onclick="liberarPalpites(false)">Fechar Envio de Palpites</button>
+      <p>Status atual: <span id="statusPalpites"></span></p>
+    </div>
+  </div>
 </body>
 </html>

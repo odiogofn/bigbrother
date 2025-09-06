@@ -1,129 +1,73 @@
-import { supabase } from "./supabase.js";
-
-let palpiteiroId = null;
-let participantesMap = {};
-
-// ==================== LOGIN ====================
-document.getElementById("login-btn").addEventListener("click", async () => {
-    const nome = document.getElementById("nome").value.trim();
-    const senha = document.getElementById("senha").value.trim();
-
-    const { data, error } = await supabase.from("palpiteiros")
-        .select("*")
-        .eq("nome", nome)
-        .eq("senha", senha)
-        .single();
-
-    if (error || !data) { 
-        alert("Nome ou senha incorretos!"); 
-        return; 
-    }
-
-    palpiteiroId = data.id;
-    document.getElementById("login-palpiteiro").style.display = "none";
-    document.getElementById("painel-palpite").style.display = "block";
-
-    await carregarParticipantes();
-    carregarHistorico();
+// palpiteiro.js
+document.addEventListener("DOMContentLoaded", async () => {
+  carregarParticipantes();
+  carregarHistorico();
 });
 
-// ==================== LOGOUT ====================
-document.getElementById("logout").addEventListener("click", () => {
-    document.getElementById("painel-palpite").style.display = "none";
-    document.getElementById("login-palpiteiro").style.display = "block";
-});
+async function enviarPalpite() {
+  const semana = document.getElementById("semanaPalpite").value;
+  const lider = document.getElementById("palpiteLider").value;
+  const anjo = document.getElementById("palpiteAnjo").value;
+  const imune = document.getElementById("palpiteImune").value;
+  const emparedado = document.getElementById("palpiteEmparedado").value;
+  const batevolta = document.getElementById("palpiteBatevolta").value;
+  const eliminado = document.getElementById("palpiteEliminado").value;
+  const capitao = document.getElementById("palpiteCapitao").value;
+  const bonus = document.getElementById("palpiteBonus").value;
 
-// ==================== CARREGAR PARTICIPANTES ====================
-async function carregarParticipantes() {
-    const { data, error } = await supabase.from("participantes").select("*");
-    if (error) return console.error(error);
+  const { error } = await supabase.from("palpites").insert([{
+    semana, lider, anjo, imune, emparedado, batevolta, eliminado, capitao, bonus
+  }]);
 
-    participantesMap = {};
-    data.forEach(p => { participantesMap[p.id] = p.nome; });
-
-    const campos = ["lider", "anjo", "imune", "emparedado", "batevolta", "eliminado", "capitao", "bonus"];
-    campos.forEach(campo => {
-        const sel = document.getElementById(campo);
-        sel.innerHTML = "<option value=''>--Selecione--</option>";
-        data.forEach(p => {
-            const opt = document.createElement("option");
-            opt.value = p.id;
-            opt.textContent = p.nome;
-            sel.appendChild(opt);
-        });
-    });
-}
-
-// ==================== ENVIAR PALPITE ====================
-document.getElementById("enviar-palpite").addEventListener("click", async () => {
-    const semana = parseInt(document.getElementById("semana").value);
-    if (!semana) return alert("Informe a semana");
-
-    const { data: existentes } = await supabase.from("palpites")
-        .select("*")
-        .eq("palpiteiro_id", palpiteiroId)
-        .eq("semana", semana);
-
-    if (existentes.length >= 3) { 
-        alert("Limite de Palpites alcançado"); 
-        return; 
-    }
-
-    const palpite = {
-        palpiteiro_id: palpiteiroId,
-        semana,
-        lider: document.getElementById("lider").value,
-        anjo: document.getElementById("anjo").value,
-        imune: document.getElementById("imune").value,
-        emparedado: document.getElementById("emparedado").value,
-        batevolta: document.getElementById("batevolta").value,
-        eliminado: document.getElementById("eliminado").value,
-        capitao: document.getElementById("capitao").value,
-        bonus: document.getElementById("bonus").value
-    };
-
-    await supabase.from("palpites").insert([palpite]);
+  if (error) {
+    alert("Erro ao enviar palpite: " + error.message);
+  } else {
     alert("Palpite enviado!");
     carregarHistorico();
-});
-
-// ==================== CARREGAR HISTÓRICO ====================
-async function carregarHistorico() {
-    const { data, error } = await supabase.from("palpites")
-        .select("*")
-        .eq("palpiteiro_id", palpiteiroId)
-        .order("semana", { ascending: true });
-    if (error) return console.error(error);
-
-    const div = document.getElementById("historico-palpite");
-    if (!data.length) { 
-        div.innerHTML = "<p>Nenhum palpite enviado.</p>"; 
-        return; 
-    }
-
-    let html = "<ul>";
-    data.forEach(p => {
-        html += `<li>
-            Semana ${p.semana}: 
-            Líder: ${participantesMap[p.lider] || '-'}, 
-            Anjo: ${participantesMap[p.anjo] || '-'}, 
-            Imune: ${participantesMap[p.imune] || '-'}, 
-            Emparedado: ${participantesMap[p.emparedado] || '-'}, 
-            Batevolta: ${participantesMap[p.batevolta] || '-'}, 
-            Eliminado: ${participantesMap[p.eliminado] || '-'}, 
-            Capitão: ${participantesMap[p.capitao] || '-'}, 
-            Bonus: ${participantesMap[p.bonus] || '-'}
-            <button onclick="excluirPalpite('${p.id}')">Excluir</button>
-        </li>`;
-    });
-    html += "</ul>";
-    div.innerHTML = html;
+  }
 }
 
-// ==================== EXCLUIR PALPITE ====================
-window.excluirPalpite = async (id) => {
-    if (!confirm("Deseja realmente excluir este palpite?")) return;
-    const { error } = await supabase.from("palpites").delete().eq("id", id);
-    if (error) return alert("Erro ao excluir palpite: " + error.message);
+async function carregarParticipantes() {
+  const { data, error } = await supabase.from("participantes").select("*");
+  if (error) return console.error(error);
+
+  const selects = [
+    "palpiteLider","palpiteAnjo","palpiteImune","palpiteEmparedado",
+    "palpiteBatevolta","palpiteEliminado","palpiteCapitao","palpiteBonus"
+  ];
+
+  selects.forEach(id => {
+    const select = document.getElementById(id);
+    select.innerHTML = `<option value="">Selecione</option>`;
+    data.forEach(p => {
+      select.innerHTML += `<option value="${p.id}">${p.nome}</option>`;
+    });
+  });
+}
+
+async function carregarHistorico() {
+  const { data, error } = await supabase.from("palpites").select("*, participantes!palpites_lider_fkey(nome)");
+  if (error) return console.error(error);
+
+  const lista = document.getElementById("historicoPalpites");
+  lista.innerHTML = "";
+
+  data.forEach(p => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      Semana ${p.semana} - Líder: ${p.lider || "-"} / Anjo: ${p.anjo || "-"} ...
+      <button onclick="excluirPalpite(${p.id})">Excluir</button>
+    `;
+    lista.appendChild(li);
+  });
+}
+
+async function excluirPalpite(id) {
+  const { error } = await supabase.from("palpites").delete().eq("id", id);
+  if (error) {
+    alert("Erro ao excluir: " + error.message);
+  } else {
+    alert("Palpite removido!");
     carregarHistorico();
-};
+  }
+}

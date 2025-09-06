@@ -1,185 +1,230 @@
 import { supabase } from "./supabase.js";
 
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "12345";
+document.addEventListener("DOMContentLoaded", () => {
+  // Troca de abas
+  const tabs = document.querySelectorAll(".tab");
+  const contents = document.querySelectorAll(".tab-content");
 
-// LOGIN
-document.getElementById("login-btn").addEventListener("click", ()=>{
-    const usuario = document.getElementById("admin-usuario").value;
-    const senha = document.getElementById("admin-senha").value;
-    if(usuario===ADMIN_USER && senha===ADMIN_PASS){
-        document.getElementById("login-admin").style.display="none";
-        document.getElementById("painel-admin").style.display="block";
-        carregarTudo();
-    } else alert("Usuário ou senha incorretos");
-});
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabs.forEach((t) => t.classList.remove("active"));
+      contents.forEach((c) => (c.style.display = "none"));
 
-// LOGOUT
-document.getElementById("logout").addEventListener("click", ()=>{
-    document.getElementById("painel-admin").style.display="none";
-    document.getElementById("login-admin").style.display="block";
-});
-
-// ABAS
-document.querySelectorAll(".aba-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-        document.querySelectorAll(".aba").forEach(div => div.style.display="none");
-        const target = btn.getAttribute("data-target");
-        document.getElementById(target).style.display = "block";
+      tab.classList.add("active");
+      document.getElementById(tab.dataset.tab).style.display = "block";
     });
-});
+  });
 
-// ============================
-// CARREGAR TODOS OS DADOS
-// ============================
-async function carregarTudo(){
-    await carregarParticipantes();
-    await carregarPalpiteiros();
-    await carregarParticipantesGabarito();
-    await carregarGabaritos();
-}
+  // ============================
+  // Participantes
+  // ============================
+  async function carregarParticipantes() {
+    const { data, error } = await supabase.from("participantes").select("*");
+    if (error) {
+      console.error("Erro ao carregar participantes:", error);
+      return;
+    }
+    const lista = document.getElementById("lista-participantes");
+    lista.innerHTML = "";
+    data.forEach((p) => {
+      const li = document.createElement("li");
+      li.textContent = p.nome;
+      const btnDel = document.createElement("button");
+      btnDel.textContent = "Excluir";
+      btnDel.onclick = () => excluirParticipante(p.id);
+      li.appendChild(btnDel);
+      lista.appendChild(li);
+    });
+  }
 
-// ============================
-// PARTICIPANTES
-// ============================
-document.getElementById("add-participante").addEventListener("click", async ()=>{
-    const nome = document.getElementById("nome-participante").value.trim();
-    if(!nome) return alert("Informe o nome");
-    await supabase.from("participantes").insert([{nome}]);
-    document.getElementById("nome-participante").value="";
+  async function adicionarParticipante() {
+    const nome = document.getElementById("nome-participante").value;
+    if (!nome) return alert("Digite um nome!");
+    const { error } = await supabase.from("participantes").insert([{ nome }]);
+    if (error) {
+      alert("Erro ao adicionar participante");
+      console.error(error);
+    }
+    document.getElementById("nome-participante").value = "";
     carregarParticipantes();
-});
+  }
 
-async function carregarParticipantes(){
-    const { data, error } = await supabase.from("participantes").select("*");
-    if(error) return console.error(error);
+  async function excluirParticipante(id) {
+    const { error } = await supabase.from("participantes").delete().eq("id", id);
+    if (error) {
+      alert("Erro ao excluir participante. Verifique se não há palpites relacionados.");
+      console.error(error);
+    }
+    carregarParticipantes();
+  }
 
-    const div = document.getElementById("lista-participantes");
-    div.innerHTML="";
-    data.forEach(p=>{
-        const item = document.createElement("div");
-        item.textContent = p.nome;
-        const btnDel = document.createElement("button");
-        btnDel.textContent="Excluir";
-        btnDel.onclick=()=>remover("participantes",p.id);
-        item.appendChild(btnDel);
-        div.appendChild(item);
-    });
-}
+  document.getElementById("btn-add-participante").onclick = adicionarParticipante;
+  carregarParticipantes();
 
-// ============================
-// PALPITEIROS
-// ============================
-document.getElementById("add-palpiteiro").addEventListener("click", async ()=>{
-    const nome = document.getElementById("nome-palpiteiro").value.trim();
-    const senha = document.getElementById("senha-palpiteiro").value.trim();
-    if(!nome || !senha) return alert("Informe nome e senha");
-    await supabase.from("palpiteiros").insert([{nome,senha}]);
-    document.getElementById("nome-palpiteiro").value="";
-    document.getElementById("senha-palpiteiro").value="";
-    carregarPalpiteiros();
-});
-
-async function carregarPalpiteiros(){
+  // ============================
+  // Palpiteiros
+  // ============================
+  async function carregarPalpiteiros() {
     const { data, error } = await supabase.from("palpiteiros").select("*");
-    if(error) return console.error(error);
-
-    const div = document.getElementById("lista-palpiteiros");
-    div.innerHTML="";
-    data.forEach(p=>{
-        const item = document.createElement("div");
-        item.textContent = p.nome;
-        const btnDel = document.createElement("button");
-        btnDel.textContent="Excluir";
-        btnDel.onclick=()=>remover("palpiteiros",p.id);
-        item.appendChild(btnDel);
-        div.appendChild(item);
-    });
-}
-
-// ============================
-// REMOVER (PROTEGIDO)
-// ============================
-window.remover = async (tabela, id)=>{
-    try {
-        if(tabela === "participantes"){
-            const { data: referencias } = await supabase.from("palpites")
-                .select("*")
-                .or(`lider.eq.${id},anjo.eq.${id},imune.eq.${id},emparedado.eq.${id},batevolta.eq.${id},eliminado.eq.${id},capitao.eq.${id},bonus.eq.${id}`);
-            if(referencias.length>0) return alert("Não é possível excluir este participante. Já foi usado em algum palpite.");
-        }
-        const { error } = await supabase.from(tabela).delete().eq("id",id);
-        if(error){ console.error(error); alert("Erro ao remover: "+error.message); return; }
-        carregarTudo();
-    } catch(err){
-        console.error(err);
-        alert("Erro ao remover: "+err.message);
+    if (error) {
+      console.error("Erro ao carregar palpiteiros:", error);
+      return;
     }
-}
-
-// ============================
-// GABARITOS
-// ============================
-async function carregarParticipantesGabarito(){
-    const { data, error } = await supabase.from("participantes").select("*");
-    if(error) return console.error(error);
-
-    const campos = ["lider-g","anjo-g","imune-g","emparedado-g","batevolta-g","eliminado-g","capitao-g","bonus-g"];
-    campos.forEach(campo=>{
-        const sel = document.getElementById(campo);
-        sel.innerHTML="<option value=''>--Selecione--</option>";
-        data.forEach(p=>{
-            const opt=document.createElement("option");
-            opt.value=p.id;
-            opt.textContent=p.nome;
-            sel.appendChild(opt);
-        });
+    const lista = document.getElementById("lista-palpiteiros");
+    lista.innerHTML = "";
+    data.forEach((p) => {
+      const li = document.createElement("li");
+      li.textContent = `${p.nome} (${p.senha})`;
+      const btnDel = document.createElement("button");
+      btnDel.textContent = "Excluir";
+      btnDel.onclick = () => excluirPalpiteiro(p.id);
+      li.appendChild(btnDel);
+      lista.appendChild(li);
     });
-}
+  }
 
-document.getElementById("salvar-gabarito").addEventListener("click", async ()=>{
-    const semana = parseInt(document.getElementById("semana-gabarito").value);
-    if(!semana) return alert("Informe a semana");
+  async function adicionarPalpiteiro() {
+    const nome = document.getElementById("nome-palpiteiro").value;
+    const senha = document.getElementById("senha-palpiteiro").value;
+    if (!nome || !senha) return alert("Preencha todos os campos!");
+    const { error } = await supabase.from("palpiteiros").insert([{ nome, senha }]);
+    if (error) {
+      alert("Erro ao adicionar palpiteiro");
+      console.error(error);
+    }
+    document.getElementById("nome-palpiteiro").value = "";
+    document.getElementById("senha-palpiteiro").value = "";
+    carregarPalpiteiros();
+  }
 
-    const gabarito = {
-        semana,
-        lider: document.getElementById("lider-g").value,
-        anjo: document.getElementById("anjo-g").value,
-        imune: document.getElementById("imune-g").value,
-        emparedado: document.getElementById("emparedado-g").value,
-        batevolta: document.getElementById("batevolta-g").value,
-        eliminado: document.getElementById("eliminado-g").value,
-        capitao: document.getElementById("capitao-g").value,
-        bonus: document.getElementById("bonus-g").value
-    };
+  async function excluirPalpiteiro(id) {
+    const { error } = await supabase.from("palpiteiros").delete().eq("id", id);
+    if (error) {
+      alert("Erro ao excluir palpiteiro.");
+      console.error(error);
+    }
+    carregarPalpiteiros();
+  }
 
-    const { data: existe } = await supabase.from("gabaritos").select("*").eq("semana",semana).single();
-    if(existe){
-        await supabase.from("gabaritos").update(gabarito).eq("id",existe.id);
-        alert("Gabarito atualizado!");
+  document.getElementById("btn-add-palpiteiro").onclick = adicionarPalpiteiro;
+  carregarPalpiteiros();
+
+  // ============================
+  // Gabarito
+  // ============================
+  async function carregarGabarito() {
+    const { data, error } = await supabase.from("gabarito").select("*");
+    if (error) {
+      console.error("Erro ao carregar gabarito:", error);
+      return;
+    }
+    const lista = document.getElementById("lista-gabarito");
+    lista.innerHTML = "";
+    data.forEach((g) => {
+      const li = document.createElement("li");
+      li.textContent = `Semana ${g.semana}`;
+      lista.appendChild(li);
+    });
+  }
+
+  async function adicionarGabarito() {
+    const semana = document.getElementById("semana-gabarito").value;
+    if (!semana) return alert("Informe a semana!");
+    const { error } = await supabase.from("gabarito").insert([{ semana }]);
+    if (error) {
+      alert("Erro ao adicionar gabarito");
+      console.error(error);
+    }
+    document.getElementById("semana-gabarito").value = "";
+    carregarGabarito();
+  }
+
+  document.getElementById("btn-add-gabarito").onclick = adicionarGabarito;
+  carregarGabarito();
+
+  // ============================
+  // Palpites Enviados
+  // ============================
+  async function carregarPalpites() {
+    const { data, error } = await supabase
+      .from("palpites")
+      .select("*, palpiteiros(nome)");
+    if (error) {
+      console.error("Erro ao carregar palpites:", error);
+      return;
+    }
+    const lista = document.getElementById("lista-palpites");
+    lista.innerHTML = "";
+    data.forEach((p) => {
+      const li = document.createElement("li");
+      li.textContent = `Semana ${p.semana} - ${p.palpiteiros.nome}`;
+      lista.appendChild(li);
+    });
+  }
+  carregarPalpites();
+
+  // ============================
+  // Pontuação
+  // ============================
+  async function carregarPontuacao() {
+    const { data, error } = await supabase.from("pontuacao").select("*");
+    if (error) {
+      console.error("Erro ao carregar pontuação:", error);
+      return;
+    }
+    const lista = document.getElementById("lista-pontuacao");
+    lista.innerHTML = "";
+    data.forEach((p) => {
+      const li = document.createElement("li");
+      li.textContent = `${p.evento}: ${p.pontos} pontos`;
+      lista.appendChild(li);
+    });
+  }
+
+  async function adicionarPontuacao() {
+    const evento = document.getElementById("evento-pontuacao").value;
+    const pontos = parseInt(document.getElementById("pontos-pontuacao").value);
+    if (!evento || isNaN(pontos)) return alert("Preencha os campos!");
+    const { error } = await supabase.from("pontuacao").insert([{ evento, pontos }]);
+    if (error) {
+      alert("Erro ao adicionar pontuação");
+      console.error(error);
+    }
+    document.getElementById("evento-pontuacao").value = "";
+    document.getElementById("pontos-pontuacao").value = "";
+    carregarPontuacao();
+  }
+
+  document.getElementById("btn-add-pontuacao").onclick = adicionarPontuacao;
+  carregarPontuacao();
+
+  // ============================
+  // Configuração (liberar envio de palpites)
+  // ============================
+  async function carregarConfiguracao() {
+    const { data, error } = await supabase.from("configuracao").select("*").limit(1);
+    if (error) {
+      console.error("Erro ao carregar configuração:", error);
+      return;
+    }
+    if (data.length > 0) {
+      document.getElementById("permitir-envio").checked = data[0].permitir_envio;
+      document.getElementById("config-id").value = data[0].id;
+    }
+  }
+
+  async function salvarConfiguracao() {
+    const permitir_envio = document.getElementById("permitir-envio").checked;
+    const id = document.getElementById("config-id").value;
+
+    if (id) {
+      await supabase.from("configuracao").update({ permitir_envio }).eq("id", id);
     } else {
-        await supabase.from("gabaritos").insert([gabarito]);
-        alert("Gabarito salvo!");
+      await supabase.from("configuracao").insert([{ permitir_envio }]);
     }
+    alert("Configuração salva!");
+  }
 
-    carregarGabaritos();
+  document.getElementById("btn-salvar-config").onclick = salvarConfiguracao;
+  carregarConfiguracao();
 });
-
-async function carregarGabaritos(){
-    const { data, error } = await supabase.from("gabaritos").select("*").order("semana",{ascending:true});
-    if(error) return console.error(error);
-
-    const div = document.getElementById("lista-gabaritos");
-    if(!data.length){ div.innerHTML="<p>Nenhum gabarito cadastrado</p>"; return; }
-
-    div.innerHTML="";
-    data.forEach(g=>{
-        const item=document.createElement("div");
-        item.textContent=`Semana ${g.semana}`;
-        const btnDel=document.createElement("button");
-        btnDel.textContent="Excluir";
-        btnDel.onclick=()=>remover("gabaritos",g.id);
-        item.appendChild(btnDel);
-        div.appendChild(item);
-    });
-}
