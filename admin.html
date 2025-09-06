@@ -40,12 +40,22 @@
     </div>
 
     <!-- ABA PALPITEIROS -->
-    <div id="aba-palpiteiros" class="aba-conteudo" style="display:none;">
-        <h2>Palpiteiros</h2>
-        <input type="text" id="nome-palpiteiro" placeholder="Nome">
-        <input type="password" id="dt-nascimento-palpiteiro" placeholder="Data de Nascimento">
-        <button id="btn-add-palpiteiro">Adicionar</button>
-        <table id="tabela-palpiteiros"></table>
+    <div id="aba-palpiteiros" class="aba-conteudo" style="display: none;">
+      <h2>Gerenciar Palpiteiros</h2>
+      <form id="form-palpiteiro">
+        <input type="text" id="palpiteiro-nome" placeholder="Nome" required>
+        <input type="password" id="palpiteiro-senha" placeholder="Senha" required>
+        <button type="submit">Salvar</button>
+      </form>
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Senha</th>
+          </tr>
+        </thead>
+        <tbody id="lista-palpiteiros"></tbody>
+      </table>
     </div>
 
     <!-- ABA GABARITO -->

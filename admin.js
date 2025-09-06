@@ -88,35 +88,41 @@ window.removerParticipante = async (id) => {
 // ==========================
 const tabelaPalpiteiros = document.getElementById('tabela-palpiteiros');
 
-document.getElementById('btn-add-palpiteiro').addEventListener('click', async () => {
-    const nome = document.getElementById('nome-palpiteiro').value.trim();
-    const dt = document.getElementById('dt-nascimento-palpiteiro').value.trim();
-    if (!nome || !dt) return alert('Preencha todos os campos');
-    const { error } = await supabase.from('palpiteiros').insert([{ nome, dt_nascimento: dt }]);
-    if (error) return alert(error.message);
-    document.getElementById('nome-palpiteiro').value = '';
-    document.getElementById('dt-nascimento-palpiteiro').value = '';
-    await carregarPalpiteiros();
+document.getElementById("form-palpiteiro").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const nome = document.getElementById("palpiteiro-nome").value;
+  const senha = document.getElementById("palpiteiro-senha").value;
+
+  const { error } = await supabase.from("palpiteiros").insert([{ nome, senha }]);
+
+  if (error) {
+    alert("Erro ao salvar palpiteiro: " + error.message);
+  } else {
+    alert("Palpiteiro salvo com sucesso!");
+    carregarPalpiteiros();
+    e.target.reset();
+  }
 });
 
 async function carregarPalpiteiros() {
-    const { data, error } = await supabase.from('palpiteiros').select('*');
-    if (error) return alert(error.message);
+  const { data, error } = await supabase.from("palpiteiros").select("*");
 
-    tabelaPalpiteiros.innerHTML = '<tr><th>ID</th><th>Nome</th><th>Data Nascimento</th><th>Ações</th></tr>';
-    data.forEach(p => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${p.id}</td>
-            <td>${p.nome}</td>
-            <td>${p.dt_nascimento}</td>
-            <td>
-                <button onclick="editarPalpiteiro('${p.id}')">Editar</button>
-                <button onclick="removerPalpiteiro('${p.id}')">Remover</button>
-            </td>
-        `;
-        tabelaPalpiteiros.appendChild(tr);
-    });
+  if (error) {
+    console.error("Erro ao carregar palpiteiros:", error);
+    return;
+  }
+
+  const tbody = document.getElementById("lista-palpiteiros");
+  tbody.innerHTML = "";
+
+  data.forEach((p) => {
+    const row = `<tr>
+      <td>${p.nome}</td>
+      <td>${p.senha}</td>
+    </tr>`;
+    tbody.innerHTML += row;
+  });
 }
 
 window.editarPalpiteiro = async (id) => {
