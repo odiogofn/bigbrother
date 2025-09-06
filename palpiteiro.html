@@ -1,104 +1,188 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8">
   <title>Palpiteiro - Gigant Brother</title>
+  <script type="module" src="supabase.js"></script>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script type="module" src="supabase.js"></script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-4xl mx-auto py-8">
+    <h1 class="text-3xl font-bold text-center mb-6">Área do Palpiteiro - Gigant Brother</h1>
 
-  <!-- Login -->
-  <div id="login" class="h-screen flex items-center justify-center">
-    <div class="bg-white shadow-lg p-8 rounded-lg w-96">
-      <h2 class="text-2xl font-bold mb-4 text-blue-700">Login Palpiteiro</h2>
-      <input id="nome" type="text" placeholder="Seu nome" class="w-full p-2 border rounded mb-3">
-      <button id="btnLogin" class="w-full bg-blue-600 text-white p-2 rounded">Entrar</button>
-    </div>
-  </div>
-
-  <!-- Área do palpiteiro -->
-  <div id="painel" class="hidden p-6">
-    <h1 class="text-3xl font-bold text-blue-700 mb-6">Área do Palpiteiro</h1>
-
-    <div class="flex space-x-4 mb-6">
-      <button class="aba bg-blue-600 text-white px-4 py-2 rounded" data-aba="palpitar">Palpitar</button>
-      <button class="aba bg-blue-600 text-white px-4 py-2 rounded" data-aba="historico">Histórico</button>
-      <button class="aba bg-blue-600 text-white px-4 py-2 rounded" data-aba="ranking">Minha Posição</button>
+    <!-- Login -->
+    <div id="login-area" class="bg-white p-6 rounded shadow mb-6">
+      <h2 class="text-xl font-semibold mb-4">Login</h2>
+      <form id="form-login" class="grid grid-cols-2 gap-2">
+        <input type="text" id="login-nome" placeholder="Nome" class="p-2 border rounded">
+        <input type="date" id="login-nascimento" class="p-2 border rounded">
+        <button type="submit" class="col-span-2 bg-blue-600 text-white px-4 py-2 rounded">Entrar</button>
+      </form>
+      <p id="login-erro" class="text-red-600 mt-2 hidden">Usuário não encontrado</p>
     </div>
 
-    <div id="conteudo"></div>
+    <!-- Área do Palpiteiro -->
+    <div id="palpiteiro-area" class="hidden">
+      <div class="bg-white p-6 rounded shadow mb-6">
+        <h2 class="text-xl font-semibold mb-4">Fazer Palpite</h2>
+        <form id="form-palpite" class="space-y-3">
+          <label>Rodada: <input type="number" id="rodada-palpite" class="p-2 border rounded w-24"></label>
+
+          <div>
+            <label>Líder(es):</label>
+            <select multiple id="palpite-lider" class="w-full p-2 border rounded"></select>
+          </div>
+          <div>
+            <label>Anjo(s):</label>
+            <select multiple id="palpite-anjo" class="w-full p-2 border rounded"></select>
+          </div>
+          <div>
+            <label>Imune(s):</label>
+            <select multiple id="palpite-imune" class="w-full p-2 border rounded"></select>
+          </div>
+          <div>
+            <label>Emparedado(s):</label>
+            <select multiple id="palpite-emparedado" class="w-full p-2 border rounded"></select>
+          </div>
+          <div>
+            <label>Bate e Volta (vencedores):</label>
+            <select multiple id="palpite-bate-volta" class="w-full p-2 border rounded"></select>
+          </div>
+          <div>
+            <label>Eliminado(s):</label>
+            <select multiple id="palpite-eliminado" class="w-full p-2 border rounded"></select>
+          </div>
+
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Enviar Palpite</button>
+        </form>
+      </div>
+
+      <!-- Histórico -->
+      <div class="bg-white p-6 rounded shadow mb-6">
+        <h2 class="text-xl font-semibold mb-4">Histórico de Palpites</h2>
+        <ul id="lista-historico" class="space-y-2 text-gray-700"></ul>
+      </div>
+
+      <!-- Gráfico -->
+      <div class="bg-white p-6 rounded shadow">
+        <h2 class="text-xl font-semibold mb-4">Evolução de Pontos</h2>
+        <canvas id="grafico-evolucao"></canvas>
+      </div>
+    </div>
   </div>
 
   <script type="module">
-    import { supabase } from './supabase.js';
+    import { supabase } from "./supabase.js";
 
-    const loginDiv = document.getElementById("login");
-    const painelDiv = document.getElementById("painel");
-    const btnLogin = document.getElementById("btnLogin");
-    const conteudo = document.getElementById("conteudo");
+    let usuarioLogado = null;
 
-    let usuario = null;
+    // === LOGIN ===
+    const formLogin = document.getElementById("form-login");
+    const loginErro = document.getElementById("login-erro");
+    const loginArea = document.getElementById("login-area");
+    const palpiteiroArea = document.getElementById("palpiteiro-area");
 
-    btnLogin.onclick = () => {
-      const nome = document.getElementById("nome").value.trim();
-      if (!nome) return alert("Digite seu nome!");
-      usuario = nome;
-      loginDiv.classList.add("hidden");
-      painelDiv.classList.remove("hidden");
-      conteudo.innerHTML = "<p class='text-gray-500'>Selecione uma aba.</p>";
-    };
+    formLogin.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      let nome = document.getElementById("login-nome").value;
+      let nascimento = document.getElementById("login-nascimento").value;
 
-    document.querySelectorAll(".aba").forEach(btn => {
-      btn.addEventListener("click", async () => {
-        if (btn.dataset.aba === "palpitar") {
-          conteudo.innerHTML = `
-            <h2 class="text-xl font-bold mb-4">Enviar Palpite</h2>
-            <input id="palpite" type="text" placeholder="Digite seu palpite" class="w-full p-2 border rounded mb-3">
-            <button id="enviarPalpite" class="bg-green-600 text-white px-4 py-2 rounded">Enviar</button>
-          `;
-          document.getElementById("enviarPalpite").onclick = async () => {
-            const palpite = document.getElementById("palpite").value;
-            if (!palpite) return alert("Digite algo!");
-            await supabase.from("palpites").insert([{ nome: usuario, palpite }]);
-            alert("Palpite registrado!");
-          };
+      let { data } = await supabase.from("palpiteiros").select("*").eq("nome",nome).eq("nascimento",nascimento).single();
+
+      if(data){
+        usuarioLogado = data;
+        loginArea.classList.add("hidden");
+        palpiteiroArea.classList.remove("hidden");
+        carregarParticipantes();
+        carregarHistorico();
+      } else {
+        loginErro.classList.remove("hidden");
+      }
+    });
+
+    // === CARREGAR PARTICIPANTES PARA O PALPITE ===
+    async function carregarParticipantes(){
+      let { data } = await supabase.from("participantes").select("*");
+      ["palpite-lider","palpite-anjo","palpite-imune","palpite-emparedado","palpite-bate-volta","palpite-eliminado"].forEach(campo=>{
+        let select = document.getElementById(campo);
+        select.innerHTML = "";
+        data.forEach(p=>{
+          let opt = document.createElement("option");
+          opt.value = p.nome;
+          opt.textContent = p.nome;
+          select.appendChild(opt);
+        });
+      });
+    }
+
+    // === ENVIAR PALPITE ===
+    const formPalpite = document.getElementById("form-palpite");
+    formPalpite.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      let rodada = parseInt(document.getElementById("rodada-palpite").value);
+      let obj = {
+        rodada,
+        palpiteiro_id: usuarioLogado.id,
+        lider: Array.from(document.getElementById("palpite-lider").selectedOptions).map(o=>o.value),
+        anjo: Array.from(document.getElementById("palpite-anjo").selectedOptions).map(o=>o.value),
+        imune: Array.from(document.getElementById("palpite-imune").selectedOptions).map(o=>o.value),
+        emparedado: Array.from(document.getElementById("palpite-emparedado").selectedOptions).map(o=>o.value),
+        bate_volta: Array.from(document.getElementById("palpite-bate-volta").selectedOptions).map(o=>o.value),
+        eliminado: Array.from(document.getElementById("palpite-eliminado").selectedOptions).map(o=>o.value),
+      };
+      await supabase.from("palpites").insert([obj]);
+      formPalpite.reset();
+      carregarHistorico();
+    });
+
+    // === HISTÓRICO ===
+    const listaHistorico = document.getElementById("lista-historico");
+    let grafico = null;
+
+    async function carregarHistorico(){
+      listaHistorico.innerHTML = "";
+      let { data } = await supabase.from("palpites").select("*").eq("palpiteiro_id",usuarioLogado.id).order("rodada",{ascending:true});
+
+      let pontosRodadas = [];
+
+      for(let p of data){
+        // busca pontuação calculada (aqui simplificado, você pode criar view SQL que retorna pontos já calculados)
+        let pontos = 0;
+        let { data:gabarito } = await supabase.from("gabaritos").select("*").eq("rodada",p.rodada).maybeSingle();
+        let { data:regra } = await supabase.from("pontuacao").select("*").single();
+        if(gabarito && regra){
+          pontos += p.lider.filter(x=>gabarito.lider.includes(x)).length * regra.lider;
+          pontos += p.anjo.filter(x=>gabarito.anjo.includes(x)).length * regra.anjo;
+          pontos += p.imune.filter(x=>gabarito.imune.includes(x)).length * regra.imune;
+          pontos += p.emparedado.filter(x=>gabarito.emparedado.includes(x)).length * regra.emparedado;
+          pontos += p.bate_volta.filter(x=>gabarito.bate_volta.includes(x)).length * regra.bate_volta;
+          pontos += p.eliminado.filter(x=>gabarito.eliminado.includes(x)).length * regra.eliminado;
         }
+        pontosRodadas.push({ rodada:p.rodada, pontos });
 
-        if (btn.dataset.aba === "historico") {
-          let { data } = await supabase.from("palpites").select("*").eq("nome", usuario);
-          conteudo.innerHTML = `<h2 class="text-xl font-bold mb-4">Histórico de Palpites</h2>
-            <ul class="list-disc pl-6">
-              ${data.map(p => `<li>${p.palpite}</li>`).join("")}
-            </ul>
-            <canvas id="grafico" class="mt-6"></canvas>
-          `;
+        let li = document.createElement("li");
+        li.className = "border p-2 rounded";
+        li.innerHTML = `<b>Rodada ${p.rodada}</b>: ${pontos} pontos`;
+        listaHistorico.appendChild(li);
+      }
 
-          const ctx = document.getElementById("grafico").getContext("2d");
-          new Chart(ctx, {
-            type: "line",
-            data: {
-              labels: data.map((_, i) => "Rodada " + (i+1)),
-              datasets: [{
-                label: "Pontos",
-                data: data.map(() => Math.floor(Math.random() * 10)), // MOCK
-                borderColor: "blue"
-              }]
-            }
-          });
-        }
-
-        if (btn.dataset.aba === "ranking") {
-          let { data } = await supabase.rpc("ranking_geral");
-          let posicao = data.findIndex(p => p.nome === usuario) + 1;
-          conteudo.innerHTML = `
-            <h2 class="text-xl font-bold mb-4">Minha Posição</h2>
-            <p>Você está em <b>${posicao}º lugar</b> no ranking.</p>
-          `;
+      // gráfico
+      let ctx = document.getElementById("grafico-evolucao").getContext("2d");
+      if(grafico) grafico.destroy();
+      grafico = new Chart(ctx,{
+        type:"line",
+        data:{
+          labels:pontosRodadas.map(r=>`Rodada ${r.rodada}`),
+          datasets:[{
+            label:"Pontuação",
+            data:pontosRodadas.map(r=>r.pontos),
+            borderColor:"blue",
+            fill:false
+          }]
         }
       });
-    });
+    }
   </script>
 </body>
 </html>
