@@ -160,8 +160,16 @@ document.getElementById('btn-salvar-pontuacao').addEventListener('click', async 
     for (let input of inputs) {
         const evento = input.dataset.evento;
         const pontos = Number(input.value);
-        const { error } = await supabase.from('pontuacao').upsert({ evento, pontos }, { onConflict: 'evento' });
-        if (error) alert('Erro ao salvar ' + evento + ': ' + error.message);
+
+        // Checa se já existe
+        const { data: existente } = await supabase.from('pontuacao').select('*').eq('evento', evento).single();
+        if (existente) {
+            const { error } = await supabase.from('pontuacao').update({ pontos }).eq('evento', evento);
+            if (error) alert('Erro ao salvar ' + evento + ': ' + error.message);
+        } else {
+            const { error } = await supabase.from('pontuacao').insert({ evento, pontos });
+            if (error) alert('Erro ao salvar ' + evento + ': ' + error.message);
+        }
     }
     alert('Pontuação salva!');
 });
@@ -192,14 +200,23 @@ document.getElementById('btn-alternar-envio').addEventListener('click', async ()
 // ==========================
 // GABARITO
 // ==========================
+
 const tabelaGabarito = document.getElementById('tabela-gabarito');
 
 async function carregarGabarito() {
+    // Busca semanas já cadastradas
     const { data: semanas, error } = await supabase.from('gabarito').select('*').order('semana');
     if (error) return alert(error.message);
 
+    // Busca participantes
     const { data: participantes, error: errPart } = await supabase.from('participantes').select('*');
     if (errPart) return alert(errPart.message);
+
+    // Se não houver semana, cria a semana 1
+    if (semanas.length === 0) {
+        await supabase.from('gabarito').insert([{ semana: 1 }]);
+        return carregarGabarito();
+    }
 
     tabelaGabarito.innerHTML = '';
     const thead = document.createElement('thead');
@@ -216,6 +233,7 @@ async function carregarGabarito() {
         tr.innerHTML = `<td>${sem.semana}</td>` +
             categorias.map(c => {
                 const sel = `<select data-evento="${c}" data-semana="${sem.semana}">
+                    <option value="">--Selecione--</option>
                     ${participantes.map(p => `<option value="${p.id}" ${sem[c.toLowerCase()]===p.id?'selected':''}>${p.nome}</option>`).join('')}
                 </select>`;
                 return `<td>${sel}</td>`;
@@ -233,9 +251,10 @@ window.salvarGabarito = async (semana) => {
         const evento = s.dataset.evento.toLowerCase();
         obj[evento] = s.value;
     });
+
     const { error } = await supabase.from('gabarito').upsert(obj, { onConflict: 'semana' });
     if (error) return alert(error.message);
-    alert('Gabarito salvo!');
+    alert('Gabarito da semana ' + semana + ' salvo!');
 };
 
 // ==========================
