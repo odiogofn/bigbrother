@@ -1,33 +1,28 @@
-// admin.js
 import { supabase } from './supabase.js';
+
+const USUARIO_ADMIN = 'admin';
+const SENHA_ADMIN = '12345';
 
 // ==========================
 // LOGIN
 // ==========================
 const loginContainer = document.getElementById('login-container');
 const painelAdmin = document.getElementById('painel-admin');
-const btnLogin = document.getElementById('btn-login');
-const btnLogout = document.getElementById('btn-logout');
 
-btnLogin.addEventListener('click', async () => {
-    const usuario = document.getElementById('usuario').value;
-    const senha = document.getElementById('senha').value;
+document.getElementById('btn-login').addEventListener('click', async () => {
+    const usuario = document.getElementById('usuario').value.trim();
+    const senha = document.getElementById('senha').value.trim();
 
-    if(usuario === 'admin' && senha === '12345') {
+    if (usuario === USUARIO_ADMIN && senha === SENHA_ADMIN) {
         loginContainer.style.display = 'none';
         painelAdmin.style.display = 'block';
-        carregarParticipantes();
-        carregarPalpiteiros();
-        carregarGabarito();
-        carregarPontuacao();
-        carregarPalpitesEnviados();
-        carregarConfiguracao();
+        await carregarTodosDados(); // carregar tudo ao logar
     } else {
-        alert('Usuário ou senha inválidos');
+        alert('Usuário ou senha incorretos');
     }
 });
 
-btnLogout.addEventListener('click', () => {
+document.getElementById('btn-logout').addEventListener('click', () => {
     painelAdmin.style.display = 'none';
     loginContainer.style.display = 'block';
 });
@@ -41,73 +36,81 @@ function mostrarAba(id) {
     document.getElementById(id).style.display = 'block';
 }
 
+// Event listeners para abas
+document.querySelectorAll('#abas button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const aba = btn.dataset.aba;
+        mostrarAba(aba);
+    });
+});
+
 // ==========================
 // PARTICIPANTES
 // ==========================
-const btnAddParticipante = document.getElementById('btn-add-participante');
-btnAddParticipante.addEventListener('click', async () => {
-    const nome = document.getElementById('nome-participante').value;
-    if(!nome) return alert('Preencha o nome');
+const tabelaParticipantes = document.getElementById('tabela-participantes');
+document.getElementById('btn-add-participante').addEventListener('click', async () => {
+    const nome = document.getElementById('nome-participante').value.trim();
+    if (!nome) return alert('Informe o nome');
     const { error } = await supabase.from('participantes').insert([{ nome }]);
-    if(error) return alert('Erro ao adicionar participante: ' + error.message);
+    if (error) return alert('Erro ao adicionar participante: ' + error.message);
     document.getElementById('nome-participante').value = '';
-    carregarParticipantes();
+    await carregarParticipantes();
 });
 
 async function carregarParticipantes() {
     const { data, error } = await supabase.from('participantes').select('*');
-    if(error) return alert(error.message);
-    const tabela = document.getElementById('tabela-participantes');
-    tabela.innerHTML = `<tr><th>ID</th><th>Nome</th><th>Ações</th></tr>`;
+    if (error) return alert(error.message);
+
+    tabelaParticipantes.innerHTML = '<tr><th>ID</th><th>Nome</th><th>Ações</th></tr>';
     data.forEach(p => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${p.id}</td>
             <td>${p.nome}</td>
             <td>
-                <button onclick="editarParticipante(${p.id}, '${p.nome}')">Editar</button>
-                <button onclick="removerParticipante(${p.id})">Excluir</button>
+                <button onclick="editarParticipante('${p.id}')">Editar</button>
+                <button onclick="removerParticipante('${p.id}')">Remover</button>
             </td>
         `;
-        tabela.appendChild(tr);
+        tabelaParticipantes.appendChild(tr);
     });
 }
 
-window.editarParticipante = async (id, nomeAtual) => {
-    const novoNome = prompt('Novo nome:', nomeAtual);
-    if(!novoNome) return;
+window.editarParticipante = async (id) => {
+    const novoNome = prompt('Novo nome:');
+    if (!novoNome) return;
     const { error } = await supabase.from('participantes').update({ nome: novoNome }).eq('id', id);
-    if(error) return alert(error.message);
-    carregarParticipantes();
+    if (error) return alert(error.message);
+    await carregarParticipantes();
 };
 
 window.removerParticipante = async (id) => {
-    if(!confirm('Confirma exclusão?')) return;
+    if (!confirm('Confirma remover?')) return;
     const { error } = await supabase.from('participantes').delete().eq('id', id);
-    if(error) return alert(error.message);
-    carregarParticipantes();
+    if (error) return alert('Erro ao remover: ' + error.message);
+    await carregarParticipantes();
 };
 
 // ==========================
 // PALPITEIROS
 // ==========================
-const btnAddPalpiteiro = document.getElementById('btn-add-palpiteiro');
-btnAddPalpiteiro.addEventListener('click', async () => {
-    const nome = document.getElementById('nome-palpiteiro').value;
-    const dt = document.getElementById('dt-nascimento-palpiteiro').value;
-    if(!nome || !dt) return alert('Preencha todos os campos');
+const tabelaPalpiteiros = document.getElementById('tabela-palpiteiros');
+document.getElementById('btn-add-palpiteiro').addEventListener('click', async () => {
+    const nome = document.getElementById('nome-palpiteiro').value.trim();
+    const dt = document.getElementById('dt-nascimento-palpiteiro').value.trim();
+    if (!nome || !dt) return alert('Preencha todos os campos');
     const { error } = await supabase.from('palpiteiros').insert([{ nome, dt_nascimento: dt }]);
-    if(error) return alert(error.message);
+    if (error) return alert(error.message);
     document.getElementById('nome-palpiteiro').value = '';
     document.getElementById('dt-nascimento-palpiteiro').value = '';
-    carregarPalpiteiros();
+    await carregarPalpiteiros();
 });
 
 async function carregarPalpiteiros() {
     const { data, error } = await supabase.from('palpiteiros').select('*');
-    if(error) return alert(error.message);
-    const tabela = document.getElementById('tabela-palpiteiros');
-    tabela.innerHTML = `<tr><th>ID</th><th>Nome</th><th>Data Nascimento</th><th>Ações</th></tr>`;
+    if (error) return alert(error.message);
+
+    tabelaPalpiteiros.innerHTML = '<tr><th>ID</th><th>Nome</th><th>Data Nascimento</th><th>Ações</th></tr>';
     data.forEach(p => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -115,41 +118,45 @@ async function carregarPalpiteiros() {
             <td>${p.nome}</td>
             <td>${p.dt_nascimento}</td>
             <td>
-                <button onclick="editarPalpiteiro(${p.id}, '${p.nome}', '${p.dt_nascimento}')">Editar</button>
-                <button onclick="removerPalpiteiro(${p.id})">Excluir</button>
+                <button onclick="editarPalpiteiro('${p.id}')">Editar</button>
+                <button onclick="removerPalpiteiro('${p.id}')">Remover</button>
             </td>
         `;
-        tabela.appendChild(tr);
+        tabelaPalpiteiros.appendChild(tr);
     });
 }
 
-window.editarPalpiteiro = async (id, nomeAtual, dtAtual) => {
-    const novoNome = prompt('Novo nome:', nomeAtual);
-    const novaData = prompt('Nova data nascimento:', dtAtual);
-    if(!novoNome || !novaData) return;
-    const { error } = await supabase.from('palpiteiros').update({ nome: novoNome, dt_nascimento: novaData }).eq('id', id);
-    if(error) return alert(error.message);
-    carregarPalpiteiros();
+window.editarPalpiteiro = async (id) => {
+    const novoNome = prompt('Novo nome:');
+    const novaDt = prompt('Nova data de nascimento:');
+    if (!novoNome || !novaDt) return;
+    const { error } = await supabase.from('palpiteiros').update({ nome: novoNome, dt_nascimento: novaDt }).eq('id', id);
+    if (error) return alert(error.message);
+    await carregarPalpiteiros();
 };
 
 window.removerPalpiteiro = async (id) => {
-    if(!confirm('Confirma exclusão?')) return;
+    if (!confirm('Confirma remover?')) return;
     const { error } = await supabase.from('palpiteiros').delete().eq('id', id);
-    if(error) return alert(error.message);
-    carregarPalpiteiros();
+    if (error) return alert(error.message);
+    await carregarPalpiteiros();
 };
 
 // ==========================
 // GABARITO
 // ==========================
+const tabelaGabarito = document.getElementById('tabela-gabarito');
+
 async function carregarGabarito() {
     const { data, error } = await supabase.from('gabarito').select('*');
-    if(error) return alert(error.message);
-    const tabela = document.getElementById('tabela-gabarito');
-    tabela.innerHTML = `<tr>
-        <th>Semana</th><th>Lider</th><th>Anjo</th><th>Imune</th><th>Emparedado</th>
-        <th>BateVolta</th><th>Eliminado</th><th>Capitão</th><th>Bonus</th><th>Ações</th>
-    </tr>`;
+    if (error) return alert(error.message);
+
+    tabelaGabarito.innerHTML = `
+        <tr>
+            <th>Semana</th><th>Lider</th><th>Anjo</th><th>Imune</th>
+            <th>Emparedado</th><th>BateVolta</th><th>Eliminado</th><th>Capitão</th><th>Bonus</th><th>Ações</th>
+        </tr>
+    `;
     data.forEach(g => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -162,64 +169,81 @@ async function carregarGabarito() {
             <td>${g.eliminado}</td>
             <td>${g.capitao}</td>
             <td>${g.bonus}</td>
-            <td><button onclick="editarGabarito(${g.id})">Editar</button></td>
+            <td>
+                <button onclick="editarGabarito('${g.id}')">Editar</button>
+                <button onclick="removerGabarito('${g.id}')">Remover</button>
+            </td>
         `;
-        tabela.appendChild(tr);
+        tabelaGabarito.appendChild(tr);
     });
 }
 
 window.editarGabarito = async (id) => {
-    const campos = ['lider','anjo','imune','emparedado','batevolta','eliminado','capitao','bonus'];
-    const updateData = {};
-    for(const c of campos){
-        const val = prompt(`Novo valor ${c}:`);
-        if(val) updateData[c] = val;
-    }
-    const { error } = await supabase.from('gabarito').update(updateData).eq('id', id);
-    if(error) return alert(error.message);
-    carregarGabarito();
+    const lider = prompt('Lider:');
+    const anjo = prompt('Anjo:');
+    const imune = prompt('Imune:');
+    const emp = prompt('Emparedado:');
+    const bv = prompt('BateVolta:');
+    const elim = prompt('Eliminado:');
+    const cap = prompt('Capitão:');
+    const bonus = prompt('Bonus:');
+    const { error } = await supabase.from('gabarito').update({
+        lider, anjo, imune, emparedado: emp, batevolta: bv, eliminado: elim, capitao: cap, bonus
+    }).eq('id', id);
+    if (error) return alert(error.message);
+    await carregarGabarito();
+};
+
+window.removerGabarito = async (id) => {
+    if (!confirm('Confirma remover?')) return;
+    const { error } = await supabase.from('gabarito').delete().eq('id', id);
+    if (error) return alert(error.message);
+    await carregarGabarito();
 };
 
 // ==========================
 // PONTUAÇÃO
 // ==========================
-async function carregarPontuacao() {
-    const { data, error } = await supabase.from('pontuacao').select('*');
-    if(error) return alert(error.message);
-    const tabela = document.getElementById('pontuacao-body');
-    tabela.innerHTML = `<tr><th>Evento</th><th>Pontos</th></tr>`;
-    data.forEach(p => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<tr>
-            <td>${p.evento}</td>
-            <td><input type="number" value="${p.pontos}" data-id="${p.id}"></td>
-        </tr>`;
-        tabela.appendChild(tr);
-    });
-}
-
+const tabelaPontuacao = document.getElementById('pontuacao-body');
 document.getElementById('salvar-pontuacao').addEventListener('click', async () => {
-    const inputs = document.querySelectorAll('#pontuacao-body input');
-    for(const inp of inputs){
-        const id = inp.dataset.id;
-        const pontos = parseInt(inp.value);
+    const linhas = tabelaPontuacao.querySelectorAll('tr[data-id]');
+    for (let tr of linhas) {
+        const id = tr.dataset.id;
+        const pontos = tr.querySelector('input').value;
         const { error } = await supabase.from('pontuacao').update({ pontos }).eq('id', id);
-        if(error) return alert(error.message);
+        if (error) alert(error.message);
     }
     alert('Pontuação salva!');
 });
 
+async function carregarPontuacao() {
+    const { data, error } = await supabase.from('pontuacao').select('*');
+    if (error) return alert(error.message);
+
+    tabelaPontuacao.innerHTML = '<tr><th>Evento</th><th>Pontos</th></tr>';
+    data.forEach(p => {
+        const tr = document.createElement('tr');
+        tr.dataset.id = p.id;
+        tr.innerHTML = `<td>${p.evento}</td><td><input type="number" value="${p.pontos}"></td>`;
+        tabelaPontuacao.appendChild(tr);
+    });
+}
+
 // ==========================
 // PALPITES ENVIADOS
 // ==========================
+const tabelaPalpitesEnviados = document.getElementById('tabela-palpites-enviados');
+
 async function carregarPalpitesEnviados() {
     const { data, error } = await supabase.from('palpites').select('*');
-    if(error) return alert(error.message);
-    const tabela = document.getElementById('tabela-palpites-enviados');
-    tabela.innerHTML = `<tr>
-        <th>Semana</th><th>Palpiteiro</th><th>Lider</th><th>Anjo</th><th>Imune</th><th>Emparedado</th>
-        <th>BateVolta</th><th>Eliminado</th><th>Capitão</th><th>Bonus</th>
-    </tr>`;
+    if (error) return alert(error.message);
+
+    tabelaPalpitesEnviados.innerHTML = `
+        <tr>
+            <th>Semana</th><th>Palpiteiro</th><th>Lider</th><th>Anjo</th><th>Imune</th>
+            <th>Emparedado</th><th>BateVolta</th><th>Eliminado</th><th>Capitão</th><th>Bonus</th>
+        </tr>
+    `;
     data.forEach(p => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -234,23 +258,34 @@ async function carregarPalpitesEnviados() {
             <td>${p.capitao}</td>
             <td>${p.bonus}</td>
         `;
-        tabela.appendChild(tr);
+        tabelaPalpitesEnviados.appendChild(tr);
     });
 }
 
 // ==========================
-// CONFIGURAÇÃO ENVIO DE PALPITES
+// CONFIGURAÇÃO
 // ==========================
-async function carregarConfiguracao() {
-    const { data, error } = await supabase.from('configuracao').select('*').limit(1);
-    if(error) return alert(error.message);
-    const config = data[0];
-    document.getElementById('permitir-envio').checked = config?.permitir_envio || false;
-}
-
+const chkPermitirEnvio = document.getElementById('permitir-envio');
 document.getElementById('btn-salvar-config').addEventListener('click', async () => {
-    const valor = document.getElementById('permitir-envio').checked;
-    const { error } = await supabase.from('configuracao').upsert([{ permitir_envio: valor }]);
-    if(error) return alert('Erro ao salvar configuração: ' + error.message);
+    const permitido = chkPermitirEnvio.checked;
+    const { error } = await supabase.from('configuracao').upsert({ id: 1, permitir_envio: permitido });
+    if (error) return alert(error.message);
     alert('Configuração salva!');
 });
+
+async function carregarConfiguracao() {
+    const { data, error } = await supabase.from('configuracao').select('*').eq('id', 1).single();
+    if (data) chkPermitirEnvio.checked = data.permitir_envio;
+}
+
+// ==========================
+// CARREGAR TODOS OS DADOS
+// ==========================
+async function carregarTodosDados() {
+    await carregarParticipantes();
+    await carregarPalpiteiros();
+    await carregarGabarito();
+    await carregarPontuacao();
+    await carregarPalpitesEnviados();
+    await carregarConfiguracao();
+}

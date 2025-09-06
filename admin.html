@@ -28,12 +28,12 @@
 
     <!-- Abas -->
     <div id="abas">
-        <button onclick="mostrarAba('aba-participantes')">Participantes</button>
-        <button onclick="mostrarAba('aba-palpiteiros')">Palpiteiros</button>
-        <button onclick="mostrarAba('aba-gabarito')">Gabarito</button>
-        <button onclick="mostrarAba('aba-pontuacao')">Pontuação</button>
-        <button onclick="mostrarAba('aba-palpites-enviados')">Palpites Enviados</button>
-        <button onclick="mostrarAba('aba-config')">Configuração</button>
+        <button data-aba="aba-participantes">Participantes</button>
+        <button data-aba="aba-palpiteiros">Palpiteiros</button>
+        <button data-aba="aba-gabarito">Gabarito</button>
+        <button data-aba="aba-pontuacao">Pontuação</button>
+        <button data-aba="aba-palpites-enviados">Palpites Enviados</button>
+        <button data-aba="aba-config">Configuração</button>
     </div>
 
     <!-- ========================== -->
@@ -117,8 +117,8 @@
 <!-- ========================== -->
 <!-- SCRIPTS -->
 <!-- ========================== -->
-<script type="module" src="supabase.js"></script> <!-- já define export const supabase -->
-<script type="module" src="admin.js"></script>   <!-- agora pode importar supabase -->
+<script type="module" src="supabase.js"></script>
+<script type="module" src="admin.js"></script>
 
 </body>
 </html>
