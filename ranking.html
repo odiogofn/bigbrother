@@ -9,7 +9,7 @@
     header { background: #4a76a8; color: white; padding: 20px; text-align: center; }
     main { max-width: 1000px; margin: 20px auto; background: white; padding: 20px;
            border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    label, select { font-size: 16px; margin-right: 10px; margin-top: 10px; }
+    label, select, input[type="checkbox"] { font-size: 16px; margin-right: 10px; margin-top: 10px; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
     th { background: #f4f4f4; }
@@ -36,6 +36,10 @@
     <select id="palpiteiro-filtro" onchange="carregarRanking()">
       <option value="0">Todos</option>
     </select>
+
+    <label>
+      <input type="checkbox" id="acumulativo" onchange="carregarRanking()"> Acumulativo
+    </label>
   </div>
 
   <h2>Ranking</h2>
@@ -63,7 +67,6 @@
     Maria: {1:2, 2:3, 3:2, 4:3}
   };
 
-  // Preenche o filtro de palpiteiro
   function preencherFiltroPalpiteiro() {
     const select = document.getElementById('palpiteiro-filtro');
     Object.keys(dados).forEach(nome => {
@@ -75,33 +78,40 @@
   }
 
   function carregarRanking() {
-    const semanaFiltro = document.getElementById('semana-filtro').value;
+    const semanaFiltro = parseInt(document.getElementById('semana-filtro').value);
     const palpiteiroFiltro = document.getElementById('palpiteiro-filtro').value;
+    const acumulativo = document.getElementById('acumulativo').checked;
 
-    // Monta array com pontuação
     const ranking = [];
     Object.entries(dados).forEach(([nome, semanas]) => {
       let pontos = 0;
 
-      if (semanaFiltro == 0) {
+      if (semanaFiltro === 0) {
+        // Todas as semanas
         pontos = Object.values(semanas).reduce((a,b)=>a+b,0);
+      } else if (acumulativo) {
+        // Soma até a semana escolhida
+        for (let i=1; i<=semanaFiltro; i++) {
+          pontos += semanas[i] || 0;
+        }
       } else {
+        // Apenas a semana escolhida
         pontos = semanas[semanaFiltro] || 0;
       }
 
       ranking.push({nome, pontos});
     });
 
-    // Aplica filtro por palpiteiro
+    // Filtro palpiteiro
     let rankingFiltrado = ranking;
     if (palpiteiroFiltro !== "0") {
       rankingFiltrado = ranking.filter(p => p.nome === palpiteiroFiltro);
     }
 
-    // Ordena por pontos
+    // Ordena
     rankingFiltrado.sort((a,b) => b.pontos - a.pontos);
 
-    // Preenche tabela
+    // Monta tabela
     const tbody = document.getElementById('ranking-table').querySelector('tbody');
     tbody.innerHTML = '';
     rankingFiltrado.forEach((p, index) => {
@@ -110,22 +120,34 @@
       tbody.appendChild(tr);
     });
 
-    carregarGrafico(semanaFiltro, palpiteiroFiltro);
+    carregarGrafico(semanaFiltro, palpiteiroFiltro, acumulativo);
   }
 
-  function carregarGrafico(semanaFiltro, palpiteiroFiltro) {
+  function carregarGrafico(semanaFiltro, palpiteiroFiltro, acumulativo) {
     const ctx = document.getElementById('graficoRanking').getContext('2d');
     const labels = ['Semana 1','Semana 2','Semana 3','Semana 4'];
 
-    // Monta datasets filtrados
     let datasets = [];
     Object.entries(dados).forEach(([nome, semanas]) => {
       if (palpiteiroFiltro !== "0" && palpiteiroFiltro !== nome) return;
 
-      let pontos = Object.values(semanas);
-      if (semanaFiltro != 0) {
-        // mostra só a semana escolhida
-        pontos = labels.map((_, i) => i+1 == semanaFiltro ? semanas[semanaFiltro] : null);
+      let pontos = [];
+      if (semanaFiltro === 0) {
+        // todas as semanas
+        pontos = Object.values(semanas);
+      } else if (acumulativo) {
+        // acumulado até a semana escolhida
+        let soma = 0;
+        pontos = labels.map((_, i) => {
+          if (i+1 <= semanaFiltro) {
+            soma += semanas[i+1] || 0;
+            return soma;
+          }
+          return null;
+        });
+      } else {
+        // só a semana escolhida
+        pontos = labels.map((_, i) => i+1 === semanaFiltro ? semanas[semanaFiltro] : null);
       }
 
       datasets.push({
@@ -151,7 +173,6 @@
     });
   }
 
-  // Gera cor diferente por nome
   function gerarCor(nome) {
     const cores = {
       Ana: 'rgba(75,192,192,1)',
@@ -161,7 +182,6 @@
     return cores[nome] || 'rgba(100,100,100,1)';
   }
 
-  // Inicialização
   preencherFiltroPalpiteiro();
   carregarRanking();
 </script>
