@@ -1,157 +1,169 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ranking e Estatísticas - Jogo Grande Irmão</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f9;
-            margin: 0;
-            padding: 0;
-        }
-
-        header {
-            background: #4a76a8;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        main {
-            max-width: 1000px;
-            margin: 20px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-
-        label, select {
-            font-size: 16px;
-            margin-right: 10px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background: #f4f4f4;
-        }
-
-        canvas {
-            margin-top: 30px;
-            max-width: 100%;
-        }
-
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking e Estatísticas - Jogo Grande Irmão</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 0; }
+    header { background: #4a76a8; color: white; padding: 20px; text-align: center; }
+    main { max-width: 1000px; margin: 20px auto; background: white; padding: 20px;
+           border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    label, select { font-size: 16px; margin-right: 10px; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background: #f4f4f4; }
+    canvas { margin-top: 30px; max-width: 100%; }
+    .filtros { margin-bottom: 20px; }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Ranking e Estatísticas</h1>
-    </header>
-    <main>
-        <label for="semana-filtro">Filtrar por semana:</label>
-        <select id="semana-filtro" onchange="carregarRanking()">
-            <option value="0">Todas</option>
-            <option value="1">Semana 1</option>
-            <option value="2">Semana 2</option>
-            <option value="3">Semana 3</option>
-            <option value="4">Semana 4</option>
-        </select>
+<header>
+  <h1>Ranking e Estatísticas</h1>
+</header>
+<main>
+  <div class="filtros">
+    <label for="semana-filtro">Filtrar por semana:</label>
+    <select id="semana-filtro" onchange="carregarRanking()">
+      <option value="0">Todas</option>
+      <option value="1">Semana 1</option>
+      <option value="2">Semana 2</option>
+      <option value="3">Semana 3</option>
+      <option value="4">Semana 4</option>
+    </select>
 
-        <h2>Ranking</h2>
-        <table id="ranking-table">
-            <thead>
-                <tr>
-                    <th>Posição</th>
-                    <th>Palpiteiro</th>
-                    <th>Pontuação</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+    <label for="palpiteiro-filtro">Filtrar por palpiteiro:</label>
+    <select id="palpiteiro-filtro" onchange="carregarRanking()">
+      <option value="0">Todos</option>
+    </select>
+  </div>
 
-        <h2>Evolução de Pontuação (Semana x Palpiteiro)</h2>
-        <canvas id="graficoRanking"></canvas>
-    </main>
+  <h2>Ranking</h2>
+  <table id="ranking-table">
+    <thead>
+      <tr>
+        <th>Posição</th>
+        <th>Palpiteiro</th>
+        <th>Pontuação</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        async function carregarRanking() {
-            const semana = document.getElementById('semana-filtro').value;
+  <h2>Evolução de Pontuação (Semana x Palpiteiro)</h2>
+  <canvas id="graficoRanking"></canvas>
+</main>
 
-            // Substituir pelo fetch real do backend
-            const ranking = [
-                {nome:'Ana', pontos:15},
-                {nome:'Pedro', pontos:12},
-                {nome:'Maria', pontos:10}
-            ];
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // 🔹 Exemplo de dados (substituir pelo Supabase depois)
+  const dados = {
+    Ana:   {1:3, 2:4, 3:4, 4:4},
+    Pedro: {1:4, 2:3, 3:3, 4:2},
+    Maria: {1:2, 2:3, 3:2, 4:3}
+  };
 
-            const tbody = document.getElementById('ranking-table').querySelector('tbody');
-            tbody.innerHTML = '';
-            ranking.forEach((p, index) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${index+1}</td><td>${p.nome}</td><td>${p.pontos}</td>`;
-                tbody.appendChild(tr);
-            });
+  // Preenche o filtro de palpiteiro
+  function preencherFiltroPalpiteiro() {
+    const select = document.getElementById('palpiteiro-filtro');
+    Object.keys(dados).forEach(nome => {
+      const opt = document.createElement('option');
+      opt.value = nome;
+      opt.textContent = nome;
+      select.appendChild(opt);
+    });
+  }
 
-            carregarGrafico();
+  function carregarRanking() {
+    const semanaFiltro = document.getElementById('semana-filtro').value;
+    const palpiteiroFiltro = document.getElementById('palpiteiro-filtro').value;
+
+    // Monta array com pontuação
+    const ranking = [];
+    Object.entries(dados).forEach(([nome, semanas]) => {
+      let pontos = 0;
+
+      if (semanaFiltro == 0) {
+        pontos = Object.values(semanas).reduce((a,b)=>a+b,0);
+      } else {
+        pontos = semanas[semanaFiltro] || 0;
+      }
+
+      ranking.push({nome, pontos});
+    });
+
+    // Aplica filtro por palpiteiro
+    let rankingFiltrado = ranking;
+    if (palpiteiroFiltro !== "0") {
+      rankingFiltrado = ranking.filter(p => p.nome === palpiteiroFiltro);
+    }
+
+    // Ordena por pontos
+    rankingFiltrado.sort((a,b) => b.pontos - a.pontos);
+
+    // Preenche tabela
+    const tbody = document.getElementById('ranking-table').querySelector('tbody');
+    tbody.innerHTML = '';
+    rankingFiltrado.forEach((p, index) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${index+1}</td><td>${p.nome}</td><td>${p.pontos}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    carregarGrafico(semanaFiltro, palpiteiroFiltro);
+  }
+
+  function carregarGrafico(semanaFiltro, palpiteiroFiltro) {
+    const ctx = document.getElementById('graficoRanking').getContext('2d');
+    const labels = ['Semana 1','Semana 2','Semana 3','Semana 4'];
+
+    // Monta datasets filtrados
+    let datasets = [];
+    Object.entries(dados).forEach(([nome, semanas]) => {
+      if (palpiteiroFiltro !== "0" && palpiteiroFiltro !== nome) return;
+
+      let pontos = Object.values(semanas);
+      if (semanaFiltro != 0) {
+        // mostra só a semana escolhida
+        pontos = labels.map((_, i) => i+1 == semanaFiltro ? semanas[semanaFiltro] : null);
+      }
+
+      datasets.push({
+        label: nome,
+        data: pontos,
+        borderColor: gerarCor(nome),
+        fill: false
+      });
+    });
+
+    if (window.graficoInstance) window.graficoInstance.destroy();
+
+    window.graficoInstance = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'top' },
+          title: { display: true, text: 'Evolução de Pontuação' }
         }
+      }
+    });
+  }
 
-        function carregarGrafico() {
-            const ctx = document.getElementById('graficoRanking').getContext('2d');
+  // Gera cor diferente por nome
+  function gerarCor(nome) {
+    const cores = {
+      Ana: 'rgba(75,192,192,1)',
+      Pedro: 'rgba(255,99,132,1)',
+      Maria: 'rgba(54,162,235,1)'
+    };
+    return cores[nome] || 'rgba(100,100,100,1)';
+  }
 
-            // Dados de exemplo, substituir pelos dados reais do backend
-            const labels = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'];
-            const datasets = [
-                {
-                    label: 'Ana',
-                    data: [3,4,4,4],
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    fill: false
-                },
-                {
-                    label: 'Pedro',
-                    data: [4,3,3,2],
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    fill: false
-                },
-                {
-                    label: 'Maria',
-                    data: [2,3,2,3],
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    fill: false
-                }
-            ];
-
-            if(window.graficoInstance) window.graficoInstance.destroy();
-
-            window.graficoInstance = new Chart(ctx, {
-                type: 'line',
-                data: { labels, datasets },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'top' },
-                        title: { display: true, text: 'Evolução de Pontuação' }
-                    }
-                }
-            });
-        }
-
-        // Carregar ranking ao abrir a página
-        carregarRanking();
-    </script>
+  // Inicialização
+  preencherFiltroPalpiteiro();
+  carregarRanking();
+</script>
 </body>
 </html>
