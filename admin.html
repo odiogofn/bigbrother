@@ -1,123 +1,81 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>Painel Administrativo</title>
     <link rel="stylesheet" href="style.css">
+    <script src="supabase.js"></script>
 </head>
 <body>
 
-<!-- ========================== -->
-<!-- LOGIN -->
-<!-- ========================== -->
+<!-- LOGIN ADMIN -->
 <div id="login-container">
     <h2>Login Admin</h2>
-    <label>Usuário:</label>
-    <input type="text" id="usuario"><br>
-    <label>Senha:</label>
-    <input type="password" id="senha"><br>
+    <input type="text" id="usuario" placeholder="Usuário">
+    <input type="password" id="senha" placeholder="Senha">
     <button id="btn-login">Entrar</button>
 </div>
 
-<!-- ========================== -->
 <!-- PAINEL ADMIN -->
-<!-- ========================== -->
 <div id="painel-admin" style="display:none;">
     <h1>Painel Administrativo</h1>
     <button id="btn-logout">Logout</button>
 
-    <!-- Abas -->
+    <!-- ABAS -->
     <div id="abas">
         <button data-aba="aba-participantes">Participantes</button>
         <button data-aba="aba-palpiteiros">Palpiteiros</button>
         <button data-aba="aba-gabarito">Gabarito</button>
         <button data-aba="aba-pontuacao">Pontuação</button>
         <button data-aba="aba-palpites-enviados">Palpites Enviados</button>
-        <button data-aba="aba-config">Configuração</button>
+        <button data-aba="aba-configuracao">Configuração</button>
     </div>
 
-    <!-- ========================== -->
-    <!-- PARTICIPANTES -->
-    <div class="aba-conteudo" id="aba-participantes" style="display:none;">
+    <!-- ABA PARTICIPANTES -->
+    <div id="aba-participantes" class="aba-conteudo" style="display:none;">
         <h2>Participantes</h2>
-        <input type="text" id="nome-participante" placeholder="Nome participante">
+        <input type="text" id="nome-participante" placeholder="Nome">
         <button id="btn-add-participante">Adicionar</button>
         <table id="tabela-participantes"></table>
     </div>
 
-    <!-- ========================== -->
-    <!-- PALPITEIROS -->
-    <div class="aba-conteudo" id="aba-palpiteiros" style="display:none;">
+    <!-- ABA PALPITEIROS -->
+    <div id="aba-palpiteiros" class="aba-conteudo" style="display:none;">
         <h2>Palpiteiros</h2>
-        <input type="text" id="nome-palpiteiro" placeholder="Nome palpiteiro">
-        <input type="password" id="dt-nascimento-palpiteiro" placeholder="Data nascimento">
+        <input type="text" id="nome-palpiteiro" placeholder="Nome">
+        <input type="password" id="dt-nascimento-palpiteiro" placeholder="Data de Nascimento">
         <button id="btn-add-palpiteiro">Adicionar</button>
         <table id="tabela-palpiteiros"></table>
     </div>
 
-    <!-- ========================== -->
-    <!-- GABARITO -->
-    <div class="aba-conteudo" id="aba-gabarito" style="display:none;">
+    <!-- ABA GABARITO -->
+    <div id="aba-gabarito" class="aba-conteudo" style="display:none;">
         <h2>Gabarito da Semana</h2>
-        <table id="tabela-gabarito">
-            <tr>
-                <th>Semana</th>
-                <th>Lider</th>
-                <th>Anjo</th>
-                <th>Imune</th>
-                <th>Emparedado</th>
-                <th>BateVolta</th>
-                <th>Eliminado</th>
-                <th>Capitão</th>
-                <th>Bonus</th>
-                <th>Ações</th>
-            </tr>
-        </table>
+        <table id="tabela-gabarito"></table>
     </div>
 
-    <!-- ========================== -->
-    <!-- PONTUAÇÃO -->
-    <div class="aba-conteudo" id="aba-pontuacao" style="display:none;">
-        <h2>Pontuação</h2>
-        <table id="pontuacao-body">
-            <tr><th>Evento</th><th>Pontos</th></tr>
-        </table>
-        <button id="salvar-pontuacao">Salvar Pontuação</button>
+    <!-- ABA PONTUAÇÃO -->
+    <div id="aba-pontuacao" class="aba-conteudo" style="display:none;">
+        <h2>Pontuação dos Eventos</h2>
+        <table id="pontuacao-body"></table>
+        <button id="btn-salvar-pontuacao">Salvar Pontuação</button>
     </div>
 
-    <!-- ========================== -->
-    <!-- PALPITES ENVIADOS -->
-    <div class="aba-conteudo" id="aba-palpites-enviados" style="display:none;">
+    <!-- ABA PALPITES ENVIADOS -->
+    <div id="aba-palpites-enviados" class="aba-conteudo" style="display:none;">
         <h2>Palpites Enviados</h2>
-        <table id="tabela-palpites-enviados">
-            <tr>
-                <th>Semana</th>
-                <th>Palpiteiro</th>
-                <th>Lider</th>
-                <th>Anjo</th>
-                <th>Imune</th>
-                <th>Emparedado</th>
-                <th>BateVolta</th>
-                <th>Eliminado</th>
-                <th>Capitão</th>
-                <th>Bonus</th>
-            </tr>
-        </table>
+        <table id="tabela-palpites-enviados"></table>
     </div>
 
-    <!-- ========================== -->
-    <!-- CONFIGURAÇÃO ENVIO DE PALPITES -->
-    <div class="aba-conteudo" id="aba-config" style="display:none;">
-        <h2>Configuração Envio de Palpites</h2>
-        <label><input type="checkbox" id="permitir-envio"> Permitir envio de palpites</label>
-        <button id="btn-salvar-config">Salvar Configuração</button>
+    <!-- ABA CONFIGURAÇÃO -->
+    <div id="aba-configuracao" class="aba-conteudo" style="display:none;">
+        <h2>Configuração</h2>
+        <p id="status-envio" data-permitido="false">Envio de Palpites: Fechado</p>
+        <button id="btn-alternar-envio">Alternar Status</button>
     </div>
 </div>
 
-<!-- ========================== -->
-<!-- SCRIPTS -->
-<!-- ========================== -->
-<script type="module" src="supabase.js"></script>
+<!-- SCRIPT -->
 <script type="module" src="admin.js"></script>
 
 </body>
