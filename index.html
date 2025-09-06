@@ -1,45 +1,20 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Gigant Brother</title>
-  <script type="module" src="supabase.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gigant Brother - Portal</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen">
-  <div class="bg-white shadow-xl rounded-xl p-6 w-96">
-    <h1 class="text-2xl font-bold text-center mb-6">Gigant Brother</h1>
+<body class="bg-gray-100 font-sans">
+<div class="min-h-screen flex flex-col justify-center items-center">
+  <h1 class="text-4xl font-bold text-indigo-600 mb-8">Gigant Brother</h1>
 
-    <!-- Login Admin -->
-    <form id="login-admin" class="space-y-4">
-      <input type="text" id="usuario" placeholder="Usuário" class="w-full p-2 border rounded">
-      <input type="password" id="senha" placeholder="Senha" class="w-full p-2 border rounded">
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded">Entrar como Admin</button>
-    </form>
-
-    <div class="text-center my-4 text-gray-500">ou</div>
-
-    <!-- Área Palpiteiro -->
-    <a href="palpiteiro.html" class="block text-center bg-green-600 text-white py-2 rounded">Área do Palpiteiro</a>
+  <div class="flex flex-col space-y-4">
+    <a href="admin.html" class="bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700 text-center">Área do Admin</a>
+    <a href="palpiteiro.html" class="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 text-center">Área do Palpiteiro</a>
+    <a href="ranking.html" class="bg-yellow-500 text-white px-6 py-3 rounded hover:bg-yellow-600 text-center">Ranking Público</a>
   </div>
-
-  <script type="module">
-    import { supabase } from "./supabase.js";
-
-    document.getElementById("login-admin").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const usuario = document.getElementById("usuario").value;
-      const senha = document.getElementById("senha").value;
-
-      let { data, error } = await supabase.from("admin").select("*").eq("usuario", usuario).eq("senha", senha).single();
-
-      if (data) {
-        localStorage.setItem("isAdmin", "true");
-        window.location.href = "admin.html";
-      } else {
-        alert("Usuário ou senha incorretos!");
-      }
-    });
-  </script>
+</div>
 </body>
 </html>

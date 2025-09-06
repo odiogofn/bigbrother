@@ -1,247 +1,237 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin - Gigant Brother</title>
-  <script type="module" src="supabase.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gigant Brother - Painel Admin</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+<script src="supabase.js"></script> <!-- arquivo separado -->
 </head>
-<body class="bg-gray-100 min-h-screen">
-  <div class="max-w-5xl mx-auto py-8">
-    <h1 class="text-3xl font-bold text-center mb-6">Painel Administrativo - Gigant Brother</h1>
+<body class="bg-gray-100 font-sans">
 
-    <!-- Abas -->
-    <div class="flex justify-center space-x-4 mb-6">
-      <button onclick="abrirAba('participantes')" class="px-4 py-2 bg-blue-500 text-white rounded">Participantes</button>
-      <button onclick="abrirAba('palpiteiros')" class="px-4 py-2 bg-blue-500 text-white rounded">Palpiteiros</button>
-      <button onclick="abrirAba('gabarito')" class="px-4 py-2 bg-blue-500 text-white rounded">Gabarito</button>
-      <button onclick="abrirAba('pontuacao')" class="px-4 py-2 bg-blue-500 text-white rounded">Pontuação</button>
-    </div>
+<div class="max-w-7xl mx-auto p-4">
 
-    <!-- Participantes -->
-    <div id="aba-participantes" class="aba hidden bg-white p-6 rounded shadow">
-      <h2 class="text-xl font-bold mb-4">Gerenciar Participantes</h2>
-      <form id="form-participante" class="flex space-x-2 mb-4">
-        <input type="text" id="nome-participante" placeholder="Nome" class="flex-1 p-2 border rounded">
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Adicionar</button>
-      </form>
-      <ul id="lista-participantes" class="space-y-2 text-gray-700"></ul>
-    </div>
+  <h1 class="text-3xl font-bold text-center mb-6 text-indigo-600">Gigant Brother - Painel Admin</h1>
 
-    <!-- Palpiteiros -->
-    <div id="aba-palpiteiros" class="aba hidden bg-white p-6 rounded shadow">
-      <h2 class="text-xl font-bold mb-4">Gerenciar Palpiteiros</h2>
-      <form id="form-palpiteiro" class="grid grid-cols-2 gap-2 mb-4">
-        <input type="text" id="nome-palpiteiro" placeholder="Nome" class="p-2 border rounded">
-        <input type="date" id="nascimento-palpiteiro" class="p-2 border rounded">
-        <button type="submit" class="col-span-2 bg-green-600 text-white px-4 py-2 rounded">Adicionar</button>
-      </form>
-      <ul id="lista-palpiteiros" class="space-y-2 text-gray-700"></ul>
-    </div>
-
-    <!-- Gabarito -->
-    <div id="aba-gabarito" class="aba hidden bg-white p-6 rounded shadow">
-      <h2 class="text-xl font-bold mb-4">Cadastrar Gabarito</h2>
-      <form id="form-gabarito" class="space-y-2 mb-4">
-        <label>Rodada: <input type="number" id="rodada" class="p-2 border rounded w-24"></label>
-
-        <div>
-          <label>Líder(es):</label>
-          <select multiple id="lider" class="w-full p-2 border rounded"></select>
-        </div>
-        <div>
-          <label>Anjo(s):</label>
-          <select multiple id="anjo" class="w-full p-2 border rounded"></select>
-        </div>
-        <div>
-          <label>Imune(s):</label>
-          <select multiple id="imune" class="w-full p-2 border rounded"></select>
-        </div>
-        <div>
-          <label>Emparedado(s):</label>
-          <select multiple id="emparedado" class="w-full p-2 border rounded"></select>
-        </div>
-        <div>
-          <label>Bate e Volta (vencedores):</label>
-          <select multiple id="bate_volta" class="w-full p-2 border rounded"></select>
-        </div>
-        <div>
-          <label>Eliminado(s):</label>
-          <select multiple id="eliminado" class="w-full p-2 border rounded"></select>
-        </div>
-
-        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Salvar Gabarito</button>
-      </form>
-      <ul id="lista-gabaritos" class="space-y-2 text-gray-700"></ul>
-    </div>
-
-    <!-- Pontuação -->
-    <div id="aba-pontuacao" class="aba hidden bg-white p-6 rounded shadow">
-      <h2 class="text-xl font-bold mb-4">Regras de Pontuação</h2>
-      <form id="form-pontuacao" class="grid grid-cols-2 gap-2 mb-4">
-        <input type="number" id="pontos-lider" placeholder="Pontos Líder" class="p-2 border rounded">
-        <input type="number" id="pontos-anjo" placeholder="Pontos Anjo" class="p-2 border rounded">
-        <input type="number" id="pontos-imune" placeholder="Pontos Imune" class="p-2 border rounded">
-        <input type="number" id="pontos-emparedado" placeholder="Pontos Emparedado" class="p-2 border rounded">
-        <input type="number" id="pontos-bate-volta" placeholder="Pontos Bate e Volta" class="p-2 border rounded">
-        <input type="number" id="pontos-eliminado" placeholder="Pontos Eliminado" class="p-2 border rounded">
-        <button type="submit" class="col-span-2 bg-green-600 text-white px-4 py-2 rounded">Salvar</button>
-      </form>
-      <div id="pontuacao-atual" class="text-gray-700"></div>
-    </div>
+  <!-- Login Admin -->
+  <div id="login-section" class="max-w-md mx-auto bg-white p-6 rounded shadow">
+    <h2 class="text-xl font-semibold mb-4">Login Admin</h2>
+    <form id="login-form" class="space-y-4">
+      <input type="text" id="admin-username" placeholder="Usuário" class="w-full p-2 border rounded">
+      <input type="password" id="admin-password" placeholder="Senha" class="w-full p-2 border rounded">
+      <button type="submit" class="w-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">Entrar</button>
+      <p id="login-error" class="text-red-500 hidden">Usuário ou senha incorretos.</p>
+    </form>
   </div>
 
-  <script type="module">
-    import { supabase } from "./supabase.js";
+  <!-- Dashboard Admin -->
+  <div id="dashboard" class="hidden">
 
-    // Controle de abas
-    window.abrirAba = (id) => {
-      document.querySelectorAll(".aba").forEach(el => el.classList.add("hidden"));
-      document.getElementById("aba-" + id).classList.remove("hidden");
-    };
+    <!-- Abas -->
+    <div class="flex mb-4 space-x-2">
+      <button class="tab-btn bg-indigo-500 text-white px-4 py-2 rounded" data-tab="participantes">Participantes</button>
+      <button class="tab-btn bg-gray-200 px-4 py-2 rounded" data-tab="palpiteiros">Palpiteiros</button>
+      <button class="tab-btn bg-gray-200 px-4 py-2 rounded" data-tab="gabarito">Gabarito</button>
+      <button class="tab-btn bg-gray-200 px-4 py-2 rounded" data-tab="ranking">Ranking</button>
+    </div>
 
-    abrirAba("participantes"); // padrão
+    <!-- Conteúdo das abas -->
+    <div id="tab-content">
 
-    // === Participantes ===
-    const formParticipante = document.getElementById("form-participante");
-    const listaParticipantes = document.getElementById("lista-participantes");
+      <!-- Participantes -->
+      <div id="participantes" class="tab-content bg-white p-6 rounded shadow">
+        <h2 class="text-xl font-semibold mb-4">Gerenciar Participantes</h2>
+        <form id="add-participante" class="mb-4 flex space-x-2">
+          <input type="text" id="participante-nome" placeholder="Nome do participante" class="flex-1 p-2 border rounded">
+          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Adicionar</button>
+        </form>
+        <ul id="participante-list" class="space-y-2"></ul>
+      </div>
 
-    async function carregarParticipantes() {
-      listaParticipantes.innerHTML = "";
-      let { data } = await supabase.from("participantes").select("*");
-      data.forEach(p => {
-        let li = document.createElement("li");
-        li.className = "flex justify-between items-center border p-2 rounded";
-        li.innerHTML = `${p.nome} <button onclick="removerParticipante(${p.id})" class="text-red-500">Remover</button>`;
-        listaParticipantes.appendChild(li);
-      });
+      <!-- Palpiteiros -->
+      <div id="palpiteiros" class="tab-content hidden bg-white p-6 rounded shadow">
+        <h2 class="text-xl font-semibold mb-4">Gerenciar Palpiteiros</h2>
+        <form id="add-palpiteiro" class="mb-4 flex space-x-2">
+          <input type="text" id="palpiteiro-nome" placeholder="Nome do palpiteiro" class="flex-1 p-2 border rounded">
+          <input type="date" id="palpiteiro-nascimento" class="p-2 border rounded">
+          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Adicionar</button>
+        </form>
+        <ul id="palpiteiro-list" class="space-y-2"></ul>
+      </div>
 
-      // Popular selects do gabarito
-      ["lider","anjo","imune","emparedado","bate_volta","eliminado"].forEach(campo=>{
-        let select = document.getElementById(campo);
-        if(select){
-          select.innerHTML = "";
-          data.forEach(p=>{
-            let opt = document.createElement("option");
-            opt.value = p.nome;
-            opt.textContent = p.nome;
-            select.appendChild(opt);
-          });
-        }
-      });
-    }
+      <!-- Gabarito -->
+      <div id="gabarito" class="tab-content hidden bg-white p-6 rounded shadow">
+        <h2 class="text-xl font-semibold mb-4">Cadastrar Gabarito da Semana</h2>
+        <form id="gabarito-form" class="space-y-3">
+          <input type="number" id="gabarito-semana" placeholder="Semana" class="w-32 p-2 border rounded">
+          
+          <div>
+            <label>Líder(es):</label>
+            <select id="gabarito-lider" multiple class="w-full border p-2 rounded"></select>
+          </div>
 
-    formParticipante.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      let nome = document.getElementById("nome-participante").value;
-      if(!nome) return;
-      await supabase.from("participantes").insert([{ nome }]);
-      formParticipante.reset();
-      carregarParticipantes();
-    });
+          <div>
+            <label>Anjo(s):</label>
+            <select id="gabarito-anjo" multiple class="w-full border p-2 rounded"></select>
+          </div>
 
-    window.removerParticipante = async (id)=>{
-      await supabase.from("participantes").delete().eq("id",id);
-      carregarParticipantes();
-    };
+          <div>
+            <label>Imune(s):</label>
+            <select id="gabarito-imune" multiple class="w-full border p-2 rounded"></select>
+          </div>
 
+          <div>
+            <label>Emparedado(s):</label>
+            <select id="gabarito-emparedado" multiple class="w-full border p-2 rounded"></select>
+          </div>
+
+          <div>
+            <label>Bate-Volta(s):</label>
+            <select id="gabarito-batevolta" multiple class="w-full border p-2 rounded"></select>
+          </div>
+
+          <div>
+            <label>Eliminado(s):</label>
+            <select id="gabarito-eliminado" multiple class="w-full border p-2 rounded"></select>
+          </div>
+
+          <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Salvar Gabarito</button>
+        </form>
+      </div>
+
+      <!-- Ranking -->
+      <div id="ranking" class="tab-content hidden bg-white p-6 rounded shadow">
+        <h2 class="text-xl font-semibold mb-4">Ranking Geral</h2>
+        <div id="ranking-list" class="space-y-2"></div>
+        <canvas id="ranking-chart" class="mt-4"></canvas>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+let adminUser = 'admin';
+let adminPass = 'admin';
+
+// abas
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('bg-indigo-500','bg-gray-200'));
+    btn.classList.replace('bg-gray-200','bg-indigo-500');
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
+    document.getElementById(tab).classList.remove('hidden');
+  });
+});
+
+// login
+document.getElementById('login-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const user = document.getElementById('admin-username').value;
+  const pass = document.getElementById('admin-password').value;
+  if(user === adminUser && pass === adminPass){
+    document.getElementById('login-section').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
     carregarParticipantes();
-
-    // === Palpiteiros ===
-    const formPalpiteiro = document.getElementById("form-palpiteiro");
-    const listaPalpiteiros = document.getElementById("lista-palpiteiros");
-
-    async function carregarPalpiteiros() {
-      listaPalpiteiros.innerHTML = "";
-      let { data } = await supabase.from("palpiteiros").select("*");
-      data.forEach(p => {
-        let li = document.createElement("li");
-        li.className = "flex justify-between items-center border p-2 rounded";
-        li.innerHTML = `${p.nome} (${p.nascimento}) <button onclick="removerPalpiteiro(${p.id})" class="text-red-500">Remover</button>`;
-        listaPalpiteiros.appendChild(li);
-      });
-    }
-
-    formPalpiteiro.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      let nome = document.getElementById("nome-palpiteiro").value;
-      let nascimento = document.getElementById("nascimento-palpiteiro").value;
-      if(!nome || !nascimento) return;
-      await supabase.from("palpiteiros").insert([{ nome, nascimento }]);
-      formPalpiteiro.reset();
-      carregarPalpiteiros();
-    });
-
-    window.removerPalpiteiro = async (id)=>{
-      await supabase.from("palpiteiros").delete().eq("id",id);
-      carregarPalpiteiros();
-    };
-
     carregarPalpiteiros();
+    carregarGabaritoSelects();
+    carregarRanking();
+  } else {
+    document.getElementById('login-error').classList.remove('hidden');
+  }
+});
 
-    // === Gabarito ===
-    const formGabarito = document.getElementById("form-gabarito");
-    const listaGabaritos = document.getElementById("lista-gabaritos");
+// Funções para carregar e salvar dados via Supabase
+async function carregarParticipantes(){
+  const { data } = await supabase.from('participantes').select('*');
+  const ul = document.getElementById('participante-list');
+  ul.innerHTML = '';
+  data.forEach(p => {
+    const li = document.createElement('li');
+    li.textContent = `${p.id} - ${p.nome}`;
+    ul.appendChild(li);
+  });
+}
 
-    async function carregarGabaritos() {
-      listaGabaritos.innerHTML = "";
-      let { data } = await supabase.from("gabaritos").select("*").order("rodada",{ascending:true});
-      data.forEach(g => {
-        let li = document.createElement("li");
-        li.className = "border p-2 rounded";
-        li.innerHTML = `<b>Rodada ${g.rodada}</b> - Líder: ${g.lider?.join(", ")} | Anjo: ${g.anjo?.join(", ")} | Imune: ${g.imune?.join(", ")} | Emparedado: ${g.emparedado?.join(", ")} | Bate e Volta: ${g.bate_volta?.join(", ")} | Eliminado: ${g.eliminado?.join(", ")}`;
-        listaGabaritos.appendChild(li);
-      });
-    }
+document.getElementById('add-participante').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const nome = document.getElementById('participante-nome').value;
+  await supabase.from('participantes').insert([{nome, ativo:true}]);
+  document.getElementById('participante-nome').value='';
+  carregarParticipantes();
+});
 
-    formGabarito.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      let rodada = parseInt(document.getElementById("rodada").value);
-      let campos = ["lider","anjo","imune","emparedado","bate_volta","eliminado"];
-      let obj = { rodada };
-      campos.forEach(campo=>{
-        let select = document.getElementById(campo);
-        obj[campo] = Array.from(select.selectedOptions).map(o=>o.value);
-      });
-      await supabase.from("gabaritos").insert([obj]);
-      formGabarito.reset();
-      carregarGabaritos();
+async function carregarPalpiteiros(){
+  const { data } = await supabase.from('palpiteiros').select('*');
+  const ul = document.getElementById('palpiteiro-list');
+  ul.innerHTML='';
+  data.forEach(p=>{
+    const li = document.createElement('li');
+    li.textContent = `${p.id} - ${p.nome}`;
+    ul.appendChild(li);
+  });
+}
+
+document.getElementById('add-palpiteiro').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const nome = document.getElementById('palpiteiro-nome').value;
+  const nascimento = document.getElementById('palpiteiro-nascimento').value;
+  await supabase.from('palpiteiros').insert([{nome, nascimento}]);
+  document.getElementById('palpiteiro-nome').value='';
+  document.getElementById('palpiteiro-nascimento').value='';
+  carregarPalpiteiros();
+});
+
+// Gabarito
+async function carregarGabaritoSelects(){
+  const { data } = await supabase.from('participantes').select('*');
+  const campos = ['lider','anjo','imune','emparedado','batevolta','eliminado'];
+  campos.forEach(c=>{
+    const sel = document.getElementById('gabarito-'+c);
+    sel.innerHTML='';
+    data.forEach(p=>{
+      const option = document.createElement('option');
+      option.value=p.id;
+      option.textContent=p.nome;
+      sel.appendChild(option);
     });
+  });
+}
 
-    carregarGabaritos();
+document.getElementById('gabarito-form').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const semana = parseInt(document.getElementById('gabarito-semana').value);
+  const gabarito = {
+    semana,
+    lider: Array.from(document.getElementById('gabarito-lider').selectedOptions).map(o=>parseInt(o.value)),
+    anjo: Array.from(document.getElementById('gabarito-anjo').selectedOptions).map(o=>parseInt(o.value)),
+    imune: Array.from(document.getElementById('gabarito-imune').selectedOptions).map(o=>parseInt(o.value)),
+    emparedados: Array.from(document.getElementById('gabarito-emparedado').selectedOptions).map(o=>parseInt(o.value)),
+    bate_volta: Array.from(document.getElementById('gabarito-batevolta').selectedOptions).map(o=>parseInt(o.value)),
+    eliminados: Array.from(document.getElementById('gabarito-eliminado').selectedOptions).map(o=>parseInt(o.value)),
+    criado_em: new Date()
+  };
+  await supabase.from('gabaritos').insert([gabarito]);
+  alert('Gabarito salvo!');
+  document.getElementById('gabarito-form').reset();
+});
 
-    // === Pontuação ===
-    const formPontuacao = document.getElementById("form-pontuacao");
-    const divPontuacao = document.getElementById("pontuacao-atual");
+// Ranking
+async function carregarRanking(){
+  // Exemplo simples: total de pontos por palpiteiro
+  const { data } = await supabase.from('palpiteiros').select('*');
+  const rankingDiv = document.getElementById('ranking-list');
+  rankingDiv.innerHTML='';
+  data.forEach((p,i)=>{
+    const div = document.createElement('div');
+    div.textContent = `${i+1} - ${p.nome} - ${p.pontos || 0} pts`;
+    rankingDiv.appendChild(div);
+  });
+}
+</script>
 
-    async function carregarPontuacao() {
-      divPontuacao.innerHTML = "";
-      let { data } = await supabase.from("pontuacao").select("*").single();
-      if(data){
-        divPontuacao.innerHTML = `
-          <p><b>Líder:</b> ${data.lider} | <b>Anjo:</b> ${data.anjo} | <b>Imune:</b> ${data.imune} | 
-          <b>Emparedado:</b> ${data.emparedado} | <b>Bate Volta:</b> ${data.bate_volta} | <b>Eliminado:</b> ${data.eliminado}</p>
-        `;
-      }
-    }
-
-    formPontuacao.addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      let obj = {
-        lider: parseInt(document.getElementById("pontos-lider").value),
-        anjo: parseInt(document.getElementById("pontos-anjo").value),
-        imune: parseInt(document.getElementById("pontos-imune").value),
-        emparedado: parseInt(document.getElementById("pontos-emparedado").value),
-        bate_volta: parseInt(document.getElementById("pontos-bate-volta").value),
-        eliminado: parseInt(document.getElementById("pontos-eliminado").value),
-      };
-      await supabase.from("pontuacao").delete().neq("id",0); // reset
-      await supabase.from("pontuacao").insert([obj]);
-      formPontuacao.reset();
-      carregarPontuacao();
-    });
-
-    carregarPontuacao();
-  </script>
 </body>
 </html>

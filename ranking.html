@@ -1,100 +1,62 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Ranking - Gigant Brother</title>
-  <script type="module" src="supabase.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gigant Brother - Ranking Público</title>
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+<script src="supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-gray-50 min-h-screen">
-  <div class="max-w-5xl mx-auto py-8">
-    <h1 class="text-3xl font-bold text-center mb-6">Ranking Geral - Gigant Brother</h1>
+<body class="bg-gray-100 font-sans">
 
-    <!-- Tabela Ranking -->
-    <div class="bg-white p-6 rounded shadow mb-6">
-      <h2 class="text-xl font-semibold mb-4">Ranking</h2>
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="border px-4 py-2">Posição</th>
-            <th class="border px-4 py-2">Palpiteiro</th>
-            <th class="border px-4 py-2">Pontos</th>
-          </tr>
-        </thead>
-        <tbody id="tabela-ranking"></tbody>
-      </table>
-    </div>
+<div class="max-w-4xl mx-auto p-4">
 
-    <!-- Gráfico Evolução -->
-    <div class="bg-white p-6 rounded shadow">
-      <h2 class="text-xl font-semibold mb-4">Evolução de Pontos</h2>
-      <canvas id="grafico-ranking"></canvas>
-    </div>
+  <h1 class="text-3xl font-bold text-center text-indigo-600 mb-6">Ranking Público - Gigant Brother</h1>
+
+  <div class="bg-white p-6 rounded shadow mb-6">
+    <h2 class="text-xl font-semibold mb-4">Ranking Geral</h2>
+    <div id="ranking-list"></div>
   </div>
 
-  <script type="module">
-    import { supabase } from "./supabase.js";
+  <div class="bg-white p-6 rounded shadow">
+    <h2 class="text-xl font-semibold mb-4">Evolução de Pontos</h2>
+    <canvas id="grafico-evolucao"></canvas>
+  </div>
 
-    async function carregarRanking(){
-      // busca todos palpites
-      const { data: palpites } = await supabase.from("palpites").select("*");
-      const { data: gabaritos } = await supabase.from("gabaritos").select("*");
-      const { data: regra } = await supabase.from("pontuacao").select("*").single();
-      const { data: palpiteiros } = await supabase.from("palpiteiros").select("*");
+</div>
 
-      // inicializa pontos por palpiteiro
-      let pontosPorPalpiteiro = {};
-      palpiteiros.forEach(p=>pontosPorPalpiteiro[p.id]={nome:p.nome,pontos:0,porRodada:[]});
+<script>
+async function carregarRanking(){
+  const { data } = await supabase.from('palpiteiros').select('*').order('pontos', { ascending: false });
+  const div = document.getElementById('ranking-list');
+  div.innerHTML='';
+  data.forEach((p,i)=>{
+    const d = document.createElement('div');
+    d.className='border-b p-2';
+    d.textContent = `${i+1} - ${p.nome} - ${p.pontos || 0} pts`;
+    div.appendChild(d);
+  });
 
-      palpites.forEach(p=>{
-        let gabarito = gabaritos.find(g=>g.rodada===p.rodada);
-        if(!gabarito || !regra) return;
-        let pontos = 0;
-        pontos += p.lider.filter(x=>gabarito.lider.includes(x)).length * regra.lider;
-        pontos += p.anjo.filter(x=>gabarito.anjo.includes(x)).length * regra.anjo;
-        pontos += p.imune.filter(x=>gabarito.imune.includes(x)).length * regra.imune;
-        pontos += p.emparedado.filter(x=>gabarito.emparedado.includes(x)).length * regra.emparedado;
-        pontos += p.bate_volta.filter(x=>gabarito.bate_volta.includes(x)).length * regra.bate_volta;
-        pontos += p.eliminado.filter(x=>gabarito.eliminado.includes(x)).length * regra.eliminado;
+  // gráfico de evolução (média de pontos por semana)
+  const semanas = [...Array(10).keys()].map(i=>i+1); // exemplo 10 semanas
+  const datasets = data.map(p=>({
+    label: p.nome,
+    data: Array(10).fill(p.pontos/10), // exemplo simplificado
+    borderColor: `hsl(${Math.random()*360},70%,50%)`,
+    backgroundColor: 'transparent',
+    tension: 0.3
+  }));
+  const ctx = document.getElementById('grafico-evolucao').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: { labels: semanas.map(s=>'Semana '+s), datasets },
+    options: { responsive:true, plugins:{legend:{display:true}} }
+  });
+}
 
-        pontosPorPalpiteiro[p.palpiteiro_id].pontos += pontos;
-        pontosPorPalpiteiro[p.palpiteiro_id].porRodada.push({rodada:p.rodada,pontos});
-      });
+carregarRanking();
+</script>
 
-      // monta tabela ranking
-      const rankingArray = Object.values(pontosPorPalpiteiro).sort((a,b)=>b.pontos - a.pontos);
-      const tabela = document.getElementById("tabela-ranking");
-      tabela.innerHTML="";
-      rankingArray.forEach((p,idx)=>{
-        let tr = document.createElement("tr");
-        tr.innerHTML = `<td class="border px-4 py-2">${idx+1}</td>
-                        <td class="border px-4 py-2">${p.nome}</td>
-                        <td class="border px-4 py-2">${p.pontos}</td>`;
-        tabela.appendChild(tr);
-      });
-
-      // gráfico evolução
-      const ctx = document.getElementById("grafico-ranking").getContext("2d");
-      const datasets = rankingArray.map(p=>{
-        let sorted = p.porRodada.sort((a,b)=>a.rodada-b.rodada);
-        return {
-          label:p.nome,
-          data: sorted.map(r=>r.pontos),
-          fill:false,
-          borderColor: "#" + Math.floor(Math.random()*16777215).toString(16),
-          tension:0.1
-        }
-      });
-      const labels = Array.from(new Set(palpites.map(p=>p.rodada))).sort((a,b)=>a-b).map(r=>"Rodada "+r);
-      new Chart(ctx,{
-        type:"line",
-        data:{labels,datasets},
-        options:{responsive:true,plugins:{legend:{position:"bottom"}}}
-      });
-    }
-
-    carregarRanking();
-  </script>
 </body>
 </html>
