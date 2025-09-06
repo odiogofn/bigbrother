@@ -1,56 +1,55 @@
 import { supabase } from "./supabase.js";
-let palpiteiroId;
+
+let palpiteiroId = null;
 
 // Login
-document.getElementById("login").addEventListener("click", async ()=>{
+document.getElementById("login-btn").addEventListener("click", async ()=>{
     const nome = document.getElementById("nome").value;
     const senha = document.getElementById("senha").value;
-    if(!nome || !senha){ alert("Informe nome e senha"); return; }
 
     const { data, error } = await supabase.from("palpiteiros")
         .select("*")
         .eq("nome", nome)
         .eq("senha", senha)
         .single();
-    if(error || !data){ alert("Usuário não encontrado"); return; }
+    
+    if(error || !data){ alert("Nome ou senha incorretos!"); return; }
 
     palpiteiroId = data.id;
-    document.getElementById("login-form").style.display = "none";
-    document.getElementById("painel-palpite").style.display = "block";
-
+    document.getElementById("login-palpiteiro").style.display="none";
+    document.getElementById("painel-palpite").style.display="block";
     carregarParticipantes();
     carregarHistorico();
 });
 
-// Carrega participantes para dropdown
+// Carregar participantes para dropdowns
 async function carregarParticipantes(){
     const { data, error } = await supabase.from("participantes").select("*");
     if(error) return console.error(error);
 
-    const opcoes = ["lider","anjo","imune","emparedado","batevolta","eliminado","bonus","capitao"];
-    opcoes.forEach(op=>{
-        const select = document.getElementById(op);
-        select.innerHTML = "<option value=''>Selecione</option>";
+    const campos = ["lider","anjo","imune","emparedado","batevolta","eliminado","capitao","bonus"];
+    campos.forEach(campo=>{
+        const sel = document.getElementById(campo);
+        sel.innerHTML = "<option value=''>--Selecione--</option>";
         data.forEach(p=>{
-            const option = document.createElement("option");
-            option.value = p.id;
-            option.text = p.nome;
-            select.appendChild(option);
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = p.nome;
+            sel.appendChild(opt);
         });
     });
 }
 
-// Envio de palpite
-document.getElementById("form-palpite").addEventListener("submit", async e=>{
-    e.preventDefault();
-    const semana = parseInt(prompt("Semana do palpite:"));
-    if(!semana) return;
+// Enviar palpite
+document.getElementById("enviar-palpite").addEventListener("click", async ()=>{
+    const semana = parseInt(document.getElementById("semana").value);
+    if(!semana) return alert("Informe a semana");
 
-    // Verifica limite de 3 palpites
     const { data: existentes } = await supabase.from("palpites")
         .select("*")
         .eq("palpiteiro_id", palpiteiroId)
         .eq("semana", semana);
+
     if(existentes.length >= 3){ alert("Limite de palpites alcançado"); return; }
 
     const palpite = {
@@ -65,6 +64,7 @@ document.getElementById("form-palpite").addEventListener("submit", async e=>{
         capitao: document.getElementById("capitao").value,
         bonus: document.getElementById("bonus").value
     };
+
     await supabase.from("palpites").insert([palpite]);
     alert("Palpite enviado!");
     carregarHistorico();
@@ -92,5 +92,5 @@ async function carregarHistorico(){
 // Logout
 document.getElementById("logout").addEventListener("click", ()=>{
     document.getElementById("painel-palpite").style.display="none";
-    document.getElementById("login-form").style.display="block";
+    document.getElementById("login-palpiteiro").style.display="block";
 });

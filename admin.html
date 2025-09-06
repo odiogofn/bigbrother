@@ -1,50 +1,44 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <title>Painel Administrativo - Jogo Grande Irmão</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Painel Administrativo</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Painel Administrativo</h1>
+<div class="container">
+<h1>Painel Administrativo</h1>
 
-        <!-- Login -->
-        <div id="admin-login">
-            <label>Usuário:
-                <input type="text" id="usuario">
-            </label>
-            <label>Senha:
-                <input type="password" id="senha">
-            </label>
-            <button id="login-admin">Entrar</button>
-        </div>
+<div id="admin-login">
+    <label>Usuário: <input type="text" id="usuario"></label>
+    <label>Senha: <input type="password" id="senha"></label>
+    <button id="login-admin">Entrar</button>
+</div>
 
-        <!-- Painel Administrativo -->
-        <div id="admin-container" style="display:none;">
-            <section>
-                <h2>Participantes</h2>
-                <button id="add-participante">Adicionar Participante</button>
-                <div id="lista-participantes"></div>
-            </section>
+<div id="admin-container" style="display:none;">
+    <section>
+        <h2>Participantes</h2>
+        <button id="add-participante">Adicionar Participante</button>
+        <div id="lista-participantes"></div>
+    </section>
 
-            <section>
-                <h2>Palpiteiros</h2>
-                <button id="add-palpiteiro">Adicionar Palpiteiro</button>
-                <div id="lista-palpiteiros"></div>
-            </section>
+    <section>
+        <h2>Palpiteiros</h2>
+        <button id="add-palpiteiro">Adicionar Palpiteiro</button>
+        <div id="lista-palpiteiros"></div>
+    </section>
 
-            <section>
-                <h2>Gabarito da Semana</h2>
-                <button id="add-gabarito">Adicionar Semana</button>
-                <div id="lista-gabaritos"></div>
-            </section>
+    <section>
+        <h2>Gabarito da Semana</h2>
+        <button id="add-gabarito">Adicionar Semana</button>
+        <div id="lista-gabaritos"></div>
+    </section>
 
-            <button id="logout">Logout</button>
-        </div>
-    </div>
+    <button id="logout">Logout</button>
+</div>
+</div>
 
-    <script type="module" src="supabase.js"></script>
-    <script type="module" src="admin.js"></script>
+<script type="module" src="supabase.js"></script>
+<script type="module" src="admin.js"></script>
 </body>
 </html>

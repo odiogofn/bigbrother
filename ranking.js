@@ -1,86 +1,53 @@
 import { supabase } from "./supabase.js";
+import Chart from 'https://cdn.jsdelivr.net/npm/chart.js/+esm';
 
-async function carregarRanking() {
-    const semanaSelecionada = parseInt(document.getElementById("filtro-semana").value) || 1;
-    const palpiteiroId = document.getElementById("filtro-palpiteiro").value;
+document.getElementById("filtrar").addEventListener("click", filtrarRanking);
+
+async function filtrarRanking(){
+    const semana = parseInt(document.getElementById("semana").value);
+    const filtro = document.getElementById("palpiteiro-filtro").value.toLowerCase();
     const acumulativo = document.getElementById("acumulativo").checked;
 
-    // Monta query
-    let query = supabase.from("palpites").select("palpiteiro_id, pontos, palpiteiro:palpiteiros(nome)");
-
-    if (palpiteiroId) {
-        query = query.eq("palpiteiro_id", palpiteiroId);
-    }
-
-    if (acumulativo) {
-        query = query.lte("semana", semanaSelecionada); // todas as semanas até a selecionada
-    } else {
-        query = query.eq("semana", semanaSelecionada); // apenas a semana selecionada
-    }
-
-    const { data, error } = await query;
-    if (error) return console.error(error);
-
-    // Agrupa pontos por palpiteiro
-    const rankingMap = {};
-    data.forEach(p => {
-        const nome = p.palpiteiro?.nome || "Desconhecido";
-        rankingMap[nome] = (rankingMap[nome] || 0) + (p.pontos || 0);
-    });
-
-    const ranking = Object.entries(rankingMap)
-        .map(([nome, pontos]) => ({ nome, pontos }))
-        .sort((a, b) => b.pontos - a.pontos);
-
-    renderTabela(ranking);
-    renderGrafico(ranking);
-}
-
-// Renderiza tabela
-function renderTabela(ranking) {
-    const tbody = document.querySelector("#tabela-ranking tbody");
-    tbody.innerHTML = "";
-    ranking.forEach(r => {
-        tbody.innerHTML += `<tr><td>${r.nome}</td><td>${r.pontos}</td></tr>`;
-    });
-}
-
-// Renderiza gráfico
-function renderGrafico(ranking) {
-    const ctx = document.getElementById("grafico-ranking").getContext("2d");
-    if (window.rankingChart) window.rankingChart.destroy(); // destrói gráfico anterior
-    window.rankingChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-            labels: ranking.map(r => r.nome),
-            datasets: [{
-                label: "Pontos",
-                data: ranking.map(r => r.pontos),
-                backgroundColor: "rgba(0,123,255,0.5)"
-            }]
+    let { data: palpites } = await supabase.from("palpites").select("*");
+    
+    if(semana){
+        if(acumulativo){
+            palpites = palpites.filter(p => p.semana <= semana);
+        } else {
+            palpites = palpites.filter(p => p.semana === semana);
         }
-    });
+    }
+
+    if(filtro){
+        const { data: palpiteiros } = await supabase.from("palpiteiros").select("*");
+        const ids = palpiteiros.filter(p => p.nome.toLowerCase().includes(filtro)).map(p=>p.id);
+        palpites = palpites.filter(p => ids.includes(p.palpiteiro_id));
+    }
+
+    mostrarRanking(palpites);
+    desenharGrafico(palpites);
 }
 
-// Preenche dropdown de palpiteiros
-async function carregarPalpiteirosDropdown() {
-    const { data, error } = await supabase.from("palpiteiros").select("*");
-    if (error) return console.error(error);
+function mostrarRanking(palpites){
+    const div = document.getElementById("ranking-lista");
+    if(!palpites.length){ div.innerHTML="<p>Nenhum dado</p>"; return; }
 
-    const select = document.getElementById("filtro-palpiteiro");
-    select.innerHTML = "<option value=''>Todos</option>";
-    data.forEach(p => {
-        const option = document.createElement("option");
-        option.value = p.id;
-        option.text = p.nome;
-        select.appendChild(option);
+    let html = "<ul>";
+    palpites.forEach(p=>{
+        html+=`<li>Semana ${p.semana} - Palpiteiro ${p.palpiteiro_id}: Líder ${p.lider}, Anjo ${p.anjo}, Imune ${p.imune}</li>`;
     });
+    html+="</ul>";
+    div.innerHTML = html;
 }
 
-// Eventos de filtro
-document.getElementById("aplicar-filtro").addEventListener("click", carregarRanking);
-
-window.onload = async () => {
-    await carregarPalpiteirosDropdown();
-    carregarRanking();
-};
+function desenharGrafico(palpites){
+    const ctx = document.getElementById('grafico-ranking').getContext('2d');
+    const labels = [...new Set(palpites.map(p=>p.semana))];
+    const data = labels.map(s=>palpites.filter(p=>p.semana===s).length);
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets:[{ label:'Palpites', data, backgroundColor:'rgba(75,192,192,0.5)'}]},
+        options:{ responsive:true }
+    });
+}
