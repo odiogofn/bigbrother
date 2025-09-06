@@ -1,78 +1,157 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gigant Brother - Ranking Público</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="supabase.js"></script> <!-- arquivo com URL e KEY do Supabase -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking e Estatísticas - Jogo Grande Irmão</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #4a76a8;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        label, select {
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background: #f4f4f4;
+        }
+
+        canvas {
+            margin-top: 30px;
+            max-width: 100%;
+        }
+
+    </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body>
+    <header>
+        <h1>Ranking e Estatísticas</h1>
+    </header>
+    <main>
+        <label for="semana-filtro">Filtrar por semana:</label>
+        <select id="semana-filtro" onchange="carregarRanking()">
+            <option value="0">Todas</option>
+            <option value="1">Semana 1</option>
+            <option value="2">Semana 2</option>
+            <option value="3">Semana 3</option>
+            <option value="4">Semana 4</option>
+        </select>
 
-<div class="max-w-5xl mx-auto p-6">
+        <h2>Ranking</h2>
+        <table id="ranking-table">
+            <thead>
+                <tr>
+                    <th>Posição</th>
+                    <th>Palpiteiro</th>
+                    <th>Pontuação</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
 
-  <h1 class="text-4xl font-bold text-indigo-600 mb-8 text-center">Ranking Público - Gigant Brother</h1>
+        <h2>Evolução de Pontuação (Semana x Palpiteiro)</h2>
+        <canvas id="graficoRanking"></canvas>
+    </main>
 
-  <div class="bg-white rounded-lg shadow p-6 mb-8">
-    <h2 class="text-2xl font-semibold mb-4">Ranking Geral</h2>
-    <div id="ranking-list" class="divide-y divide-gray-200"></div>
-  </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        async function carregarRanking() {
+            const semana = document.getElementById('semana-filtro').value;
 
-  <div class="bg-white rounded-lg shadow p-6">
-    <h2 class="text-2xl font-semibold mb-4">Evolução de Pontos</h2>
-    <canvas id="grafico-evolucao"></canvas>
-  </div>
+            // Substituir pelo fetch real do backend
+            const ranking = [
+                {nome:'Ana', pontos:15},
+                {nome:'Pedro', pontos:12},
+                {nome:'Maria', pontos:10}
+            ];
 
-</div>
+            const tbody = document.getElementById('ranking-table').querySelector('tbody');
+            tbody.innerHTML = '';
+            ranking.forEach((p, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${index+1}</td><td>${p.nome}</td><td>${p.pontos}</td>`;
+                tbody.appendChild(tr);
+            });
 
-<script>
-async function carregarRanking() {
-  // Busca todos os palpiteiros e suas pontuações totais
-  const { data: palpiteiros, error } = await supabase
-    .from('palpiteiros')
-    .select('*')
-    .order('pontos', { ascending: false });
+            carregarGrafico();
+        }
 
-  if (error) {
-    console.error('Erro ao carregar palpiteiros:', error);
-    return;
-  }
+        function carregarGrafico() {
+            const ctx = document.getElementById('graficoRanking').getContext('2d');
 
-  // Ranking geral
-  const divRanking = document.getElementById('ranking-list');
-  divRanking.innerHTML = '';
-  palpiteiros.forEach((p, i) => {
-    const row = document.createElement('div');
-    row.className = 'flex justify-between py-2';
-    row.innerHTML = `<span class="font-semibold">${i+1} - ${p.nome}</span> <span>${p.pontos || 0} pts</span>`;
-    divRanking.appendChild(row);
-  });
+            // Dados de exemplo, substituir pelos dados reais do backend
+            const labels = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'];
+            const datasets = [
+                {
+                    label: 'Ana',
+                    data: [3,4,4,4],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    fill: false
+                },
+                {
+                    label: 'Pedro',
+                    data: [4,3,3,2],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    fill: false
+                },
+                {
+                    label: 'Maria',
+                    data: [2,3,2,3],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    fill: false
+                }
+            ];
 
-  // Evolução de pontos (simulação com 10 semanas)
-  const semanas = Array.from({length: 10}, (_, i) => 'Semana ' + (i+1));
-  const datasets = palpiteiros.map(p => ({
-    label: p.nome,
-    data: Array.from({length: 10}, () => Math.floor(Math.random()*10)), // simulação
-    borderColor: `hsl(${Math.random()*360},70%,50%)`,
-    backgroundColor: 'transparent',
-    tension: 0.3
-  }));
+            if(window.graficoInstance) window.graficoInstance.destroy();
 
-  const ctx = document.getElementById('grafico-evolucao').getContext('2d');
-  new Chart(ctx, {
-    type: 'line',
-    data: { labels: semanas, datasets },
-    options: {
-      responsive: true,
-      plugins: { legend: { position: 'bottom' } }
-    }
-  });
-}
+            window.graficoInstance = new Chart(ctx, {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Evolução de Pontuação' }
+                    }
+                }
+            });
+        }
 
-// Carrega ao abrir a página
-carregarRanking();
-</script>
-
+        // Carregar ranking ao abrir a página
+        carregarRanking();
+    </script>
 </body>
 </html>

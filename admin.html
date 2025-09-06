@@ -1,142 +1,329 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gigant Brother - Admin</title>
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
-<script src="supabase.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Jogo Grande Irmão</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #4a76a8;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .hidden { display: none; }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input, select, button {
+            margin-top: 5px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        button {
+            background: #4a76a8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover { background: #346090; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background: #f4f4f4;
+        }
+
+        .logout {
+            margin-top: 20px;
+            background: #e74c3c;
+        }
+
+        .logout:hover { background: #c0392b; }
+
+        nav {
+            margin-bottom: 20px;
+        }
+
+        nav button {
+            margin-right: 10px;
+        }
+
+        h2 {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-top: 20px;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body>
+    <header>
+        <h1>Painel Administrativo</h1>
+    </header>
+    <main>
+        <!-- Login do Administrador -->
+        <div id="login-section">
+            <h2>Login</h2>
+            <label for="usuario">Usuário:</label>
+            <input type="text" id="usuario" placeholder="Digite o usuário">
 
-<div class="min-h-screen flex flex-col">
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" placeholder="Digite a senha">
 
-  <!-- Header -->
-  <header class="bg-indigo-600 text-white p-4 flex justify-between items-center">
-    <h1 class="text-xl font-bold">Gigant Brother - Admin</h1>
-    <button id="logoutBtn" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600 hidden">Logout</button>
-  </header>
+            <button onclick="loginAdmin()">Entrar</button>
+            <p id="login-msg" style="color:red;"></p>
+        </div>
 
-  <!-- Login -->
-  <div id="loginDiv" class="flex flex-col justify-center items-center flex-1">
-    <h2 class="text-2xl font-semibold mb-4 text-indigo-600">Login Admin</h2>
-    <form id="loginForm" class="bg-white p-6 rounded shadow-md w-80 flex flex-col gap-4">
-      <input type="text" id="adminUser" placeholder="Usuário" class="border px-3 py-2 rounded" required>
-      <input type="password" id="adminPass" placeholder="Senha" class="border px-3 py-2 rounded" required>
-      <button type="submit" class="bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">Entrar</button>
-      <div id="loginError" class="text-red-500 text-sm hidden">Usuário ou senha incorretos</div>
-    </form>
-  </div>
+        <!-- Dashboard após login -->
+        <div id="dashboard-section" class="hidden">
+            <nav>
+                <button onclick="mostrarSecao('participantes')">Participantes</button>
+                <button onclick="mostrarSecao('palpiteiros')">Palpiteiros</button>
+                <button onclick="mostrarSecao('gabarito')">Gabarito da Semana</button>
+            </nav>
 
-  <!-- Dashboard -->
-  <div id="dashboardDiv" class="hidden flex-1 flex flex-col">
-    <!-- Tabs -->
-    <nav class="bg-white shadow flex space-x-2 p-2">
-      <button class="tabBtn bg-indigo-100 px-4 py-2 rounded" data-tab="participantes">Participantes</button>
-      <button class="tabBtn bg-indigo-100 px-4 py-2 rounded" data-tab="palpiteiros">Palpiteiros</button>
-      <button class="tabBtn bg-indigo-100 px-4 py-2 rounded" data-tab="gabarito">Gabarito</button>
-      <button class="tabBtn bg-indigo-100 px-4 py-2 rounded" data-tab="pontuacao">Pontuação</button>
-    </nav>
+            <!-- Participantes -->
+            <div id="participantes-section" class="hidden">
+                <h2>Participantes</h2>
+                <label for="participante-nome">Nome:</label>
+                <input type="text" id="participante-nome">
+                <button onclick="cadastrarParticipante()">Cadastrar</button>
+                <p id="participante-msg" style="color:red;"></p>
 
-    <!-- Conteúdo das abas -->
-    <div class="p-6 flex-1 overflow-auto">
+                <table id="participantes-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
 
-      <!-- Participantes -->
-      <div id="participantes" class="tabContent hidden">
-        <h2 class="text-xl font-semibold mb-4">Gerenciar Participantes</h2>
-        <form id="formParticipante" class="flex gap-2 mb-4">
-          <input type="text" id="nomeParticipante" placeholder="Nome do participante" class="border px-3 py-2 rounded flex-1" required>
-          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Adicionar</button>
-        </form>
-        <div id="listaParticipantes" class="space-y-2"></div>
-      </div>
+            <!-- Palpiteiros -->
+            <div id="palpiteiros-section" class="hidden">
+                <h2>Palpiteiros</h2>
+                <label for="palpiteiro-nome">Nome:</label>
+                <input type="text" id="palpiteiro-nome">
+                <label for="palpiteiro-nascimento">Data de Nascimento:</label>
+                <input type="date" id="palpiteiro-nascimento">
+                <button onclick="cadastrarPalpiteiro()">Cadastrar</button>
+                <p id="palpiteiro-msg" style="color:red;"></p>
 
-      <!-- Palpiteiros -->
-      <div id="palpiteiros" class="tabContent hidden">
-        <h2 class="text-xl font-semibold mb-4">Gerenciar Palpiteiros</h2>
-        <form id="formPalpiteiro" class="flex gap-2 mb-4">
-          <input type="text" id="nomePalpiteiro" placeholder="Nome" class="border px-3 py-2 rounded flex-1" required>
-          <input type="date" id="nascimentoPalpiteiro" placeholder="Data de Nascimento" class="border px-3 py-2 rounded" required>
-          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Adicionar</button>
-        </form>
-        <div id="listaPalpiteiros" class="space-y-2"></div>
-      </div>
+                <table id="palpiteiros-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Nascimento</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
 
-      <!-- Gabarito da Semana -->
-      <div id="gabarito" class="tabContent hidden">
-        <h2 class="text-xl font-semibold mb-4">Gabarito da Semana</h2>
-        <form id="formGabarito" class="space-y-4">
-          <input type="number" id="semanaGabarito" placeholder="Semana" class="border px-3 py-2 rounded w-32" required>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="text" id="liderGabarito" placeholder="Líder(s) separados por vírgula" class="border px-3 py-2 rounded">
-            <input type="text" id="anjoGabarito" placeholder="Anjo(s) separados por vírgula" class="border px-3 py-2 rounded">
-            <input type="text" id="imuneGabarito" placeholder="Imune(s) separados por vírgula" class="border px-3 py-2 rounded">
-            <input type="text" id="emparedadosGabarito" placeholder="Emparedado(s) separados por vírgula" class="border px-3 py-2 rounded">
-            <input type="text" id="batevoltaGabarito" placeholder="Bate Volta(s) separados por vírgula" class="border px-3 py-2 rounded">
-            <input type="text" id="eliminadosGabarito" placeholder="Eliminado(s) separados por vírgula" class="border px-3 py-2 rounded">
-          </div>
-          <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">Salvar Gabarito</button>
-        </form>
-      </div>
+            <!-- Gabarito da Semana -->
+            <div id="gabarito-section" class="hidden">
+                <h2>Gabarito da Semana</h2>
+                <label for="semana-num">Semana:</label>
+                <input type="number" id="semana-num" min="1">
 
-      <!-- Pontuação -->
-      <div id="pontuacao" class="tabContent hidden">
-        <h2 class="text-xl font-semibold mb-4">Pontuação</h2>
-        <form id="formPontuacao" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="number" id="ptsLider" placeholder="Pontos Líder" class="border px-3 py-2 rounded">
-          <input type="number" id="ptsAnjo" placeholder="Pontos Anjo" class="border px-3 py-2 rounded">
-          <input type="number" id="ptsImune" placeholder="Pontos Imune" class="border px-3 py-2 rounded">
-          <input type="number" id="ptsEmparedado" placeholder="Pontos Emparedado" class="border px-3 py-2 rounded">
-          <input type="number" id="ptsBatevolta" placeholder="Pontos Bate Volta" class="border px-3 py-2 rounded">
-          <input type="number" id="ptsEliminado" placeholder="Pontos Eliminado" class="border px-3 py-2 rounded">
-          <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 col-span-full">Salvar Pontuação</button>
-        </form>
-      </div>
+                <label for="lider-gabarito">Líder:</label>
+                <input type="text" id="lider-gabarito">
 
-    </div>
-  </div>
+                <label for="anjo-gabarito">Anjo:</label>
+                <input type="text" id="anjo-gabarito">
 
-</div>
+                <label for="imune-gabarito">Imune:</label>
+                <input type="text" id="imune-gabarito">
 
-<script>
-// LOGIN SIMPLES
-const loginDiv = document.getElementById('loginDiv');
-const dashboardDiv = document.getElementById('dashboardDiv');
-const logoutBtn = document.getElementById('logoutBtn');
-const loginForm = document.getElementById('loginForm');
+                <button onclick="cadastrarGabarito()">Cadastrar</button>
+                <p id="gabarito-msg" style="color:red;"></p>
 
-loginForm.addEventListener('submit', e=>{
-  e.preventDefault();
-  const user = document.getElementById('adminUser').value;
-  const pass = document.getElementById('adminPass').value;
-  if(user==='admin' && pass==='admin'){
-    loginDiv.classList.add('hidden');
-    dashboardDiv.classList.remove('hidden');
-    logoutBtn.classList.remove('hidden');
-  } else {
-    document.getElementById('loginError').classList.remove('hidden');
-  }
-});
+                <table id="gabarito-table">
+                    <thead>
+                        <tr>
+                            <th>Semana</th>
+                            <th>Líder</th>
+                            <th>Anjo</th>
+                            <th>Imune</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
 
-logoutBtn.addEventListener('click', ()=>{
-  dashboardDiv.classList.add('hidden');
-  loginDiv.classList.remove('hidden');
-  logoutBtn.classList.add('hidden');
-  loginForm.reset();
-});
+            <button class="logout" onclick="logout()">Logout</button>
+        </div>
+    </main>
 
-// TABS
-document.querySelectorAll('.tabBtn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.tabContent').forEach(tc=>tc.classList.add('hidden'));
-    const tab = btn.dataset.tab;
-    document.getElementById(tab).classList.remove('hidden');
-  });
-});
+    <script>
+        function loginAdmin() {
+            const usuario = document.getElementById('usuario').value.trim();
+            const senha = document.getElementById('senha').value;
 
-// Aqui entraremos com integração Supabase
-// Funções para listar e cadastrar participantes, palpiteiros, gabarito e pontuação
-</script>
+            // Exemplo de validação (substituir pela chamada real ao backend)
+            if(usuario === 'admin' && senha === '1234') {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                mostrarSecao('participantes');
+                carregarParticipantes();
+                carregarPalpiteiros();
+                carregarGabarito();
+            } else {
+                document.getElementById('login-msg').textContent = 'Usuário ou senha incorretos.';
+            }
+        }
 
+        function mostrarSecao(secao) {
+            const secoes = ['participantes','palpiteiros','gabarito'];
+            secoes.forEach(s => {
+                document.getElementById(`${s}-section`).classList.add('hidden');
+            });
+            document.getElementById(`${secao}-section`).classList.remove('hidden');
+        }
+
+        function logout() {
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+            document.getElementById('usuario').value = '';
+            document.getElementById('senha').value = '';
+        }
+
+        // ---------------- Participantes ----------------
+        async function cadastrarParticipante() {
+            const nome = document.getElementById('participante-nome').value.trim();
+            if(!nome) return;
+
+            // Substituir por chamada real ao backend
+            console.log('Cadastrar participante:', nome);
+            document.getElementById('participante-nome').value = '';
+            carregarParticipantes();
+        }
+
+        async function carregarParticipantes() {
+            const tbody = document.getElementById('participantes-table').querySelector('tbody');
+            tbody.innerHTML = '';
+            // Substituir pelo fetch real
+            const participantes = [
+                {id:1, nome:'João'},
+                {id:2, nome:'Maria'}
+            ];
+            participantes.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${p.id}</td><td>${p.nome}</td>
+                <td><button onclick="editarParticipante(${p.id})">Editar</button>
+                    <button onclick="excluirParticipante(${p.id})">Excluir</button></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function editarParticipante(id){ console.log('Editar participante', id); }
+        function excluirParticipante(id){ console.log('Excluir participante', id); }
+
+        // ---------------- Palpiteiros ----------------
+        async function cadastrarPalpiteiro() {
+            const nome = document.getElementById('palpiteiro-nome').value.trim();
+            const nascimento = document.getElementById('palpiteiro-nascimento').value;
+            if(!nome || !nascimento) return;
+
+            console.log('Cadastrar palpiteiro:', nome, nascimento);
+            document.getElementById('palpiteiro-nome').value = '';
+            document.getElementById('palpiteiro-nascimento').value = '';
+            carregarPalpiteiros();
+        }
+
+        async function carregarPalpiteiros() {
+            const tbody = document.getElementById('palpiteiros-table').querySelector('tbody');
+            tbody.innerHTML = '';
+            const palpiteiros = [
+                {id:1, nome:'Ana', nascimento:'2000-01-01'},
+                {id:2, nome:'Pedro', nascimento:'1995-05-05'}
+            ];
+            palpiteiros.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${p.id}</td><td>${p.nome}</td><td>${p.nascimento}</td>
+                <td><button onclick="editarPalpiteiro(${p.id})">Editar</button>
+                    <button onclick="excluirPalpiteiro(${p.id})">Excluir</button></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function editarPalpiteiro(id){ console.log('Editar palpiteiro', id); }
+        function excluirPalpiteiro(id){ console.log('Excluir palpiteiro', id); }
+
+        // ---------------- Gabarito ----------------
+        async function cadastrarGabarito() {
+            const semana = document.getElementById('semana-num').value;
+            const lider = document.getElementById('lider-gabarito').value.trim();
+            const anjo = document.getElementById('anjo-gabarito').value.trim();
+            const imune = document.getElementById('imune-gabarito').value.trim();
+            if(!semana || !lider || !anjo || !imune) return;
+
+            console.log('Cadastrar gabarito:', semana, lider, anjo, imune);
+            document.getElementById('semana-num').value='';
+            document.getElementById('lider-gabarito').value='';
+            document.getElementById('anjo-gabarito').value='';
+            document.getElementById('imune-gabarito').value='';
+            carregarGabarito();
+        }
+
+        async function carregarGabarito() {
+            const tbody = document.getElementById('gabarito-table').querySelector('tbody');
+            tbody.innerHTML = '';
+            const gabaritos = [
+                {semana:1, lider:'João', anjo:'Maria', imune:'Ana'},
+                {semana:2, lider:'Pedro', anjo:'Ana', imune:'Maria'}
+            ];
+            gabaritos.forEach(g => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${g.semana}</td><td>${g.lider}</td><td>${g.anjo}</td><td>${g.imune}</td>
+                <td><button onclick="editarGabarito(${g.semana})">Editar</button>
+                    <button onclick="excluirGabarito(${g.semana})">Excluir</button></td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function editarGabarito(semana){ console.log('Editar gabarito', semana); }
+        function excluirGabarito(semana){ console.log('Excluir gabarito', semana); }
+    </script>
 </body>
 </html>
