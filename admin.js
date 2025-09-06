@@ -16,7 +16,7 @@ document.getElementById('btn-login').addEventListener('click', async () => {
     if (usuario === USUARIO_ADMIN && senha === SENHA_ADMIN) {
         loginContainer.style.display = 'none';
         painelAdmin.style.display = 'block';
-        await carregarTodosDados(); // carregar tudo ao logar
+        await carregarTodosDados();
     } else {
         alert('Usuário ou senha incorretos');
     }
@@ -36,11 +36,9 @@ function mostrarAba(id) {
     document.getElementById(id).style.display = 'block';
 }
 
-// Event listeners para abas
 document.querySelectorAll('#abas button').forEach(btn => {
     btn.addEventListener('click', () => {
-        const aba = btn.dataset.aba;
-        mostrarAba(aba);
+        mostrarAba(btn.dataset.aba);
     });
 });
 
@@ -48,11 +46,12 @@ document.querySelectorAll('#abas button').forEach(btn => {
 // PARTICIPANTES
 // ==========================
 const tabelaParticipantes = document.getElementById('tabela-participantes');
+
 document.getElementById('btn-add-participante').addEventListener('click', async () => {
     const nome = document.getElementById('nome-participante').value.trim();
     if (!nome) return alert('Informe o nome');
     const { error } = await supabase.from('participantes').insert([{ nome }]);
-    if (error) return alert('Erro ao adicionar participante: ' + error.message);
+    if (error) return alert(error.message);
     document.getElementById('nome-participante').value = '';
     await carregarParticipantes();
 });
@@ -95,6 +94,7 @@ window.removerParticipante = async (id) => {
 // PALPITEIROS
 // ==========================
 const tabelaPalpiteiros = document.getElementById('tabela-palpiteiros');
+
 document.getElementById('btn-add-palpiteiro').addEventListener('click', async () => {
     const nome = document.getElementById('nome-palpiteiro').value.trim();
     const dt = document.getElementById('dt-nascimento-palpiteiro').value.trim();
@@ -178,40 +178,17 @@ async function carregarGabarito() {
     });
 }
 
-window.editarGabarito = async (id) => {
-    const lider = prompt('Lider:');
-    const anjo = prompt('Anjo:');
-    const imune = prompt('Imune:');
-    const emp = prompt('Emparedado:');
-    const bv = prompt('BateVolta:');
-    const elim = prompt('Eliminado:');
-    const cap = prompt('Capitão:');
-    const bonus = prompt('Bonus:');
-    const { error } = await supabase.from('gabarito').update({
-        lider, anjo, imune, emparedado: emp, batevolta: bv, eliminado: elim, capitao: cap, bonus
-    }).eq('id', id);
-    if (error) return alert(error.message);
-    await carregarGabarito();
-};
-
-window.removerGabarito = async (id) => {
-    if (!confirm('Confirma remover?')) return;
-    const { error } = await supabase.from('gabarito').delete().eq('id', id);
-    if (error) return alert(error.message);
-    await carregarGabarito();
-};
-
 // ==========================
-// PONTUAÇÃO
+// PONTUAÇÃO (AJUSTADA)
 // ==========================
 const tabelaPontuacao = document.getElementById('pontuacao-body');
-document.getElementById('salvar-pontuacao').addEventListener('click', async () => {
+document.getElementById('btn-salvar-pontuacao').addEventListener('click', async () => {
     const linhas = tabelaPontuacao.querySelectorAll('tr[data-id]');
     for (let tr of linhas) {
         const id = tr.dataset.id;
         const pontos = tr.querySelector('input').value;
         const { error } = await supabase.from('pontuacao').update({ pontos }).eq('id', id);
-        if (error) alert(error.message);
+        if (error) alert('Erro ao salvar: ' + error.message);
     }
     alert('Pontuação salva!');
 });
@@ -224,9 +201,31 @@ async function carregarPontuacao() {
     data.forEach(p => {
         const tr = document.createElement('tr');
         tr.dataset.id = p.id;
-        tr.innerHTML = `<td>${p.evento}</td><td><input type="number" value="${p.pontos}"></td>`;
+        tr.innerHTML = `<td>${p.evento}</td><td><input type="number" value="${p.pontos}" min="0"></td>`;
         tabelaPontuacao.appendChild(tr);
     });
+}
+
+// ==========================
+// CONFIGURAÇÃO (AJUSTADA)
+// ==========================
+const statusEnvio = document.getElementById('status-envio');
+
+document.getElementById('btn-alternar-envio').addEventListener('click', async () => {
+    const permitido = statusEnvio.dataset.permitido === 'true' ? false : true;
+    const { error } = await supabase.from('configuracao').upsert({ id: 1, permitir_envio: permitido });
+    if (error) return alert('Erro ao atualizar status: ' + error.message);
+    statusEnvio.dataset.permitido = permitido;
+    statusEnvio.textContent = permitido ? 'Envio de Palpites: Liberado' : 'Envio de Palpites: Fechado';
+});
+
+async function carregarConfiguracao() {
+    const { data, error } = await supabase.from('configuracao').select('*').eq('id', 1).single();
+    if (error) return alert(error.message);
+    if (data) {
+        statusEnvio.dataset.permitido = data.permitir_envio;
+        statusEnvio.textContent = data.permitir_envio ? 'Envio de Palpites: Liberado' : 'Envio de Palpites: Fechado';
+    }
 }
 
 // ==========================
@@ -263,29 +262,13 @@ async function carregarPalpitesEnviados() {
 }
 
 // ==========================
-// CONFIGURAÇÃO
-// ==========================
-const chkPermitirEnvio = document.getElementById('permitir-envio');
-document.getElementById('btn-salvar-config').addEventListener('click', async () => {
-    const permitido = chkPermitirEnvio.checked;
-    const { error } = await supabase.from('configuracao').upsert({ id: 1, permitir_envio: permitido });
-    if (error) return alert(error.message);
-    alert('Configuração salva!');
-});
-
-async function carregarConfiguracao() {
-    const { data, error } = await supabase.from('configuracao').select('*').eq('id', 1).single();
-    if (data) chkPermitirEnvio.checked = data.permitir_envio;
-}
-
-// ==========================
-// CARREGAR TODOS OS DADOS
+// CARREGAR TODOS AO INICIAR
 // ==========================
 async function carregarTodosDados() {
     await carregarParticipantes();
     await carregarPalpiteiros();
     await carregarGabarito();
     await carregarPontuacao();
-    await carregarPalpitesEnviados();
     await carregarConfiguracao();
+    await carregarPalpitesEnviados();
 }
