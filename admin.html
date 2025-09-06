@@ -1,122 +1,96 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Painel Administrativo</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Painel Administrativo</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h1>Painel Administrativo</h1>
-
-    <!-- LOGIN -->
-    <div id="login-area">
-      <label>Usuário: <input id="admin-username" type="text" /></label>
-      <label>Senha: <input id="admin-password" type="password" /></label>
-      <button id="admin-login-btn">Entrar</button>
+    <div id="login-container">
+        <h2>Login Admin</h2>
+        <input type="text" id="usuario" placeholder="Usuário">
+        <input type="password" id="senha" placeholder="Senha">
+        <button id="btn-login">Login</button>
     </div>
 
-    <!-- PAINEL (escondido até login) -->
-    <div id="admin-panel" style="display:none;">
-      <div style="display:flex;gap:8px;margin:12px 0;">
-        <button class="tab-btn" data-target="tab-participantes">Participantes</button>
-        <button class="tab-btn" data-target="tab-palpiteiros">Palpiteiros</button>
-        <button class="tab-btn" data-target="tab-gabarito">Gabarito</button>
-        <button class="tab-btn" data-target="tab-palpites">Palpites Enviados</button>
-        <button class="tab-btn" data-target="tab-pontuacao">Pontuação</button>
-        <button class="tab-btn" data-target="tab-config">Configuração</button>
-        <button id="admin-logout-btn" style="margin-left:auto">Logout</button>
-      </div>
+    <div id="painel-admin" style="display:none;">
+        <h1>Painel Administrativo</h1>
+        <nav>
+            <button onclick="mostrarAba('aba-participantes')">Participantes</button>
+            <button onclick="mostrarAba('aba-palpiteiros')">Palpiteiros</button>
+            <button onclick="mostrarAba('aba-gabarito')">Gabarito</button>
+            <button onclick="mostrarAba('aba-pontuacao')">Pontuação</button>
+            <button onclick="mostrarAba('aba-palpites-enviados')">Palpites Enviados</button>
+        </nav>
 
-      <!-- TAB: PARTICIPANTES -->
-      <section id="tab-participantes" class="tab" style="display:none;">
-        <h2>Participantes</h2>
+        <button id="btn-logout">Logout</button>
+
+        <!-- Aba Participantes -->
+        <div id="aba-participantes" class="aba-conteudo" style="display:none;">
+            <h2>Participantes</h2>
+            <input type="text" id="nome-participante" placeholder="Nome">
+            <button id="btn-add-participante">Adicionar</button>
+            <table id="tabela-participantes"></table>
+        </div>
+
+        <!-- Aba Palpiteiros -->
+        <div id="aba-palpiteiros" class="aba-conteudo" style="display:none;">
+            <h2>Palpiteiros</h2>
+            <input type="text" id="nome-palpiteiro" placeholder="Nome">
+            <input type="password" id="dt-nascimento-palpiteiro" placeholder="Data de Nascimento">
+            <button id="btn-add-palpiteiro">Adicionar</button>
+            <table id="tabela-palpiteiros"></table>
+        </div>
+
+        <!-- Aba Gabarito -->
+        <div id="aba-gabarito" class="aba-conteudo" style="display:none;">
+            <h2>Gabarito da Semana</h2>
+            <input type="number" id="semana-gabarito" placeholder="Semana">
+            <div id="gabarito-eventos">
+                <div>Lider: <select id="lider-gabarito"></select></div>
+                <div>Anjo: <select id="anjo-gabarito"></select></div>
+                <div>Imune: <select id="imune-gabarito"></select></div>
+                <div>Emparedado: <select id="emparedado-gabarito"></select></div>
+                <div>Batevolta: <select id="batevolta-gabarito"></select></div>
+                <div>Eliminado: <select id="eliminado-gabarito"></select></div>
+                <div>Capitao: <select id="capitao-gabarito"></select></div>
+                <div>Bonus: <select id="bonus-gabarito"></select></div>
+            </div>
+            <button id="btn-add-gabarito">Salvar Gabarito</button>
+            <table id="tabela-gabarito"></table>
+        </div>
+
+        <!-- Aba Pontuação -->
+        <div id="aba-pontuacao" class="aba-conteudo" style="display:none;">
+            <h2>Pontuação dos Eventos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Evento</th>
+                        <th>Pontos</th>
+                    </tr>
+                </thead>
+                <tbody id="pontuacao-body"></tbody>
+            </table>
+            <button id="salvar-pontuacao">Salvar Alterações</button>
+        </div>
+
+        <!-- Aba Palpites Enviados -->
+        <div id="aba-palpites-enviados" class="aba-conteudo" style="display:none;">
+            <h2>Palpites Enviados</h2>
+            <table id="tabela-palpites-enviados"></table>
+        </div>
+
+        <!-- Botão de abrir/fechar envio de palpites -->
         <div>
-          <input id="participante-nome" placeholder="Nome do participante" />
-          <button id="participante-add-btn">Adicionar</button>
+            <label>
+                <input type="checkbox" id="check-envio"> Permitir envio de palpites
+            </label>
         </div>
-        <ul id="participante-list"></ul>
-      </section>
+    </div>
 
-      <!-- TAB: PALPITEIROS -->
-      <section id="tab-palpiteiros" class="tab" style="display:none;">
-        <h2>Palpiteiros</h2>
-        <div>
-          <input id="palpiteiro-nome" placeholder="Nome" />
-          <input id="palpiteiro-senha" placeholder="Senha (data nascimento)" type="password" />
-          <button id="palpiteiro-add-btn">Adicionar</button>
-        </div>
-        <ul id="palpiteiro-list"></ul>
-      </section>
-
-      <!-- TAB: GABARITO -->
-      <section id="tab-gabarito" class="tab" style="display:none;">
-        <h2>Gabarito por Semana</h2>
-        <div>
-          <input id="gabarito-semana" type="number" min="1" placeholder="Semana (número)" />
-          <button id="gabarito-load-btn">Carregar Semana</button>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;align-items:center;">
-          <label>LÍDER<br><select id="gabarito-lider"></select></label>
-          <label>ANJO<br><select id="gabarito-anjo"></select></label>
-          <label>IMUNE<br><select id="gabarito-imune"></select></label>
-          <label>EMPAREDADO<br><select id="gabarito-emparedado"></select></label>
-          <label>BATEVOLTA<br><select id="gabarito-batevolta"></select></label>
-          <label>ELIMINADO<br><select id="gabarito-eliminado"></select></label>
-          <label>CAPITÃO<br><select id="gabarito-capitao"></select></label>
-          <label>BONUS<br><select id="gabarito-bonus"></select></label>
-        </div>
-
-        <div style="margin-top:8px;">
-          <button id="gabarito-save-btn">Salvar Gabarito (inserir/atualizar)</button>
-          <button id="gabarito-clear-btn">Limpar Campos</button>
-        </div>
-
-        <h3 style="margin-top:12px;">Gabaritos cadastrados</h3>
-        <ul id="gabarito-list"></ul>
-      </section>
-
-      <!-- TAB: PALPITES ENVIADOS -->
-      <section id="tab-palpites" class="tab" style="display:none;">
-        <h2>Palpites Enviados</h2>
-        <div>
-          <label>Filtro por semana: <input id="palpites-filtro-semana" type="number" min="1" /></label>
-          <button id="palpites-filter-btn">Aplicar</button>
-          <button id="palpites-refresh-btn">Atualizar</button>
-        </div>
-        <ul id="palpites-list"></ul>
-      </section>
-
-      <!-- TAB: PONTUAÇÃO -->
-      <section id="tab-pontuacao" class="tab" style="display:none;">
-        <h2>Pontuação por Evento</h2>
-        <div>
-          <input id="pontuacao-evento" placeholder="Evento (ex: lider)" />
-          <input id="pontuacao-pontos" type="number" placeholder="Pontos (inteiro)" />
-          <button id="pontuacao-add-btn">Adicionar</button>
-        </div>
-        <ul id="pontuacao-list"></ul>
-      </section>
-
-      <!-- TAB: CONFIG -->
-      <section id="tab-config" class="tab" style="display:none;">
-        <h2>Configurações</h2>
-        <label>
-          <input id="config-permitir-envio" type="checkbox" />
-          Permitir envio de palpites
-        </label>
-        <div style="margin-top:8px;">
-          <button id="config-save-btn">Salvar configuração</button>
-          <span style="margin-left:12px">Status atual: <strong id="config-status">-</strong></span>
-        </div>
-      </section>
-
-    </div> <!-- admin-panel -->
-  </div> <!-- container -->
-
-  <script type="module" src="supabase.js"></script>
-  <script type="module" src="admin.js"></script>
+    <script src="admin.js"></script>
 </body>
 </html>
