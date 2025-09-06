@@ -1,44 +1,56 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Painel Palpiteiro</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Painel Palpiteiro</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-<h1>Painel do Palpiteiro</h1>
+  <div class="container">
+    <h1>Painel Palpiteiro</h1>
 
-<div id="login-palpiteiro">
-    <label>Nome: <input type="text" id="nome"></label>
-    <label>Senha: <input type="password" id="senha"></label>
-    <button id="login-btn">Entrar</button>
-</div>
+    <!-- LOGIN -->
+    <div id="login-area">
+      <label>Nome: <input id="palpiteiro-nome-login" type="text" /></label>
+      <label>Senha: <input id="palpiteiro-senha-login" type="password" /></label>
+      <button id="palpiteiro-login-btn">Entrar</button>
+    </div>
 
-<div id="painel-palpite" style="display:none;">
-    <section>
+    <!-- PAINEL (após login) -->
+    <div id="palpiteiro-panel" style="display:none;">
+      <button id="palpiteiro-logout-btn" style="margin-bottom:12px;">Logout</button>
+
+      <!-- ENVIO DE PALPITE -->
+      <section id="palpite-envio">
         <h2>Enviar Palpite</h2>
-        <label>Semana: <input type="number" id="semana" min="1"></label>
-        <label>Líder: <select id="lider"></select></label>
-        <label>Anjo: <select id="anjo"></select></label>
-        <label>Imune: <select id="imune"></select></label>
-        <label>Emparedado: <select id="emparedado"></select></label>
-        <label>Batevolta: <select id="batevolta"></select></label>
-        <label>Eliminado: <select id="eliminado"></select></label>
-        <label>Capitão: <select id="capitao"></select></label>
-        <label>Bonus: <select id="bonus"></select></label>
-        <button id="enviar-palpite">Enviar Palpite</button>
-    </section>
+        <div>
+          <label>Semana: <input type="number" min="1" id="palpite-semana" /></label>
+        </div>
 
-    <section>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+          <label>LÍDER<br><select id="palpite-lider"></select></label>
+          <label>ANJO<br><select id="palpite-anjo"></select></label>
+          <label>IMUNE<br><select id="palpite-imune"></select></label>
+          <label>EMPAREDADO<br><select id="palpite-emparedado"></select></label>
+          <label>BATEVOLTA<br><select id="palpite-batevolta"></select></label>
+          <label>ELIMINADO<br><select id="palpite-eliminado"></select></label>
+          <label>CAPITÃO<br><select id="palpite-capitao"></select></label>
+          <label>BONUS<br><select id="palpite-bonus"></select></label>
+        </div>
+
+        <button id="palpite-send-btn" style="margin-top:8px;">Enviar Palpite</button>
+      </section>
+
+      <!-- HISTÓRICO DE PALPITES -->
+      <section id="palpite-historico" style="margin-top:16px;">
         <h2>Histórico de Palpites</h2>
-        <div id="historico-palpite"></div>
-    </section>
+        <ul id="palpite-list"></ul>
+      </section>
+    </div>
+  </div>
 
-    <button id="logout">Logout</button>
-</div>
-
-<script type="module" src="supabase.js"></script>
-<script type="module" src="palpiteiro.js"></script>
+  <script type="module" src="supabase.js"></script>
+  <script type="module" src="palpiteiro.js"></script>
 </body>
 </html>
