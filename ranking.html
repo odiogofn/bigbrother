@@ -1,189 +1,65 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ranking e Estatísticas - Jogo Grande Irmão</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 0; }
-    header { background: #4a76a8; color: white; padding: 20px; text-align: center; }
-    main { max-width: 1000px; margin: 20px auto; background: white; padding: 20px;
-           border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    label, select, input[type="checkbox"] { font-size: 16px; margin-right: 10px; margin-top: 10px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { background: #f4f4f4; }
-    canvas { margin-top: 30px; max-width: 100%; }
-    .filtros { margin-bottom: 20px; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Ranking - Jogo Grande Irmão</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<header>
-  <h1>Ranking e Estatísticas</h1>
-</header>
-<main>
-  <div class="filtros">
-    <label for="semana-filtro">Filtrar por semana:</label>
-    <select id="semana-filtro" onchange="carregarRanking()">
-      <option value="0">Todas</option>
-      <option value="1">Semana 1</option>
-      <option value="2">Semana 2</option>
-      <option value="3">Semana 3</option>
-      <option value="4">Semana 4</option>
-    </select>
+    <div class="container">
+        <h1>Ranking - Jogo Grande Irmão</h1>
 
-    <label for="palpiteiro-filtro">Filtrar por palpiteiro:</label>
-    <select id="palpiteiro-filtro" onchange="carregarRanking()">
-      <option value="0">Todos</option>
-    </select>
+        <section class="filtros">
+            <label>
+                Semana:
+                <select id="filtro-semana">
+                    <option value="1">Semana 1</option>
+                    <option value="2">Semana 2</option>
+                    <option value="3">Semana 3</option>
+                    <option value="4">Semana 4</option>
+                    <option value="5">Semana 5</option>
+                    <!-- adicionar mais semanas conforme necessário -->
+                </select>
+            </label>
 
-    <label>
-      <input type="checkbox" id="acumulativo" onchange="carregarRanking()"> Acumulativo
-    </label>
-  </div>
+            <label>
+                Palpiteiro:
+                <select id="filtro-palpiteiro">
+                    <option value="">Todos</option>
+                </select>
+            </label>
 
-  <h2>Ranking</h2>
-  <table id="ranking-table">
-    <thead>
-      <tr>
-        <th>Posição</th>
-        <th>Palpiteiro</th>
-        <th>Pontuação</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+            <label>
+                <input type="checkbox" id="acumulativo">
+                Acumulativo
+            </label>
 
-  <h2>Evolução de Pontuação (Semana x Palpiteiro)</h2>
-  <canvas id="graficoRanking"></canvas>
-</main>
+            <button id="aplicar-filtro">Aplicar Filtro</button>
+        </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  // 🔹 Exemplo de dados (substituir pelo Supabase depois)
-  const dados = {
-    Ana:   {1:3, 2:4, 3:4, 4:4},
-    Pedro: {1:4, 2:3, 3:3, 4:2},
-    Maria: {1:2, 2:3, 3:2, 4:3}
-  };
+        <section>
+            <h2>Tabela de Ranking</h2>
+            <table id="tabela-ranking">
+                <thead>
+                    <tr>
+                        <th>Palpiteiro</th>
+                        <th>Pontos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- preenchido pelo ranking.js -->
+                </tbody>
+            </table>
+        </section>
 
-  function preencherFiltroPalpiteiro() {
-    const select = document.getElementById('palpiteiro-filtro');
-    Object.keys(dados).forEach(nome => {
-      const opt = document.createElement('option');
-      opt.value = nome;
-      opt.textContent = nome;
-      select.appendChild(opt);
-    });
-  }
+        <section>
+            <h2>Gráfico de Pontos</h2>
+            <canvas id="grafico-ranking" width="800" height="400"></canvas>
+        </section>
+    </div>
 
-  function carregarRanking() {
-    const semanaFiltro = parseInt(document.getElementById('semana-filtro').value);
-    const palpiteiroFiltro = document.getElementById('palpiteiro-filtro').value;
-    const acumulativo = document.getElementById('acumulativo').checked;
-
-    const ranking = [];
-    Object.entries(dados).forEach(([nome, semanas]) => {
-      let pontos = 0;
-
-      if (semanaFiltro === 0) {
-        // Todas as semanas
-        pontos = Object.values(semanas).reduce((a,b)=>a+b,0);
-      } else if (acumulativo) {
-        // Soma até a semana escolhida
-        for (let i=1; i<=semanaFiltro; i++) {
-          pontos += semanas[i] || 0;
-        }
-      } else {
-        // Apenas a semana escolhida
-        pontos = semanas[semanaFiltro] || 0;
-      }
-
-      ranking.push({nome, pontos});
-    });
-
-    // Filtro palpiteiro
-    let rankingFiltrado = ranking;
-    if (palpiteiroFiltro !== "0") {
-      rankingFiltrado = ranking.filter(p => p.nome === palpiteiroFiltro);
-    }
-
-    // Ordena
-    rankingFiltrado.sort((a,b) => b.pontos - a.pontos);
-
-    // Monta tabela
-    const tbody = document.getElementById('ranking-table').querySelector('tbody');
-    tbody.innerHTML = '';
-    rankingFiltrado.forEach((p, index) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${index+1}</td><td>${p.nome}</td><td>${p.pontos}</td>`;
-      tbody.appendChild(tr);
-    });
-
-    carregarGrafico(semanaFiltro, palpiteiroFiltro, acumulativo);
-  }
-
-  function carregarGrafico(semanaFiltro, palpiteiroFiltro, acumulativo) {
-    const ctx = document.getElementById('graficoRanking').getContext('2d');
-    const labels = ['Semana 1','Semana 2','Semana 3','Semana 4'];
-
-    let datasets = [];
-    Object.entries(dados).forEach(([nome, semanas]) => {
-      if (palpiteiroFiltro !== "0" && palpiteiroFiltro !== nome) return;
-
-      let pontos = [];
-      if (semanaFiltro === 0) {
-        // todas as semanas
-        pontos = Object.values(semanas);
-      } else if (acumulativo) {
-        // acumulado até a semana escolhida
-        let soma = 0;
-        pontos = labels.map((_, i) => {
-          if (i+1 <= semanaFiltro) {
-            soma += semanas[i+1] || 0;
-            return soma;
-          }
-          return null;
-        });
-      } else {
-        // só a semana escolhida
-        pontos = labels.map((_, i) => i+1 === semanaFiltro ? semanas[semanaFiltro] : null);
-      }
-
-      datasets.push({
-        label: nome,
-        data: pontos,
-        borderColor: gerarCor(nome),
-        fill: false
-      });
-    });
-
-    if (window.graficoInstance) window.graficoInstance.destroy();
-
-    window.graficoInstance = new Chart(ctx, {
-      type: 'line',
-      data: { labels, datasets },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top' },
-          title: { display: true, text: 'Evolução de Pontuação' }
-        }
-      }
-    });
-  }
-
-  function gerarCor(nome) {
-    const cores = {
-      Ana: 'rgba(75,192,192,1)',
-      Pedro: 'rgba(255,99,132,1)',
-      Maria: 'rgba(54,162,235,1)'
-    };
-    return cores[nome] || 'rgba(100,100,100,1)';
-  }
-
-  preencherFiltroPalpiteiro();
-  carregarRanking();
-</script>
+    <script type="module" src="supabase.js"></script>
+    <script type="module" src="ranking.js"></script>
 </body>
 </html>

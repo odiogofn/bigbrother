@@ -1,81 +1,18 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo Grande Irmão</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f9;
-            margin: 0;
-            padding: 0;
-        }
-
-        header {
-            background: #4a76a8;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        main {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 80vh;
-            gap: 20px;
-            padding: 20px;
-        }
-
-        a.button {
-            display: inline-block;
-            background: #4a76a8;
-            color: white;
-            text-decoration: none;
-            padding: 15px 30px;
-            border-radius: 8px;
-            font-size: 18px;
-            transition: background 0.3s;
-        }
-
-        a.button:hover {
-            background: #346090;
-        }
-
-        footer {
-            background: #ddd;
-            text-align: center;
-            padding: 15px;
-            font-size: 14px;
-            color: #333;
-        }
-
-        @media (max-width: 600px) {
-            main {
-                gap: 15px;
-            }
-
-            a.button {
-                padding: 12px 20px;
-                font-size: 16px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Jogo Grande Irmão</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Jogo Grande Irmão</h1>
-        <p>Bem-vindo ao sistema! Escolha seu painel:</p>
-    </header>
-    <main>
-        <a href="palpiteiro.html" class="button">Painel do Palpiteiro</a>
-        <a href="admin.html" class="button">Painel Administrativo</a>
-        <a href="ranking.html" class="button">Ranking e Estatísticas</a>
-    </main>
-    <footer>
-        &copy; 2025 Jogo Grande Irmão
-    </footer>
+  <div class="container">
+    <h1>Jogo Grande Irmão</h1>
+    <div class="menu-links">
+      <a href="admin.html" class="btn">Painel Administrativo</a>
+      <a href="palpiteiro.html" class="btn">Painel do Palpiteiro</a>
+      <a href="ranking.html" class="btn">Ranking</a>
+    </div>
+  </div>
 </body>
 </html>

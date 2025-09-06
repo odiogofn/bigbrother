@@ -1,256 +1,64 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel do Palpiteiro - Jogo Grande Irmão</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f9;
-            margin: 0;
-            padding: 0;
-        }
-
-        header {
-            background: #4a76a8;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        main {
-            max-width: 800px;
-            margin: 20px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-
-        label {
-            display: block;
-            margin-top: 10px;
-        }
-
-        input, select, button {
-            margin-top: 5px;
-            padding: 10px;
-            width: 100%;
-            font-size: 16px;
-        }
-
-        button {
-            background: #4a76a8;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        button:hover {
-            background: #346090;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        h2 {
-            margin-top: 20px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 5px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background: #f4f4f4;
-        }
-
-        .logout {
-            margin-top: 20px;
-            background: #e74c3c;
-        }
-
-        .logout:hover {
-            background: #c0392b;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
+    <div class="container">
         <h1>Painel do Palpiteiro</h1>
-    </header>
-    <main>
+
         <!-- Login -->
-        <div id="login-section">
-            <h2>Login</h2>
-            <label for="nome">Nome:</label>
-            <input type="text" id="nome" placeholder="Digite seu nome">
-
-            <label for="nascimento">Data de Nascimento:</label>
-            <input type="date" id="nascimento">
-
-            <button onclick="loginPalpiteiro()">Entrar</button>
-            <p id="login-msg" style="color:red;"></p>
+        <div id="login-form">
+            <label>Nome:
+                <input type="text" id="nome">
+            </label>
+            <label>Data de Nascimento:
+                <input type="date" id="data-nascimento">
+            </label>
+            <button id="login">Entrar</button>
         </div>
 
-        <!-- Painel após login -->
-        <div id="painel-section" class="hidden">
+        <!-- Painel -->
+        <div id="painel-palpite" style="display:none;">
             <h2>Enviar Palpite</h2>
-            <label for="lider">Líder:</label>
-            <select id="lider"></select>
-
-            <label for="anjo">Anjo:</label>
-            <select id="anjo"></select>
-
-            <label for="imune">Imune:</label>
-            <select id="imune"></select>
-
-            <button onclick="enviarPalpite()">Enviar Palpite</button>
-            <p id="palpite-msg" style="color:red;"></p>
+            <form id="form-palpite">
+                <label>Líder:
+                    <select id="lider"></select>
+                </label>
+                <label>Anjo:
+                    <select id="anjo"></select>
+                </label>
+                <label>Imune:
+                    <select id="imune"></select>
+                </label>
+                <label>Emparedado:
+                    <select id="emparedado"></select>
+                </label>
+                <label>Batevolta:
+                    <select id="batevolta"></select>
+                </label>
+                <label>Eliminado:
+                    <select id="eliminado"></select>
+                </label>
+                <label>Capitão:
+                    <select id="capitao"></select>
+                </label>
+                <label>Bonus:
+                    <select id="bonus"></select>
+                </label>
+                <button type="submit">Enviar Palpite</button>
+            </form>
 
             <h2>Histórico de Palpites</h2>
-            <table id="historico-table">
-                <thead>
-                    <tr>
-                        <th>Semana</th>
-                        <th>Líder</th>
-                        <th>Anjo</th>
-                        <th>Imune</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <div id="historico-palpite"></div>
 
-            <button class="logout" onclick="logout()">Logout</button>
+            <button id="logout">Logout</button>
         </div>
-    </main>
+    </div>
 
-    <script>
-        let palpiteiroId = null; // Armazena ID do palpiteiro logado
-
-        async function loginPalpiteiro() {
-            const nome = document.getElementById('nome').value.trim();
-            const nascimento = document.getElementById('nascimento').value;
-
-            if(!nome || !nascimento) {
-                document.getElementById('login-msg').textContent = 'Preencha todos os campos.';
-                return;
-            }
-
-            // Exemplo de validação via backend (Substitua pela chamada real)
-            try {
-                const res = await fetch(`/api/login-palpiteiro`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome, nascimento })
-                });
-                const data = await res.json();
-
-                if(data.success) {
-                    palpiteiroId = data.id;
-                    document.getElementById('login-section').classList.add('hidden');
-                    document.getElementById('painel-section').classList.remove('hidden');
-                    carregarParticipantes();
-                    carregarHistorico();
-                } else {
-                    document.getElementById('login-msg').textContent = 'Nome ou data de nascimento incorretos.';
-                }
-            } catch (err) {
-                console.error(err);
-                document.getElementById('login-msg').textContent = 'Erro ao conectar com o servidor.';
-            }
-        }
-
-        async function carregarParticipantes() {
-            try {
-                const res = await fetch('/api/participantes');
-                const participantes = await res.json();
-
-                const campos = ['lider','anjo','imune'];
-                campos.forEach(campo => {
-                    const select = document.getElementById(campo);
-                    select.innerHTML = '<option value="">Selecione</option>';
-                    participantes.forEach(p => {
-                        const opt = document.createElement('option');
-                        opt.value = p.id;
-                        opt.textContent = p.nome;
-                        select.appendChild(opt);
-                    });
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        async function enviarPalpite() {
-            const lider = document.getElementById('lider').value;
-            const anjo = document.getElementById('anjo').value;
-            const imune = document.getElementById('imune').value;
-
-            if(!lider || !anjo || !imune) {
-                document.getElementById('palpite-msg').textContent = 'Selecione todos os campos.';
-                return;
-            }
-
-            try {
-                const res = await fetch('/api/palpites', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ palpiteiroId, lider, anjo, imune })
-                });
-                const data = await res.json();
-
-                if(data.success) {
-                    document.getElementById('palpite-msg').textContent = 'Palpite enviado com sucesso!';
-                    carregarHistorico();
-                } else {
-                    document.getElementById('palpite-msg').textContent = data.message || 'Erro ao enviar palpite.';
-                }
-            } catch (err) {
-                console.error(err);
-                document.getElementById('palpite-msg').textContent = 'Erro ao conectar com o servidor.';
-            }
-        }
-
-        async function carregarHistorico() {
-            try {
-                const res = await fetch(`/api/historico-palpiteiro/${palpiteiroId}`);
-                const historico = await res.json();
-
-                const tbody = document.getElementById('historico-table').querySelector('tbody');
-                tbody.innerHTML = '';
-                historico.forEach(p => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${p.semana}</td><td>${p.lider}</td><td>${p.anjo}</td><td>${p.imune}</td>`;
-                    tbody.appendChild(tr);
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        function logout() {
-            palpiteiroId = null;
-            document.getElementById('painel-section').classList.add('hidden');
-            document.getElementById('login-section').classList.remove('hidden');
-            document.getElementById('nome').value = '';
-            document.getElementById('nascimento').value = '';
-            document.getElementById('palpite-msg').textContent = '';
-        }
-    </script>
+    <script type="module" src="supabase.js"></script>
+    <script type="module" src="palpiteiro.js"></script>
 </body>
 </html>
