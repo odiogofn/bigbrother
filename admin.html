@@ -38,7 +38,6 @@
 
     <!-- ========================== -->
     <!-- PARTICIPANTES -->
-    <!-- ========================== -->
     <div class="aba-conteudo" id="aba-participantes" style="display:none;">
         <h2>Participantes</h2>
         <input type="text" id="nome-participante" placeholder="Nome participante">
@@ -48,7 +47,6 @@
 
     <!-- ========================== -->
     <!-- PALPITEIROS -->
-    <!-- ========================== -->
     <div class="aba-conteudo" id="aba-palpiteiros" style="display:none;">
         <h2>Palpiteiros</h2>
         <input type="text" id="nome-palpiteiro" placeholder="Nome palpiteiro">
@@ -59,7 +57,6 @@
 
     <!-- ========================== -->
     <!-- GABARITO -->
-    <!-- ========================== -->
     <div class="aba-conteudo" id="aba-gabarito" style="display:none;">
         <h2>Gabarito da Semana</h2>
         <table id="tabela-gabarito">
@@ -80,7 +77,6 @@
 
     <!-- ========================== -->
     <!-- PONTUAÇÃO -->
-    <!-- ========================== -->
     <div class="aba-conteudo" id="aba-pontuacao" style="display:none;">
         <h2>Pontuação</h2>
         <table id="pontuacao-body">
@@ -91,7 +87,6 @@
 
     <!-- ========================== -->
     <!-- PALPITES ENVIADOS -->
-    <!-- ========================== -->
     <div class="aba-conteudo" id="aba-palpites-enviados" style="display:none;">
         <h2>Palpites Enviados</h2>
         <table id="tabela-palpites-enviados">
@@ -112,7 +107,6 @@
 
     <!-- ========================== -->
     <!-- CONFIGURAÇÃO ENVIO DE PALPITES -->
-    <!-- ========================== -->
     <div class="aba-conteudo" id="aba-config" style="display:none;">
         <h2>Configuração Envio de Palpites</h2>
         <label><input type="checkbox" id="permitir-envio"> Permitir envio de palpites</label>
@@ -120,7 +114,11 @@
     </div>
 </div>
 
-<script src="supabase.js"></script>
-<script src="admin.js"></script>
+<!-- ========================== -->
+<!-- SCRIPTS -->
+<!-- ========================== -->
+<script type="module" src="supabase.js"></script> <!-- já define export const supabase -->
+<script type="module" src="admin.js"></script>   <!-- agora pode importar supabase -->
+
 </body>
 </html>
