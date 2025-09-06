@@ -1,34 +1,46 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Ranking</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ranking</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="container">
-<h1>Ranking do Jogo</h1>
+  <div class="container">
+    <h1>Ranking do Jogo</h1>
 
-<section>
-    <label>Semana: <input type="number" id="filtro-semana" min="1"></label>
-    <label>Palpiteiro: <select id="filtro-palpiteiro"><option value="">Todos</option></select></label>
-    <label>Acumulativo: <input type="checkbox" id="filtro-acumulativo"></label>
-    <button id="filtrar">Filtrar</button>
-</section>
+    <!-- FILTROS -->
+    <div id="ranking-filtros">
+      <label>Semana: <input type="number" id="ranking-semana" min="1" /></label>
+      <label>Palpiteiro:
+        <select id="ranking-palpiteiro">
+          <option value="">Todos</option>
+        </select>
+      </label>
+      <label>
+        <input type="checkbox" id="ranking-acumulativo"> Acumulativo
+      </label>
+      <button id="ranking-btn">Atualizar</button>
+    </div>
 
-<section>
-    <h2>Ranking</h2>
-    <div id="ranking-lista"></div>
-</section>
+    <!-- TABELA -->
+    <table id="ranking-tabela" border="1">
+      <thead>
+        <tr>
+          <th>Palpiteiro</th>
+          <th>Pontuação</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
 
-<section>
-    <h2>Gráfico Semana x Palpiteiro</h2>
-    <canvas id="grafico-ranking" width="800" height="400"></canvas>
-</section>
+    <!-- GRÁFICO -->
+    <canvas id="ranking-grafico" width="600" height="400"></canvas>
+  </div>
 
-<script type="module" src="supabase.js"></script>
-<script type="module" src="ranking.js"></script>
-</div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="supabase.js"></script>
+  <script type="module" src="ranking.js"></script>
 </body>
 </html>
