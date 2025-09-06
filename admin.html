@@ -1,96 +1,126 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <title>Painel Administrativo</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase.js"></script>
 </head>
 <body>
-    <div id="login-container">
-        <h2>Login Admin</h2>
-        <input type="text" id="usuario" placeholder="Usuário">
-        <input type="password" id="senha" placeholder="Senha">
-        <button id="btn-login">Login</button>
+
+<!-- ========================== -->
+<!-- LOGIN -->
+<!-- ========================== -->
+<div id="login-container">
+    <h2>Login Admin</h2>
+    <label>Usuário:</label>
+    <input type="text" id="usuario"><br>
+    <label>Senha:</label>
+    <input type="password" id="senha"><br>
+    <button id="btn-login">Entrar</button>
+</div>
+
+<!-- ========================== -->
+<!-- PAINEL ADMIN -->
+<!-- ========================== -->
+<div id="painel-admin" style="display:none;">
+    <h1>Painel Administrativo</h1>
+    <button id="btn-logout">Logout</button>
+
+    <!-- Abas -->
+    <div id="abas">
+        <button onclick="mostrarAba('aba-participantes')">Participantes</button>
+        <button onclick="mostrarAba('aba-palpiteiros')">Palpiteiros</button>
+        <button onclick="mostrarAba('aba-gabarito')">Gabarito</button>
+        <button onclick="mostrarAba('aba-pontuacao')">Pontuação</button>
+        <button onclick="mostrarAba('aba-palpites-enviados')">Palpites Enviados</button>
+        <button onclick="mostrarAba('aba-config')">Configuração</button>
     </div>
 
-    <div id="painel-admin" style="display:none;">
-        <h1>Painel Administrativo</h1>
-        <nav>
-            <button onclick="mostrarAba('aba-participantes')">Participantes</button>
-            <button onclick="mostrarAba('aba-palpiteiros')">Palpiteiros</button>
-            <button onclick="mostrarAba('aba-gabarito')">Gabarito</button>
-            <button onclick="mostrarAba('aba-pontuacao')">Pontuação</button>
-            <button onclick="mostrarAba('aba-palpites-enviados')">Palpites Enviados</button>
-        </nav>
-
-        <button id="btn-logout">Logout</button>
-
-        <!-- Aba Participantes -->
-        <div id="aba-participantes" class="aba-conteudo" style="display:none;">
-            <h2>Participantes</h2>
-            <input type="text" id="nome-participante" placeholder="Nome">
-            <button id="btn-add-participante">Adicionar</button>
-            <table id="tabela-participantes"></table>
-        </div>
-
-        <!-- Aba Palpiteiros -->
-        <div id="aba-palpiteiros" class="aba-conteudo" style="display:none;">
-            <h2>Palpiteiros</h2>
-            <input type="text" id="nome-palpiteiro" placeholder="Nome">
-            <input type="password" id="dt-nascimento-palpiteiro" placeholder="Data de Nascimento">
-            <button id="btn-add-palpiteiro">Adicionar</button>
-            <table id="tabela-palpiteiros"></table>
-        </div>
-
-        <!-- Aba Gabarito -->
-        <div id="aba-gabarito" class="aba-conteudo" style="display:none;">
-            <h2>Gabarito da Semana</h2>
-            <input type="number" id="semana-gabarito" placeholder="Semana">
-            <div id="gabarito-eventos">
-                <div>Lider: <select id="lider-gabarito"></select></div>
-                <div>Anjo: <select id="anjo-gabarito"></select></div>
-                <div>Imune: <select id="imune-gabarito"></select></div>
-                <div>Emparedado: <select id="emparedado-gabarito"></select></div>
-                <div>Batevolta: <select id="batevolta-gabarito"></select></div>
-                <div>Eliminado: <select id="eliminado-gabarito"></select></div>
-                <div>Capitao: <select id="capitao-gabarito"></select></div>
-                <div>Bonus: <select id="bonus-gabarito"></select></div>
-            </div>
-            <button id="btn-add-gabarito">Salvar Gabarito</button>
-            <table id="tabela-gabarito"></table>
-        </div>
-
-        <!-- Aba Pontuação -->
-        <div id="aba-pontuacao" class="aba-conteudo" style="display:none;">
-            <h2>Pontuação dos Eventos</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Evento</th>
-                        <th>Pontos</th>
-                    </tr>
-                </thead>
-                <tbody id="pontuacao-body"></tbody>
-            </table>
-            <button id="salvar-pontuacao">Salvar Alterações</button>
-        </div>
-
-        <!-- Aba Palpites Enviados -->
-        <div id="aba-palpites-enviados" class="aba-conteudo" style="display:none;">
-            <h2>Palpites Enviados</h2>
-            <table id="tabela-palpites-enviados"></table>
-        </div>
-
-        <!-- Botão de abrir/fechar envio de palpites -->
-        <div>
-            <label>
-                <input type="checkbox" id="check-envio"> Permitir envio de palpites
-            </label>
-        </div>
+    <!-- ========================== -->
+    <!-- PARTICIPANTES -->
+    <!-- ========================== -->
+    <div class="aba-conteudo" id="aba-participantes" style="display:none;">
+        <h2>Participantes</h2>
+        <input type="text" id="nome-participante" placeholder="Nome participante">
+        <button id="btn-add-participante">Adicionar</button>
+        <table id="tabela-participantes"></table>
     </div>
 
-    <script src="admin.js"></script>
+    <!-- ========================== -->
+    <!-- PALPITEIROS -->
+    <!-- ========================== -->
+    <div class="aba-conteudo" id="aba-palpiteiros" style="display:none;">
+        <h2>Palpiteiros</h2>
+        <input type="text" id="nome-palpiteiro" placeholder="Nome palpiteiro">
+        <input type="password" id="dt-nascimento-palpiteiro" placeholder="Data nascimento">
+        <button id="btn-add-palpiteiro">Adicionar</button>
+        <table id="tabela-palpiteiros"></table>
+    </div>
+
+    <!-- ========================== -->
+    <!-- GABARITO -->
+    <!-- ========================== -->
+    <div class="aba-conteudo" id="aba-gabarito" style="display:none;">
+        <h2>Gabarito da Semana</h2>
+        <table id="tabela-gabarito">
+            <tr>
+                <th>Semana</th>
+                <th>Lider</th>
+                <th>Anjo</th>
+                <th>Imune</th>
+                <th>Emparedado</th>
+                <th>BateVolta</th>
+                <th>Eliminado</th>
+                <th>Capitão</th>
+                <th>Bonus</th>
+                <th>Ações</th>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ========================== -->
+    <!-- PONTUAÇÃO -->
+    <!-- ========================== -->
+    <div class="aba-conteudo" id="aba-pontuacao" style="display:none;">
+        <h2>Pontuação</h2>
+        <table id="pontuacao-body">
+            <tr><th>Evento</th><th>Pontos</th></tr>
+        </table>
+        <button id="salvar-pontuacao">Salvar Pontuação</button>
+    </div>
+
+    <!-- ========================== -->
+    <!-- PALPITES ENVIADOS -->
+    <!-- ========================== -->
+    <div class="aba-conteudo" id="aba-palpites-enviados" style="display:none;">
+        <h2>Palpites Enviados</h2>
+        <table id="tabela-palpites-enviados">
+            <tr>
+                <th>Semana</th>
+                <th>Palpiteiro</th>
+                <th>Lider</th>
+                <th>Anjo</th>
+                <th>Imune</th>
+                <th>Emparedado</th>
+                <th>BateVolta</th>
+                <th>Eliminado</th>
+                <th>Capitão</th>
+                <th>Bonus</th>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ========================== -->
+    <!-- CONFIGURAÇÃO ENVIO DE PALPITES -->
+    <!-- ========================== -->
+    <div class="aba-conteudo" id="aba-config" style="display:none;">
+        <h2>Configuração Envio de Palpites</h2>
+        <label><input type="checkbox" id="permitir-envio"> Permitir envio de palpites</label>
+        <button id="btn-salvar-config">Salvar Configuração</button>
+    </div>
+</div>
+
+<script src="supabase.js"></script>
+<script src="admin.js"></script>
 </body>
 </html>
