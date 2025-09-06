@@ -16,29 +16,47 @@
 </div>
 
 <div id="painel-admin" style="display:none;">
-    <h2>Participantes</h2>
-    <input type="text" id="nome-participante" placeholder="Nome">
-    <button id="add-participante">Adicionar</button>
-    <div id="lista-participantes"></div>
 
-    <h2>Palpiteiros</h2>
-    <input type="text" id="nome-palpiteiro" placeholder="Nome">
-    <input type="password" id="senha-palpiteiro" placeholder="Senha">
-    <button id="add-palpiteiro">Adicionar</button>
-    <div id="lista-palpiteiros"></div>
+    <div class="abas">
+        <button class="aba-btn" data-target="participantes">Participantes</button>
+        <button class="aba-btn" data-target="palpiteiros">Palpiteiros</button>
+        <button class="aba-btn" data-target="gabarito">Gabarito</button>
+    </div>
 
-    <h2>Gabarito da Semana</h2>
-    <label>Semana: <input type="number" id="semana-gabarito"></label>
-    <label>Líder: <select id="lider-g"></select></label>
-    <label>Anjo: <select id="anjo-g"></select></label>
-    <label>Imune: <select id="imune-g"></select></label>
-    <label>Emparedado: <select id="emparedado-g"></select></label>
-    <label>Batevolta: <select id="batevolta-g"></select></label>
-    <label>Eliminado: <select id="eliminado-g"></select></label>
-    <label>Capitão: <select id="capitao-g"></select></label>
-    <label>Bonus: <select id="bonus-g"></select></label>
-    <button id="salvar-gabarito">Salvar Gabarito</button>
-    <div id="lista-gabaritos"></div>
+    <div id="conteudo-abas">
+        <!-- PARTICIPANTES -->
+        <div class="aba" id="participantes">
+            <h2>Participantes</h2>
+            <input type="text" id="nome-participante" placeholder="Nome">
+            <button id="add-participante">Adicionar</button>
+            <div id="lista-participantes"></div>
+        </div>
+
+        <!-- PALPITEIROS -->
+        <div class="aba" id="palpiteiros" style="display:none">
+            <h2>Palpiteiros</h2>
+            <input type="text" id="nome-palpiteiro" placeholder="Nome">
+            <input type="password" id="senha-palpiteiro" placeholder="Senha">
+            <button id="add-palpiteiro">Adicionar</button>
+            <div id="lista-palpiteiros"></div>
+        </div>
+
+        <!-- GABARITO -->
+        <div class="aba" id="gabarito" style="display:none">
+            <h2>Gabarito da Semana</h2>
+            <label>Semana: <input type="number" id="semana-gabarito" min="1"></label>
+            <label>Líder: <select id="lider-g"></select></label>
+            <label>Anjo: <select id="anjo-g"></select></label>
+            <label>Imune: <select id="imune-g"></select></label>
+            <label>Emparedado: <select id="emparedado-g"></select></label>
+            <label>Batevolta: <select id="batevolta-g"></select></label>
+            <label>Eliminado: <select id="eliminado-g"></select></label>
+            <label>Capitão: <select id="capitao-g"></select></label>
+            <label>Bonus: <select id="bonus-g"></select></label>
+            <button id="salvar-gabarito">Salvar Gabarito</button>
+            <div id="lista-gabaritos"></div>
+        </div>
+    </div>
 
     <button id="logout">Logout</button>
 </div>

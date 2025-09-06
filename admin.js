@@ -20,7 +20,18 @@ document.getElementById("logout").addEventListener("click", ()=>{
     document.getElementById("login-admin").style.display="block";
 });
 
+// ABAS
+document.querySelectorAll(".aba-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".aba").forEach(div => div.style.display="none");
+        const target = btn.getAttribute("data-target");
+        document.getElementById(target).style.display = "block";
+    });
+});
+
+// ============================
 // CARREGAR TODOS OS DADOS
+// ============================
 async function carregarTudo(){
     await carregarParticipantes();
     await carregarPalpiteiros();
@@ -87,12 +98,23 @@ async function carregarPalpiteiros(){
 }
 
 // ============================
-// REMOVER
+// REMOVER (PROTEGIDO)
 // ============================
-window.remover = async (tabela,id)=>{
-    const { error } = await supabase.from(tabela).delete().eq("id",id);
-    if(error){ console.error(error); alert("Erro ao remover: "+error.message); return; }
-    carregarTudo();
+window.remover = async (tabela, id)=>{
+    try {
+        if(tabela === "participantes"){
+            const { data: referencias } = await supabase.from("palpites")
+                .select("*")
+                .or(`lider.eq.${id},anjo.eq.${id},imune.eq.${id},emparedado.eq.${id},batevolta.eq.${id},eliminado.eq.${id},capitao.eq.${id},bonus.eq.${id}`);
+            if(referencias.length>0) return alert("Não é possível excluir este participante. Já foi usado em algum palpite.");
+        }
+        const { error } = await supabase.from(tabela).delete().eq("id",id);
+        if(error){ console.error(error); alert("Erro ao remover: "+error.message); return; }
+        carregarTudo();
+    } catch(err){
+        console.error(err);
+        alert("Erro ao remover: "+err.message);
+    }
 }
 
 // ============================

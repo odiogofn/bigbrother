@@ -5,14 +5,11 @@ let participantesMap = {};
 
 // LOGIN
 document.getElementById("login-btn").addEventListener("click", async ()=>{
-    const nome = document.getElementById("nome").value;
-    const senha = document.getElementById("senha").value;
+    const nome = document.getElementById("nome").value.trim();
+    const senha = document.getElementById("senha").value.trim();
 
     const { data, error } = await supabase.from("palpiteiros")
-        .select("*")
-        .eq("nome", nome)
-        .eq("senha", senha)
-        .single();
+        .select("*").eq("nome", nome).eq("senha", senha).single();
 
     if(error || !data){ alert("Nome ou senha incorretos!"); return; }
 
@@ -51,11 +48,9 @@ document.getElementById("enviar-palpite").addEventListener("click", async ()=>{
     if(!semana) return alert("Informe a semana");
 
     const { data: existentes } = await supabase.from("palpites")
-        .select("*")
-        .eq("palpiteiro_id", palpiteiroId)
-        .eq("semana", semana);
+        .select("*").eq("palpiteiro_id", palpiteiroId).eq("semana", semana);
 
-    if(existentes.length >= 3){ alert("Limite de palpites alcançado"); return; }
+    if(existentes.length >= 3){ alert("Limite de Palpites alcançado"); return; }
 
     const palpite = {
         palpiteiro_id: palpiteiroId,

@@ -3,7 +3,6 @@ import { supabase } from "./supabase.js";
 let palpiteirosMap = {};
 let participantesMap = {};
 
-// CARREGAR PALPITEIROS E PARTICIPANTES
 async function carregarMapas(){
     const { data: pData } = await supabase.from("palpiteiros").select("*");
     pData.forEach(p => palpiteirosMap[p.id] = p.nome);
@@ -21,99 +20,58 @@ async function carregarMapas(){
     });
 }
 
-// CARREGAR RANKING
 async function carregarRanking(){
     let semanaFiltro = parseInt(document.getElementById("filtro-semana").value);
     let palpiteiroFiltro = document.getElementById("filtro-palpiteiro").value;
     let acumulativo = document.getElementById("filtro-acumulativo").checked;
 
-    // Busca os palpites
     let query = supabase.from("palpites").select("*").order("semana",{ascending:true});
-
-    if(semanaFiltro){
-        if(acumulativo) query = query.lte("semana", semanaFiltro);
-        else query = query.eq("semana", semanaFiltro);
-    }
+    if(semanaFiltro) query = acumulativo ? query.lte("semana", semanaFiltro) : query.eq("semana", semanaFiltro);
     if(palpiteiroFiltro) query = query.eq("palpiteiro_id", palpiteiroFiltro);
 
     const { data: palpites } = await query;
-
-    // Carregar gabaritos
     const { data: gabaritos } = await supabase.from("gabaritos").select("*");
 
-    // Calcular pontuação
-    let ranking = {};
+    // Calcular pontuação simples: 1 ponto por acerto em cada categoria
+    let pontuacoes = {};
     palpites.forEach(p=>{
-        if(!ranking[p.palpiteiro_id]) ranking[p.palpiteiro_id] = 0;
-
-        const g = gabaritos.find(g=>g.semana === p.semana);
-        if(!g) return;
-
-        ["lider","anjo","imune","emparedado","batevolta","eliminado","capitao","bonus"].forEach(campo=>{
-            if(p[campo] && g[campo] && p[campo] === g[campo]) ranking[p.palpiteiro_id] +=1;
+        let gabs = gabaritos.filter(g=>g.semana===p.semana);
+        if(!gabs.length) return;
+        let g = gabs[0];
+        let pontos = 0;
+        ["lider","anjo","imune","emparedado","batevolta","eliminado","capitao","bonus"].forEach(c=>{
+            if(p[c] && p[c] === g[c]) pontos++;
         });
+        pontuacoes[p.palpiteiro_id] = (pontuacoes[p.palpiteiro_id]||0) + pontos;
     });
 
-    // Transformar em array e ordenar
-    let rankingArray = Object.keys(ranking).map(id=>({nome: palpiteirosMap[id], pontos: ranking[id]}));
-    rankingArray.sort((a,b)=>b.pontos - a.pontos);
+    // Exibir ranking
+    const listaDiv = document.getElementById("ranking-lista");
+    listaDiv.innerHTML = "";
+    Object.entries(pontuacoes).sort((a,b)=>b[1]-a[1]).forEach(([id, pts])=>{
+        const div = document.createElement("div");
+        div.textContent = `${palpiteirosMap[id] || '-'}: ${pts} pontos`;
+        listaDiv.appendChild(div);
+    });
 
-    // Mostrar ranking
-    const div = document.getElementById("ranking-lista");
-    div.innerHTML = "<ol>" + rankingArray.map(r=>`<li>${r.nome}: ${r.pontos} pts</li>`).join("") + "</ol>";
-
-    // Preparar gráfico
+    // Gráfico
     const ctx = document.getElementById("grafico-ranking").getContext("2d");
-    const labels = Object.values(palpiteirosMap);
-    const datasets = [];
-
-    Object.keys(palpiteirosMap).forEach(pid=>{
-        const dataSet = [];
-        let acumulado = 0;
-        const semanas = [...new Set(palpites.map(p=>p.semana))].sort((a,b)=>a-b);
-
-        semanas.forEach(s=>{
-            let p = palpites.find(pal=>pal.palpiteiro_id==pid && pal.semana==s);
-            let g = gabaritos.find(gab=>gab.semana==s);
-            if(p && g){
-                let pontosSemana=0;
-                ["lider","anjo","imune","emparedado","batevolta","eliminado","capitao","bonus"].forEach(campo=>{
-                    if(p[campo] && g[campo] && p[campo] === g[campo]) pontosSemana++;
-                });
-                acumulado += pontosSemana;
-                dataSet.push(acumulativo ? acumulado : pontosSemana);
-            } else dataSet.push(0);
-        });
-
-        datasets.push({
-            label: palpiteirosMap[pid],
-            data: dataSet,
-            fill: false,
-            borderColor: '#' + Math.floor(Math.random()*16777215).toString(16),
-            tension:0.1
-        });
-    });
-
-    new Chart(ctx,{
-        type:"line",
-        data:{
-            labels:[...new Set(palpites.map(p=>p.semana))].sort((a,b)=>a-b),
-            datasets
-        },
-        options:{
-            responsive:true,
-            plugins:{
-                legend:{ position:"top" },
-                title:{ display:true, text:"Pontuação por semana" }
-            }
+    const labels = Object.keys(pontuacoes).map(id=>palpiteirosMap[id]||'-');
+    const data = Object.values(pontuacoes);
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Pontuação',
+                data,
+                backgroundColor: 'rgba(75, 192, 192, 0.5)'
+            }]
         }
     });
 }
 
 document.getElementById("filtrar").addEventListener("click", carregarRanking);
 
-// Carregar mapas e ranking inicial
-(async ()=>{
-    await carregarMapas();
-    await carregarRanking();
-})();
+// Inicialização
+carregarMapas().then(carregarRanking);
