@@ -36,11 +36,10 @@ async function atualizarRanking() {
   const palpiteiroFiltro = document.getElementById("ranking-palpiteiro").value;
   const acumulativo = document.getElementById("ranking-acumulativo").checked;
 
-  // buscar palpites
   let query = supabase.from("palpites").select("*");
   if (palpiteiroFiltro) query = query.eq("palpiteiro_id", palpiteiroFiltro);
   if (semanaFiltro) {
-    if (acumulativo) query = query.lte("semana", semanaFiltro);
+    if (acumulativo) query = query.lte("semana", semanaFiltro); // acumulativo até semana
     else query = query.eq("semana", semanaFiltro);
   }
 
@@ -48,7 +47,9 @@ async function atualizarRanking() {
   if (error) return console.error(error);
 
   // buscar pontuação
-  const { data: pontosData } = await supabase.from("pontuacao").select("*");
+  const { data: pontosData, error: pontosError } = await supabase.from("pontuacao").select("*");
+  if (pontosError) return console.error(pontosError);
+
   const PONTOS = {};
   (pontosData || []).forEach(p => PONTOS[p.evento] = p.pontos);
 
