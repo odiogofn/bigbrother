@@ -3,201 +3,216 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gigant Brother - Área do Palpiteiro</title>
+<title>Gigant Brother - Palpiteiro</title>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
-<script src="supabase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="supabase.js"></script>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-50 font-sans">
 
-<div class="max-w-7xl mx-auto p-4">
+<div class="min-h-screen flex flex-col">
 
-  <h1 class="text-3xl font-bold text-center mb-6 text-indigo-600">Gigant Brother - Área do Palpiteiro</h1>
+  <!-- Header -->
+  <header class="bg-green-600 text-white p-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">Gigant Brother - Área do Palpiteiro</h1>
+    <button id="logoutBtn" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600 hidden">Logout</button>
+  </header>
 
-  <!-- Login Palpiteiro -->
-  <div id="login-section" class="max-w-md mx-auto bg-white p-6 rounded shadow">
-    <h2 class="text-xl font-semibold mb-4">Login</h2>
-    <form id="login-form" class="space-y-4">
-      <input type="text" id="palpiteiro-nome-login" placeholder="Nome" class="w-full p-2 border rounded">
-      <input type="date" id="palpiteiro-nascimento-login" placeholder="Data de Nascimento" class="w-full p-2 border rounded">
-      <button type="submit" class="w-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">Entrar</button>
-      <p id="login-error" class="text-red-500 hidden">Nome ou data de nascimento incorretos.</p>
+  <!-- Login -->
+  <div id="loginDiv" class="flex flex-col justify-center items-center flex-1">
+    <h2 class="text-2xl font-semibold mb-4 text-green-600">Login Palpiteiro</h2>
+    <form id="loginForm" class="bg-white p-6 rounded shadow-md w-80 flex flex-col gap-4">
+      <input type="text" id="nomePalpiteiroLogin" placeholder="Nome" class="border px-3 py-2 rounded" required>
+      <input type="date" id="nascimentoPalpiteiroLogin" placeholder="Data de Nascimento" class="border px-3 py-2 rounded" required>
+      <button type="submit" class="bg-green-600 text-white py-2 rounded hover:bg-green-700">Entrar</button>
+      <div id="loginError" class="text-red-500 text-sm hidden">Nome ou data de nascimento incorretos</div>
     </form>
   </div>
 
-  <!-- Área do Palpiteiro -->
-  <div id="palpiteiro-dashboard" class="hidden">
+  <!-- Dashboard -->
+  <div id="dashboardDiv" class="hidden flex-1 flex flex-col p-6">
 
-    <div class="bg-white p-6 rounded shadow mb-4">
-      <h2 class="text-xl font-semibold mb-4">Enviar Palpite</h2>
-      <form id="palpite-form" class="space-y-3">
+    <nav class="bg-white shadow flex space-x-2 p-2 mb-4">
+      <button class="tabBtn bg-green-100 px-4 py-2 rounded" data-tab="fazerPalpite">Fazer Palpite</button>
+      <button class="tabBtn bg-green-100 px-4 py-2 rounded" data-tab="historico">Histórico</button>
+      <button class="tabBtn bg-green-100 px-4 py-2 rounded" data-tab="ranking">Ranking</button>
+    </nav>
 
-        <input type="number" id="palpite-semana" placeholder="Semana" class="w-32 p-2 border rounded">
+    <!-- Conteúdo das abas -->
+    <div class="flex-1 overflow-auto">
 
-        <div>
-          <label>Líder(es):</label>
-          <select id="palpite-lider" multiple class="w-full border p-2 rounded"></select>
-        </div>
+      <!-- Fazer Palpite -->
+      <div id="fazerPalpite" class="tabContent hidden">
+        <h2 class="text-xl font-semibold mb-4">Enviar Palpite - Semana</h2>
+        <form id="formPalpite" class="space-y-4 bg-white p-4 rounded shadow-md">
 
-        <div>
-          <label>Anjo(s):</label>
-          <select id="palpite-anjo" multiple class="w-full border p-2 rounded"></select>
-        </div>
+          <input type="number" id="semanaPalpite" placeholder="Semana" class="border px-3 py-2 rounded w-32" required>
 
-        <div>
-          <label>Imune(s):</label>
-          <select id="palpite-imune" multiple class="w-full border p-2 rounded"></select>
-        </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <select id="liderPalpite" multiple class="border px-3 py-2 rounded" required></select>
+            <select id="anjoPalpite" multiple class="border px-3 py-2 rounded"></select>
+            <select id="imunePalpite" multiple class="border px-3 py-2 rounded"></select>
+            <select id="emparedadosPalpite" multiple class="border px-3 py-2 rounded"></select>
+            <select id="batevoltaPalpite" multiple class="border px-3 py-2 rounded"></select>
+            <select id="eliminadosPalpite" multiple class="border px-3 py-2 rounded"></select>
+          </div>
 
-        <div>
-          <label>Emparedado(s):</label>
-          <select id="palpite-emparedado" multiple class="w-full border p-2 rounded"></select>
-        </div>
+          <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">Enviar Palpite</button>
+        </form>
+      </div>
 
-        <div>
-          <label>Bate-Volta(s):</label>
-          <select id="palpite-batevolta" multiple class="w-full border p-2 rounded"></select>
-        </div>
+      <!-- Histórico -->
+      <div id="historico" class="tabContent hidden">
+        <h2 class="text-xl font-semibold mb-4">Histórico de Pontos</h2>
+        <div id="historicoList" class="bg-white p-4 rounded shadow-md space-y-2"></div>
+      </div>
 
-        <div>
-          <label>Eliminado(s):</label>
-          <select id="palpite-eliminado" multiple class="w-full border p-2 rounded"></select>
-        </div>
+      <!-- Ranking -->
+      <div id="ranking" class="tabContent hidden">
+        <h2 class="text-xl font-semibold mb-4">Ranking Geral</h2>
+        <canvas id="rankingChart" class="bg-white p-4 rounded shadow-md"></canvas>
+      </div>
 
-        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Enviar Palpite</button>
-      </form>
     </div>
-
-    <!-- Histórico e Pontuação -->
-    <div class="bg-white p-6 rounded shadow mb-4">
-      <h2 class="text-xl font-semibold mb-4">Histórico de Palpites</h2>
-      <div id="historico-palpiteiros"></div>
-    </div>
-
-    <!-- Gráfico -->
-    <div class="bg-white p-6 rounded shadow">
-      <h2 class="text-xl font-semibold mb-4">Evolução de Pontos</h2>
-      <canvas id="grafico-evolucao"></canvas>
-    </div>
-
-    <!-- Ranking -->
-    <div class="bg-white p-6 rounded shadow mt-4">
-      <h2 class="text-xl font-semibold mb-4">Ranking Geral</h2>
-      <div id="ranking-list"></div>
-    </div>
-
   </div>
 
 </div>
 
 <script>
-let palpiteiroAtual = null;
+const loginDiv = document.getElementById('loginDiv');
+const dashboardDiv = document.getElementById('dashboardDiv');
+const logoutBtn = document.getElementById('logoutBtn');
 
-// login palpiteiro
-document.getElementById('login-form').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const nome = document.getElementById('palpiteiro-nome-login').value;
-  const nascimento = document.getElementById('palpiteiro-nascimento-login').value;
+const loginForm = document.getElementById('loginForm');
+let usuarioLogado = null;
 
-  const { data, error } = await supabase.from('palpiteiros')
-    .select('*')
-    .eq('nome', nome)
-    .eq('nascimento', nascimento)
-    .single();
-
-  if(data){
-    palpiteiroAtual = data;
-    document.getElementById('login-section').classList.add('hidden');
-    document.getElementById('palpiteiro-dashboard').classList.remove('hidden');
-    carregarParticipantes();
-    carregarHistorico();
-    carregarRanking();
-  } else {
-    document.getElementById('login-error').classList.remove('hidden');
-  }
+// Tabs
+document.querySelectorAll('.tabBtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabContent').forEach(tc=>tc.classList.add('hidden'));
+    const tab = btn.dataset.tab;
+    document.getElementById(tab).classList.remove('hidden');
+  });
 });
 
-// carregar participantes para selects
-async function carregarParticipantes(){
-  const { data } = await supabase.from('participantes').select('*');
-  const campos = ['lider','anjo','imune','emparedado','batevolta','eliminado'];
-  campos.forEach(c=>{
-    const sel = document.getElementById('palpite-'+c);
-    sel.innerHTML='';
-    data.forEach(p=>{
-      const option = document.createElement('option');
-      option.value = p.id;
-      option.textContent = p.nome;
-      sel.appendChild(option);
-    });
-  });
-}
-
-// enviar palpite
-document.getElementById('palpite-form').addEventListener('submit', async e=>{
+// Login Palpiteiro
+loginForm.addEventListener('submit', async e=>{
   e.preventDefault();
-  const semana = parseInt(document.getElementById('palpite-semana').value);
-  const palpite = {
-    palpiteiro_id: palpiteiroAtual.id,
-    semana,
-    lider: Array.from(document.getElementById('palpite-lider').selectedOptions).map(o=>parseInt(o.value)),
-    anjo: Array.from(document.getElementById('palpite-anjo').selectedOptions).map(o=>parseInt(o.value)),
-    imune: Array.from(document.getElementById('palpite-imune').selectedOptions).map(o=>parseInt(o.value)),
-    emparedados: Array.from(document.getElementById('palpite-emparedado').selectedOptions).map(o=>parseInt(o.value)),
-    bate_volta: Array.from(document.getElementById('palpite-batevolta').selectedOptions).map(o=>parseInt(o.value)),
-    eliminados: Array.from(document.getElementById('palpite-eliminado').selectedOptions).map(o=>parseInt(o.value)),
-    criado_em: new Date()
-  };
-  await supabase.from('palpites').insert([palpite]);
-  alert('Palpite enviado!');
-  document.getElementById('palpite-form').reset();
+  const nome = document.getElementById('nomePalpiteiroLogin').value.trim();
+  const nascimento = document.getElementById('nascimentoPalpiteiroLogin').value;
+
+  let { data, error } = await supabase.from('palpiteiros')
+    .select('*')
+    .eq('nome', nome)
+    .eq('data_nascimento', nascimento)
+    .single();
+
+  if(error || !data){
+    document.getElementById('loginError').classList.remove('hidden');
+    return;
+  }
+
+  usuarioLogado = data;
+  loginDiv.classList.add('hidden');
+  dashboardDiv.classList.remove('hidden');
+  logoutBtn.classList.remove('hidden');
+
+  carregarParticipantes();
   carregarHistorico();
   carregarRanking();
 });
 
-// histórico
-async function carregarHistorico(){
-  const { data } = await supabase.from('palpites').select('*')
-    .eq('palpiteiro_id', palpiteiroAtual.id)
-    .order('semana', { ascending:true });
-  const div = document.getElementById('historico-palpiteiros');
-  div.innerHTML='';
-  data.forEach(p=>{
-    const d = document.createElement('div');
-    d.className='border-b p-2';
-    d.textContent = `Semana ${p.semana}: L: ${p.lider.length}, A: ${p.anjo.length}, I: ${p.imune.length}, E: ${p.emparedados.length}, BV: ${p.bate_volta.length}, EL: ${p.eliminados.length}`;
-    div.appendChild(d);
-  });
+// Logout
+logoutBtn.addEventListener('click', ()=>{
+  dashboardDiv.classList.add('hidden');
+  loginDiv.classList.remove('hidden');
+  logoutBtn.classList.add('hidden');
+  loginForm.reset();
+});
 
-  // gráfico
-  const ctx = document.getElementById('grafico-evolucao').getContext('2d');
-  const labels = data.map(p=>'Semana '+p.semana);
-  const pontos = data.map(p=>p.pontos || 0);
-  new Chart(ctx, {
-    type:'line',
+// Carregar participantes disponíveis
+async function carregarParticipantes(){
+  const selects = ['liderPalpite','anjoPalpite','imunePalpite','emparedadosPalpite','batevoltaPalpite','eliminadosPalpite'];
+  let { data: participantes } = await supabase.from('participantes').select('id,nome').eq('ativo', true);
+  selects.forEach(sel=>{
+    const s = document.getElementById(sel);
+    s.innerHTML = '';
+    participantes.forEach(p=>{
+      const opt = document.createElement('option');
+      opt.value = p.nome;
+      opt.textContent = p.nome;
+      s.appendChild(opt);
+    });
+  });
+}
+
+// Enviar palpite
+document.getElementById('formPalpite').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const semana = parseInt(document.getElementById('semanaPalpite').value);
+  const palpite = {
+    semana,
+    palpiteiro_id: usuarioLogado.id,
+    lider: Array.from(document.getElementById('liderPalpite').selectedOptions).map(o=>o.value),
+    anjo: Array.from(document.getElementById('anjoPalpite').selectedOptions).map(o=>o.value),
+    imune: Array.from(document.getElementById('imunePalpite').selectedOptions).map(o=>o.value),
+    emparedados: Array.from(document.getElementById('emparedadosPalpite').selectedOptions).map(o=>o.value),
+    bate_volta: Array.from(document.getElementById('batevoltaPalpite').selectedOptions).map(o=>o.value),
+    eliminados: Array.from(document.getElementById('eliminadosPalpite').selectedOptions).map(o=>o.value)
+  };
+  let { error } = await supabase.from('palpites').insert([palpite]);
+  if(error){
+    alert('Erro ao enviar palpite');
+  } else {
+    alert('Palpite enviado com sucesso!');
+    document.getElementById('formPalpite').reset();
+    carregarHistorico();
+    carregarRanking();
+  }
+});
+
+// Histórico de palpites
+async function carregarHistorico(){
+  const { data } = await supabase.from('palpites')
+    .select('*, semana')
+    .eq('palpiteiro_id', usuarioLogado.id)
+    .order('semana', {ascending:true});
+
+  const container = document.getElementById('historicoList');
+  container.innerHTML = '';
+  if(!data) return;
+
+  data.forEach(p=>{
+    const div = document.createElement('div');
+    div.className = 'p-2 bg-gray-100 rounded';
+    div.innerHTML = `<strong>Semana ${p.semana}:</strong> Líder: ${p.lider.join(', ')}, Anjo: ${p.anjo.join(', ')}, Imune: ${p.imune.join(', ')}, Emparedado: ${p.emparedados.join(', ')}, Bate Volta: ${p.bate_volta.join(', ')}, Eliminado: ${p.eliminados.join(', ')}`;
+    container.appendChild(div);
+  });
+}
+
+// Ranking geral
+async function carregarRanking(){
+  const { data } = await supabase.rpc('ranking_palpiteiros');
+  if(!data) return;
+
+  const ctx = document.getElementById('rankingChart').getContext('2d');
+  const labels = data.map(d=>d.nome);
+  const pontos = data.map(d=>d.pontos);
+  if(window.rankingChart) window.rankingChart.destroy();
+  window.rankingChart = new Chart(ctx,{
+    type:'bar',
     data:{
       labels,
       datasets:[{
         label:'Pontos',
         data:pontos,
-        borderColor:'rgba(99,102,241,1)',
-        backgroundColor:'rgba(99,102,241,0.2)',
-        tension:0.3
+        backgroundColor:'rgba(34,197,94,0.7)'
       }]
     },
-    options:{responsive:true,plugins:{legend:{display:true}}}
-  });
-}
-
-// ranking geral
-async function carregarRanking(){
-  const { data } = await supabase.from('palpiteiros').select('*').order('pontos',{ascending:false});
-  const div = document.getElementById('ranking-list');
-  div.innerHTML='';
-  data.forEach((p,i)=>{
-    const d = document.createElement('div');
-    d.textContent = `${i+1} - ${p.nome} - ${p.pontos || 0} pts`;
-    div.appendChild(d);
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}}
+    }
   });
 }
 </script>

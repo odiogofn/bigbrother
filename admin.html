@@ -3,234 +3,139 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gigant Brother - Painel Admin</title>
+<title>Gigant Brother - Admin</title>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
-<script src="supabase.js"></script> <!-- arquivo separado -->
+<script src="supabase.js"></script>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-50 font-sans">
 
-<div class="max-w-7xl mx-auto p-4">
+<div class="min-h-screen flex flex-col">
 
-  <h1 class="text-3xl font-bold text-center mb-6 text-indigo-600">Gigant Brother - Painel Admin</h1>
+  <!-- Header -->
+  <header class="bg-indigo-600 text-white p-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">Gigant Brother - Admin</h1>
+    <button id="logoutBtn" class="bg-red-500 px-4 py-2 rounded hover:bg-red-600 hidden">Logout</button>
+  </header>
 
-  <!-- Login Admin -->
-  <div id="login-section" class="max-w-md mx-auto bg-white p-6 rounded shadow">
-    <h2 class="text-xl font-semibold mb-4">Login Admin</h2>
-    <form id="login-form" class="space-y-4">
-      <input type="text" id="admin-username" placeholder="Usuário" class="w-full p-2 border rounded">
-      <input type="password" id="admin-password" placeholder="Senha" class="w-full p-2 border rounded">
-      <button type="submit" class="w-full bg-indigo-600 text-white p-2 rounded hover:bg-indigo-700">Entrar</button>
-      <p id="login-error" class="text-red-500 hidden">Usuário ou senha incorretos.</p>
+  <!-- Login -->
+  <div id="loginDiv" class="flex flex-col justify-center items-center flex-1">
+    <h2 class="text-2xl font-semibold mb-4 text-indigo-600">Login Admin</h2>
+    <form id="loginForm" class="bg-white p-6 rounded shadow-md w-80 flex flex-col gap-4">
+      <input type="text" id="adminUser" placeholder="Usuário" class="border px-3 py-2 rounded" required>
+      <input type="password" id="adminPass" placeholder="Senha" class="border px-3 py-2 rounded" required>
+      <button type="submit" class="bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">Entrar</button>
+      <div id="loginError" class="text-red-500 text-sm hidden">Usuário ou senha incorretos</div>
     </form>
   </div>
 
-  <!-- Dashboard Admin -->
-  <div id="dashboard" class="hidden">
-
-    <!-- Abas -->
-    <div class="flex mb-4 space-x-2">
-      <button class="tab-btn bg-indigo-500 text-white px-4 py-2 rounded" data-tab="participantes">Participantes</button>
-      <button class="tab-btn bg-gray-200 px-4 py-2 rounded" data-tab="palpiteiros">Palpiteiros</button>
-      <button class="tab-btn bg-gray-200 px-4 py-2 rounded" data-tab="gabarito">Gabarito</button>
-      <button class="tab-btn bg-gray-200 px-4 py-2 rounded" data-tab="ranking">Ranking</button>
-    </div>
+  <!-- Dashboard -->
+  <div id="dashboardDiv" class="hidden flex-1 flex flex-col">
+    <!-- Tabs -->
+    <nav class="bg-white shadow flex space-x-2 p-2">
+      <button class="tabBtn bg-indigo-100 px-4 py-2 rounded" data-tab="participantes">Participantes</button>
+      <button class="tabBtn bg-indigo-100 px-4 py-2 rounded" data-tab="palpiteiros">Palpiteiros</button>
+      <button class="tabBtn bg-indigo-100 px-4 py-2 rounded" data-tab="gabarito">Gabarito</button>
+      <button class="tabBtn bg-indigo-100 px-4 py-2 rounded" data-tab="pontuacao">Pontuação</button>
+    </nav>
 
     <!-- Conteúdo das abas -->
-    <div id="tab-content">
+    <div class="p-6 flex-1 overflow-auto">
 
       <!-- Participantes -->
-      <div id="participantes" class="tab-content bg-white p-6 rounded shadow">
+      <div id="participantes" class="tabContent hidden">
         <h2 class="text-xl font-semibold mb-4">Gerenciar Participantes</h2>
-        <form id="add-participante" class="mb-4 flex space-x-2">
-          <input type="text" id="participante-nome" placeholder="Nome do participante" class="flex-1 p-2 border rounded">
-          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Adicionar</button>
+        <form id="formParticipante" class="flex gap-2 mb-4">
+          <input type="text" id="nomeParticipante" placeholder="Nome do participante" class="border px-3 py-2 rounded flex-1" required>
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Adicionar</button>
         </form>
-        <ul id="participante-list" class="space-y-2"></ul>
+        <div id="listaParticipantes" class="space-y-2"></div>
       </div>
 
       <!-- Palpiteiros -->
-      <div id="palpiteiros" class="tab-content hidden bg-white p-6 rounded shadow">
+      <div id="palpiteiros" class="tabContent hidden">
         <h2 class="text-xl font-semibold mb-4">Gerenciar Palpiteiros</h2>
-        <form id="add-palpiteiro" class="mb-4 flex space-x-2">
-          <input type="text" id="palpiteiro-nome" placeholder="Nome do palpiteiro" class="flex-1 p-2 border rounded">
-          <input type="date" id="palpiteiro-nascimento" class="p-2 border rounded">
-          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Adicionar</button>
+        <form id="formPalpiteiro" class="flex gap-2 mb-4">
+          <input type="text" id="nomePalpiteiro" placeholder="Nome" class="border px-3 py-2 rounded flex-1" required>
+          <input type="date" id="nascimentoPalpiteiro" placeholder="Data de Nascimento" class="border px-3 py-2 rounded" required>
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Adicionar</button>
         </form>
-        <ul id="palpiteiro-list" class="space-y-2"></ul>
+        <div id="listaPalpiteiros" class="space-y-2"></div>
       </div>
 
-      <!-- Gabarito -->
-      <div id="gabarito" class="tab-content hidden bg-white p-6 rounded shadow">
-        <h2 class="text-xl font-semibold mb-4">Cadastrar Gabarito da Semana</h2>
-        <form id="gabarito-form" class="space-y-3">
-          <input type="number" id="gabarito-semana" placeholder="Semana" class="w-32 p-2 border rounded">
-          
-          <div>
-            <label>Líder(es):</label>
-            <select id="gabarito-lider" multiple class="w-full border p-2 rounded"></select>
+      <!-- Gabarito da Semana -->
+      <div id="gabarito" class="tabContent hidden">
+        <h2 class="text-xl font-semibold mb-4">Gabarito da Semana</h2>
+        <form id="formGabarito" class="space-y-4">
+          <input type="number" id="semanaGabarito" placeholder="Semana" class="border px-3 py-2 rounded w-32" required>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" id="liderGabarito" placeholder="Líder(s) separados por vírgula" class="border px-3 py-2 rounded">
+            <input type="text" id="anjoGabarito" placeholder="Anjo(s) separados por vírgula" class="border px-3 py-2 rounded">
+            <input type="text" id="imuneGabarito" placeholder="Imune(s) separados por vírgula" class="border px-3 py-2 rounded">
+            <input type="text" id="emparedadosGabarito" placeholder="Emparedado(s) separados por vírgula" class="border px-3 py-2 rounded">
+            <input type="text" id="batevoltaGabarito" placeholder="Bate Volta(s) separados por vírgula" class="border px-3 py-2 rounded">
+            <input type="text" id="eliminadosGabarito" placeholder="Eliminado(s) separados por vírgula" class="border px-3 py-2 rounded">
           </div>
-
-          <div>
-            <label>Anjo(s):</label>
-            <select id="gabarito-anjo" multiple class="w-full border p-2 rounded"></select>
-          </div>
-
-          <div>
-            <label>Imune(s):</label>
-            <select id="gabarito-imune" multiple class="w-full border p-2 rounded"></select>
-          </div>
-
-          <div>
-            <label>Emparedado(s):</label>
-            <select id="gabarito-emparedado" multiple class="w-full border p-2 rounded"></select>
-          </div>
-
-          <div>
-            <label>Bate-Volta(s):</label>
-            <select id="gabarito-batevolta" multiple class="w-full border p-2 rounded"></select>
-          </div>
-
-          <div>
-            <label>Eliminado(s):</label>
-            <select id="gabarito-eliminado" multiple class="w-full border p-2 rounded"></select>
-          </div>
-
-          <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Salvar Gabarito</button>
+          <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">Salvar Gabarito</button>
         </form>
       </div>
 
-      <!-- Ranking -->
-      <div id="ranking" class="tab-content hidden bg-white p-6 rounded shadow">
-        <h2 class="text-xl font-semibold mb-4">Ranking Geral</h2>
-        <div id="ranking-list" class="space-y-2"></div>
-        <canvas id="ranking-chart" class="mt-4"></canvas>
+      <!-- Pontuação -->
+      <div id="pontuacao" class="tabContent hidden">
+        <h2 class="text-xl font-semibold mb-4">Pontuação</h2>
+        <form id="formPontuacao" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input type="number" id="ptsLider" placeholder="Pontos Líder" class="border px-3 py-2 rounded">
+          <input type="number" id="ptsAnjo" placeholder="Pontos Anjo" class="border px-3 py-2 rounded">
+          <input type="number" id="ptsImune" placeholder="Pontos Imune" class="border px-3 py-2 rounded">
+          <input type="number" id="ptsEmparedado" placeholder="Pontos Emparedado" class="border px-3 py-2 rounded">
+          <input type="number" id="ptsBatevolta" placeholder="Pontos Bate Volta" class="border px-3 py-2 rounded">
+          <input type="number" id="ptsEliminado" placeholder="Pontos Eliminado" class="border px-3 py-2 rounded">
+          <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 col-span-full">Salvar Pontuação</button>
+        </form>
       </div>
 
     </div>
-
   </div>
+
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-let adminUser = 'admin';
-let adminPass = 'admin';
+// LOGIN SIMPLES
+const loginDiv = document.getElementById('loginDiv');
+const dashboardDiv = document.getElementById('dashboardDiv');
+const logoutBtn = document.getElementById('logoutBtn');
+const loginForm = document.getElementById('loginForm');
 
-// abas
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.replace('bg-indigo-500','bg-gray-200'));
-    btn.classList.replace('bg-gray-200','bg-indigo-500');
+loginForm.addEventListener('submit', e=>{
+  e.preventDefault();
+  const user = document.getElementById('adminUser').value;
+  const pass = document.getElementById('adminPass').value;
+  if(user==='admin' && pass==='admin'){
+    loginDiv.classList.add('hidden');
+    dashboardDiv.classList.remove('hidden');
+    logoutBtn.classList.remove('hidden');
+  } else {
+    document.getElementById('loginError').classList.remove('hidden');
+  }
+});
+
+logoutBtn.addEventListener('click', ()=>{
+  dashboardDiv.classList.add('hidden');
+  loginDiv.classList.remove('hidden');
+  logoutBtn.classList.add('hidden');
+  loginForm.reset();
+});
+
+// TABS
+document.querySelectorAll('.tabBtn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabContent').forEach(tc=>tc.classList.add('hidden'));
     const tab = btn.dataset.tab;
-    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
     document.getElementById(tab).classList.remove('hidden');
   });
 });
 
-// login
-document.getElementById('login-form').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const user = document.getElementById('admin-username').value;
-  const pass = document.getElementById('admin-password').value;
-  if(user === adminUser && pass === adminPass){
-    document.getElementById('login-section').classList.add('hidden');
-    document.getElementById('dashboard').classList.remove('hidden');
-    carregarParticipantes();
-    carregarPalpiteiros();
-    carregarGabaritoSelects();
-    carregarRanking();
-  } else {
-    document.getElementById('login-error').classList.remove('hidden');
-  }
-});
-
-// Funções para carregar e salvar dados via Supabase
-async function carregarParticipantes(){
-  const { data } = await supabase.from('participantes').select('*');
-  const ul = document.getElementById('participante-list');
-  ul.innerHTML = '';
-  data.forEach(p => {
-    const li = document.createElement('li');
-    li.textContent = `${p.id} - ${p.nome}`;
-    ul.appendChild(li);
-  });
-}
-
-document.getElementById('add-participante').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const nome = document.getElementById('participante-nome').value;
-  await supabase.from('participantes').insert([{nome, ativo:true}]);
-  document.getElementById('participante-nome').value='';
-  carregarParticipantes();
-});
-
-async function carregarPalpiteiros(){
-  const { data } = await supabase.from('palpiteiros').select('*');
-  const ul = document.getElementById('palpiteiro-list');
-  ul.innerHTML='';
-  data.forEach(p=>{
-    const li = document.createElement('li');
-    li.textContent = `${p.id} - ${p.nome}`;
-    ul.appendChild(li);
-  });
-}
-
-document.getElementById('add-palpiteiro').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const nome = document.getElementById('palpiteiro-nome').value;
-  const nascimento = document.getElementById('palpiteiro-nascimento').value;
-  await supabase.from('palpiteiros').insert([{nome, nascimento}]);
-  document.getElementById('palpiteiro-nome').value='';
-  document.getElementById('palpiteiro-nascimento').value='';
-  carregarPalpiteiros();
-});
-
-// Gabarito
-async function carregarGabaritoSelects(){
-  const { data } = await supabase.from('participantes').select('*');
-  const campos = ['lider','anjo','imune','emparedado','batevolta','eliminado'];
-  campos.forEach(c=>{
-    const sel = document.getElementById('gabarito-'+c);
-    sel.innerHTML='';
-    data.forEach(p=>{
-      const option = document.createElement('option');
-      option.value=p.id;
-      option.textContent=p.nome;
-      sel.appendChild(option);
-    });
-  });
-}
-
-document.getElementById('gabarito-form').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const semana = parseInt(document.getElementById('gabarito-semana').value);
-  const gabarito = {
-    semana,
-    lider: Array.from(document.getElementById('gabarito-lider').selectedOptions).map(o=>parseInt(o.value)),
-    anjo: Array.from(document.getElementById('gabarito-anjo').selectedOptions).map(o=>parseInt(o.value)),
-    imune: Array.from(document.getElementById('gabarito-imune').selectedOptions).map(o=>parseInt(o.value)),
-    emparedados: Array.from(document.getElementById('gabarito-emparedado').selectedOptions).map(o=>parseInt(o.value)),
-    bate_volta: Array.from(document.getElementById('gabarito-batevolta').selectedOptions).map(o=>parseInt(o.value)),
-    eliminados: Array.from(document.getElementById('gabarito-eliminado').selectedOptions).map(o=>parseInt(o.value)),
-    criado_em: new Date()
-  };
-  await supabase.from('gabaritos').insert([gabarito]);
-  alert('Gabarito salvo!');
-  document.getElementById('gabarito-form').reset();
-});
-
-// Ranking
-async function carregarRanking(){
-  // Exemplo simples: total de pontos por palpiteiro
-  const { data } = await supabase.from('palpiteiros').select('*');
-  const rankingDiv = document.getElementById('ranking-list');
-  rankingDiv.innerHTML='';
-  data.forEach((p,i)=>{
-    const div = document.createElement('div');
-    div.textContent = `${i+1} - ${p.nome} - ${p.pontos || 0} pts`;
-    rankingDiv.appendChild(div);
-  });
-}
+// Aqui entraremos com integração Supabase
+// Funções para listar e cadastrar participantes, palpiteiros, gabarito e pontuação
 </script>
 
 </body>
