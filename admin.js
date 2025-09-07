@@ -185,22 +185,45 @@ document.getElementById('btn-salvar-pontuacao').addEventListener('click', async 
 // ==========================
 const statusEnvio = document.getElementById('status-envio');
 
+// 🔹 Carregar status atual da configuração
 async function carregarConfiguracao() {
-    const { data, error } = await supabase.from('configuracao').select('*').limit(1);
-    if (error) return alert(error.message);
-    const config = data[0];
-    if (config) {
-        statusEnvio.dataset.permitido = config.permitir_envio;
-        statusEnvio.textContent = 'Envio de Palpites: ' + (config.permitir_envio ? 'Liberado' : 'Fechado');
+    const { data, error } = await supabase
+        .from('configuracao')
+        .select('id, permitir_envio')
+        .eq('id', 1)
+        .single();
+
+    if (error) {
+        console.error("Erro ao buscar configuração:", error.message);
+        statusEnvio.dataset.permitido = false;
+        statusEnvio.textContent = 'Envio de Palpites: Fechado';
+        return;
     }
+
+    statusEnvio.dataset.permitido = data.permitir_envio;
+    statusEnvio.textContent =
+        'Envio de Palpites: ' + (data.permitir_envio ? 'Liberado' : 'Fechado');
 }
 
+// 🔹 Botão alternar status
 document.getElementById('btn-alternar-envio').addEventListener('click', async () => {
     const permitido = statusEnvio.dataset.permitido === 'true' ? false : true;
-    const { error } = await supabase.from('configuracao').upsert({ id:1, permitir_envio: permitido }, { onConflict:'id' });
-    if (error) return alert(error.message);
+
+    const { error } = await supabase
+        .from('configuracao')
+        .upsert(
+            [{ id: 1, permitir_envio: permitido }],
+            { onConflict: ["id"] }
+        );
+
+    if (error) {
+        alert("Erro ao salvar configuração: " + error.message);
+        return;
+    }
+
     statusEnvio.dataset.permitido = permitido;
-    statusEnvio.textContent = 'Envio de Palpites: ' + (permitido ? 'Liberado' : 'Fechado');
+    statusEnvio.textContent =
+        'Envio de Palpites: ' + (permitido ? 'Liberado' : 'Fechado');
 });
 
 // ==========================

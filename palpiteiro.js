@@ -57,21 +57,31 @@ async function carregarParticipantes() {
 
 // ---------- CARREGAR CONFIGURAÇÃO ----------
 async function carregarConfiguracao() {
-const { data, error } = await supabase.from("configuracao").select("*").limit(1);
+    try {
+        const { data, error } = await supabase
+            .from("configuracao")
+            .select("permitir_envio")
+            .eq("id", 1)   // sempre pega a linha de id 1
+            .single();      // garante que retorna apenas 1 objeto
 
-if (error) {
-  console.error("Erro ao buscar configuração:", error.message);
-  // mantém o último estado, não bloqueia à toa
-  return;
-}
+        if (error) {
+            console.error("Erro ao buscar configuração:", error.message);
+            PERMITIR_ENVIO = true; // fallback: deixa enviar
+            return;
+        }
 
-if (!data || data.length === 0) {
-  console.warn("Nenhuma configuração encontrada, mantendo envio ativo por padrão");
-  PERMITIR_ENVIO = true; // deixa liberado se não tiver config
-  return;
-}
+        if (!data) {
+            console.warn("Nenhuma configuração encontrada, mantendo envio ativo por padrão");
+            PERMITIR_ENVIO = true; // fallback seguro
+            return;
+        }
 
-PERMITIR_ENVIO = Boolean(data[0].permitir_envio);
+        PERMITIR_ENVIO = Boolean(data.permitir_envio);
+
+    } catch (err) {
+        console.error("Erro inesperado ao carregar configuração:", err);
+        PERMITIR_ENVIO = true; // fallback seguro
+    }
 }
 
 // ---------- ENVIAR PALPITE ----------
