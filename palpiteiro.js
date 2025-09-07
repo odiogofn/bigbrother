@@ -57,12 +57,21 @@ async function carregarParticipantes() {
 
 // ---------- CARREGAR CONFIGURAÇÃO ----------
 async function carregarConfiguracao() {
-  const { data, error } = await supabase.from("configuracao").select("*").limit(1);
-  if (error || !data || data.length === 0) {
-    PERMITIR_ENVIO = false;
-    return;
-  }
-  PERMITIR_ENVIO = !!data[0].permitir_envio;
+const { data, error } = await supabase.from("configuracao").select("*").limit(1);
+
+if (error) {
+  console.error("Erro ao buscar configuração:", error.message);
+  // mantém o último estado, não bloqueia à toa
+  return;
+}
+
+if (!data || data.length === 0) {
+  console.warn("Nenhuma configuração encontrada, mantendo envio ativo por padrão");
+  PERMITIR_ENVIO = true; // deixa liberado se não tiver config
+  return;
+}
+
+PERMITIR_ENVIO = Boolean(data[0].permitir_envio);
 }
 
 // ---------- ENVIAR PALPITE ----------
