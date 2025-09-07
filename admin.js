@@ -292,28 +292,44 @@ window.salvarGabarito = async (semana) => {
 const tabelaPalpitesEnviados = document.getElementById('tabela-palpites-enviados');
 
 async function carregarPalpitesEnviados() {
-    const { data, error } = await supabase.from('palpites').select(`
+    // Pega todos os palpites
+    const { data: palpites, error } = await supabase.from('palpites').select(`
         semana, palpiteiro_id, lider, anjo, imune, emparedado, batevolta, eliminado, capitao, bonus
     `);
     if (error) return alert(error.message);
 
+    // Pega todos os palpiteiros
     const { data: palpiteiros } = await supabase.from('palpiteiros').select('*');
+    if (!palpiteiros) return alert("Erro ao carregar palpiteiros");
+
+    // Pega todos os participantes (para substituir os IDs pelo nome)
+    const { data: participantes } = await supabase.from('participantes').select('*');
+    if (!participantes) return alert("Erro ao carregar participantes");
 
     tabelaPalpitesEnviados.innerHTML = '';
+
     const thead = document.createElement('thead');
     thead.innerHTML = `<tr>
-        <th>Semana</th><th>Palpiteiro</th>${categorias.map(c=>`<th>${c}</th>`).join('')}
+        <th>Semana</th><th>Palpiteiro</th>${categorias.map(c => `<th>${c}</th>`).join('')}
     </tr>`;
     tabelaPalpitesEnviados.appendChild(thead);
 
     const tbody = document.createElement('tbody');
-    data.forEach(p => {
+    palpites.forEach(p => {
         const pal = palpiteiros.find(pp => pp.id === p.palpiteiro_id);
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${p.semana}</td><td>${pal?pal.nome:'-'}</td>` +
-            categorias.map(c => `<td>${p[c.toLowerCase()]||''}</td>`).join('');
+
+        // Para cada categoria, substitui o ID pelo nome do participante
+        const colunas = categorias.map(c => {
+            const participanteId = p[c.toLowerCase()];
+            const participante = participantes.find(part => part.id === participanteId);
+            return `<td>${participante ? participante.nome : ''}</td>`;
+        }).join('');
+
+        tr.innerHTML = `<td>${p.semana}</td><td>${pal ? pal.nome : '-'}</td>${colunas}`;
         tbody.appendChild(tr);
     });
+
     tabelaPalpitesEnviados.appendChild(tbody);
 }
 
