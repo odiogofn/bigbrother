@@ -1,106 +1,116 @@
-// ranking.js (module)
-import { supabase } from './supabase.js'; // <- importa o cliente supabase
+async function carregarRanking() {
+  // Busca pontos já processados
+  const { data: pontuacoes, error } = await supabase
+    .from("pontuacao")
+    .select(`
+      semana, palpiteiro_id, pontos
+    `);
 
-const tabela = document.getElementById("tabela-ranking");
-const selectSemana = document.getElementById("semana-select");
-const btnFiltrar = document.getElementById("btn-filtrar");
-
-const categorias = ["lider","anjo","imune","emparedado","batevolta","eliminado","capitao","bonus"];
-
-async function carregarSemanas() {
-  const { data: gabaritos, error } = await supabase.from("gabarito").select("semana").order("semana", { ascending: true });
   if (error) {
-    console.error("Erro ao carregar semanas:", error.message);
+    console.error("Erro ao carregar pontuações:", error.message);
     return;
   }
-  selectSemana.innerHTML = "";
-  if (!gabaritos || gabaritos.length === 0) {
-    const opt = document.createElement("option"); opt.value = ""; opt.textContent = "Nenhuma semana";
-    selectSemana.appendChild(opt);
-    return;
-  }
-  gabaritos.forEach(g => {
+
+  const { data: palpiteiros } = await supabase.from("palpiteiros").select("*");
+
+  // Filtro de participante
+  const selectFiltro = document.getElementById("filtroParticipante");
+  selectFiltro.innerHTML = `<option value="">Todos</option>`;
+  palpiteiros.forEach(p => {
     const opt = document.createElement("option");
-    opt.value = String(g.semana);
-    opt.textContent = `Semana ${g.semana}`;
-    selectSemana.appendChild(opt);
-  });
-  selectSemana.value = String(gabaritos[gabaritos.length - 1].semana);
-}
-
-async function carregarRanking(limiteSemana = null) {
-  // busca dados
-  const [{ data: palpites, error: errPalpites }, 
-         { data: gabaritos, error: errGabarito },
-         { data: pontuacoes, error: errPontuacao },
-         { data: palpiteiros, error: errPalpiteiros }] = await Promise.all([
-    supabase.from("palpites").select("*"),
-    supabase.from("gabarito").select("*"),
-    supabase.from("pontuacao").select("*"),
-    supabase.from("palpiteiros").select("*")
-  ]);
-
-  if (errPalpites) return alert("Erro ao carregar palpites: " + errPalpites.message);
-  if (errGabarito) return alert("Erro ao carregar gabarito: " + errGabarito.message);
-  if (errPontuacao) return alert("Erro ao carregar pontuação: " + errPontuacao.message);
-  if (errPalpiteiros) return alert("Erro ao carregar palpiteiros: " + errPalpiteiros.message);
-
-  // normaliza pontuação (evento -> número)
-  const pontosConfig = {};
-  (pontuacoes || []).forEach(p => {
-    pontosConfig[String(p.evento).toLowerCase()] = Number(p.pontos || 0);
+    opt.value = p.id;
+    opt.textContent = p.nome;
+    selectFiltro.appendChild(opt);
   });
 
-  // ranking acumulado
-  const ranking = {};
+  function renderizarTabela(filtroId = "") {
+    const tabela = document.getElementById("tabela-ranking");
+    tabela.innerHTML = "";
 
-  (palpites || []).forEach(p => {
-    const semanaPalpite = Number(p.semana);
-    if (limiteSemana && semanaPalpite > limiteSemana) return;
+    const thead = document.createElement("thead");
+    thead.innerHTML = "<tr><th>Palpiteiro</th><th>Pontos</th></tr>";
+    tabela.appendChild(thead);
 
-    const palpiteiro = (palpiteiros || []).find(pp => String(pp.id) === String(p.palpiteiro_id));
-    if (!palpiteiro) return;
+    const tbody = document.createElement("tbody");
 
-    const gab = (gabaritos || []).find(g => Number(g.semana) === semanaPalpite);
-    if (!gab) return;
-
-    let total = 0;
-    categorias.forEach(cat => {
-      const pontos = Number(pontosConfig[cat] || 0);
-      const palpiteVal = p[cat];
-      const corretoVal = gab[cat];
-      // comparar como strings (IDs)
-      if (palpiteVal != null && corretoVal != null && String(palpiteVal) === String(corretoVal)) {
-        total += pontos;
-      }
+    let ranking = palpiteiros.map(p => {
+      let pontos = pontuacoes
+        .filter(pl => pl.palpiteiro_id === p.id)
+        .reduce((acc, pl) => acc + (pl.pontos || 0), 0);
+      return { id: p.id, nome: p.nome, pontos };
     });
 
-    if (!ranking[palpiteiro.id]) ranking[palpiteiro.id] = { nome: palpiteiro.nome, pontos: 0 };
-    ranking[palpiteiro.id].pontos += total;
-  });
+    if (filtroId) {
+      ranking = ranking.filter(r => r.id == filtroId);
+    }
 
-  // render
-  const tbody = tabela.querySelector("tbody");
-  tbody.innerHTML = "";
-  Object.values(ranking)
-    .sort((a,b) => b.pontos - a.pontos)
-    .forEach((r, i) => {
+    ranking.sort((a, b) => b.pontos - a.pontos);
+
+    ranking.forEach(r => {
       const tr = document.createElement("tr");
-      if (i === 0) tr.classList.add("top1");
-      else if (i === 1) tr.classList.add("top2");
-      else if (i === 2) tr.classList.add("top3");
-      tr.innerHTML = `<td>${i+1}º</td><td>${r.nome}</td><td>${r.pontos}</td>`;
+      tr.innerHTML = `<td>${r.nome}</td><td>${r.pontos}</td>`;
       tbody.appendChild(tr);
+    });
+
+    tabela.appendChild(tbody);
+  }
+
+  function renderizarGrafico(filtroId = "") {
+    const ctx = document.getElementById("graficoRanking").getContext("2d");
+
+    let datasets = [];
+
+    palpiteiros.forEach(p => {
+      if (filtroId && p.id != filtroId) return;
+
+      let pontosPorSemana = {};
+      pontuacoes
+        .filter(pl => pl.palpiteiro_id === p.id)
+        .forEach(pl => {
+          pontosPorSemana[pl.semana] = (pontosPorSemana[pl.semana] || 0) + (pl.pontos || 0);
+        });
+
+      // acumular
+      let acumulado = 0;
+      let dados = Object.keys(pontosPorSemana).sort((a, b) => a - b).map(s => {
+        acumulado += pontosPorSemana[s];
+        return { semana: s, pontos: acumulado };
+      });
+
+      datasets.push({
+        label: p.nome,
+        data: dados.map(d => ({ x: d.semana, y: d.pontos })),
+        borderWidth: 2,
+        fill: false
+      });
+    });
+
+    if (window.graficoRanking) {
+      window.graficoRanking.destroy();
+    }
+
+    window.graficoRanking = new Chart(ctx, {
+      type: "line",
+      data: { datasets },
+      options: {
+        responsive: true,
+        scales: {
+          x: { type: "category", title: { display: true, text: "Semana" } },
+          y: { beginAtZero: true, title: { display: true, text: "Pontos" } }
+        }
+      }
+    });
+  }
+
+  // Inicial
+  renderizarTabela();
+  renderizarGrafico();
+
+  // Evento de filtro
+  selectFiltro.addEventListener("change", e => {
+    renderizarTabela(e.target.value);
+    renderizarGrafico(e.target.value);
   });
 }
 
-btnFiltrar.addEventListener("click", () => {
-  const val = Number(selectSemana.value) || null;
-  carregarRanking(val);
-});
-
-document.addEventListener("DOMContentLoaded", async () => {
-  await carregarSemanas();
-  const lim = Number(selectSemana.value) || null;
-  await carregarRanking(lim);
-});
+carregarRanking();
