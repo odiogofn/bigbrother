@@ -1,48 +1,27 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Ranking - Jogo Grande Irmão</title>
-    <link rel="stylesheet" href="style.css">
-    <script type="module" src="ranking.js" defer></script>
+  <meta charset="UTF-8">
+  <title>Ranking</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="supabase.js"></script>
+  <script src="ranking.js" defer></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { margin-bottom: 10px; }
+    select, button { margin: 5px 0; padding: 5px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 15px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #f0f0f0; }
+  </style>
 </head>
 <body>
-    <h1>Ranking Geral</h1>
+  <h1>Ranking de Palpiteiros</h1>
 
-    <div class="filtros">
-        <label for="semana">Semana:</label>
-        <select id="semana">
-            <option value="0">Todas</option>
-            <option value="1">Semana 1</option>
-            <option value="2">Semana 2</option>
-            <option value="3">Semana 3</option>
-            <option value="4">Semana 4</option>
-            <option value="5">Semana 5</option>
-        </select>
+  <label for="semana-select">Acumulado até a semana:</label>
+  <select id="semana-select"></select>
+  <button id="btn-filtrar">Filtrar</button>
 
-        <label for="palpiteiro">Palpiteiro:</label>
-        <select id="palpiteiro">
-            <option value="">Todos</option>
-            <!-- JS preenche os palpiteiros -->
-        </select>
-
-        <label for="acumulativo">Acumulativo:</label>
-        <input type="checkbox" id="acumulativo">
-
-        <button id="filtrarBtn">Filtrar</button>
-    </div>
-
-    <table>
-        <thead>
-            <tr>
-                <th>Posição</th>
-                <th>Palpiteiro</th>
-                <th>Pontos</th>
-            </tr>
-        </thead>
-        <tbody id="ranking-body">
-            <!-- Ranking será preenchido pelo JS -->
-        </tbody>
-    </table>
+  <table id="tabela-ranking"></table>
 </body>
 </html>
