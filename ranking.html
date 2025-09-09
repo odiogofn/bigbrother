@@ -1,26 +1,23 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>Ranking - Palpites</title>
+  <meta charset="utf-8" />
+  <title>Ranking</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>Ranking de Palpiteiros</h1>
+
+  <label for="semana-select">Acumulado até a semana:</label>
+  <select id="semana-select"></select>
+  <button id="btn-filtrar">Filtrar</button>
+
   <table id="tabela-ranking">
-    <thead>
-      <tr>
-        <th>Posição</th>
-        <th>Palpiteiro</th>
-        <th>Pontos</th>
-      </tr>
-    </thead>
+    <thead><tr><th>Posição</th><th>Palpiteiro</th><th>Pontos</th></tr></thead>
     <tbody></tbody>
   </table>
 
-  <!-- Importa Supabase já configurado -->
-  <script src="supabase.js"></script>
-  <!-- Importa o JS do Ranking -->
-  <script src="ranking.js"></script>
+  <!-- NÃO incluir supabase.js aqui como tag <script> — ranking.js irá importar -->
+  <script type="module" src="ranking.js"></script>
 </body>
 </html>
