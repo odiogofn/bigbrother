@@ -1,117 +1,112 @@
 let rankingData = [];
-let chart = null;
-
 const tabelaRanking = document.getElementById('tabela-ranking').querySelector('tbody');
-const filtroSemana = document.getElementById('filtro-semana');
-const filtroPalpiteiro = document.getElementById('filtro-palpiteiro');
-const acumulativoCheck = document.getElementById('acumulativo');
-const btnAtualizar = document.getElementById('btn-atualizar');
-
-async function carregarPalpiteiros() {
-    const { data, error } = await supabase.from('palpiteiros').select('*');
-    if (error) return alert(error.message);
-
-    filtroPalpiteiro.innerHTML = '<option value="">Todos</option>';
-    data.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = p.nome;
-        filtroPalpiteiro.appendChild(opt);
-    });
-}
+const selectSemana = document.getElementById('select-semana');
+const selectPalpiteiro = document.getElementById('select-palpiteiro');
+const chkAcumulativo = document.getElementById('chk-acumulativo');
+const ctx = document.getElementById('grafico-ranking').getContext('2d');
+let chart;
 
 async function carregarRanking() {
-    const { data, error } = await supabase.from('ranking_semana').select(`
-        palpiteiro, semana, pontos
-    `);
+    // Pega os dados da tabela ranking_semana
+    const { data, error } = await supabase.from('ranking_semana').select('semana, palpiteiro, pontos').order('semana', { ascending: true });
     if (error) return alert(error.message);
 
     rankingData = data;
 
-    // Preencher filtro de semanas
-    const semanas = [...new Set(data.map(d => d.semana))].sort((a,b)=>a-b);
-    filtroSemana.innerHTML = '';
-    semanas.forEach(s => {
-        const opt = document.createElement('option');
-        opt.value = s;
-        opt.textContent = `Semana ${s}`;
-        filtroSemana.appendChild(opt);
-    });
+    // Preencher seletores
+    const semanas = [...new Set(data.map(d => d.semana))];
+    selectSemana.innerHTML = semanas.map(s => `<option value="${s}">${s}</option>`).join('');
+
+    const { data: palpiteiros } = await supabase.from('palpiteiros').select('id, nome');
+    if (palpiteiros) {
+        selectPalpiteiro.innerHTML = '<option value="">Todos</option>' + palpiteiros.map(p => `<option value="${p.id}">${p.nome}</option>`).join('');
+    }
 
     atualizarTabela();
+    atualizarGrafico();
 }
 
 function atualizarTabela() {
-    const semanaSelecionada = filtroSemana.value ? parseInt(filtroSemana.value) : null;
-    const palpiteiroSelecionado = filtroPalpiteiro.value;
-    const acumulativo = acumulativoCheck.checked;
-
-    const tbody = tabelaRanking;
-    tbody.innerHTML = '';
+    const semanaSelecionada = parseInt(selectSemana.value);
+    const palpiteiroSelecionado = selectPalpiteiro.value;
+    const acumulativo = chkAcumulativo.checked;
 
     let dadosFiltrados = rankingData;
+
+    if (acumulativo) {
+        dadosFiltrados = dadosFiltrados.filter(d => d.semana <= semanaSelecionada);
+    } else {
+        dadosFiltrados = dadosFiltrados.filter(d => d.semana === semanaSelecionada);
+    }
 
     if (palpiteiroSelecionado) {
         dadosFiltrados = dadosFiltrados.filter(d => d.palpiteiro === palpiteiroSelecionado);
     }
 
-    if (semanaSelecionada) {
-        if (acumulativo) {
-            dadosFiltrados = dadosFiltrados.filter(d => d.semana <= semanaSelecionada);
-        } else {
-            dadosFiltrados = dadosFiltrados.filter(d => d.semana === semanaSelecionada);
-        }
-    }
-
-    // Soma pontos por palpiteiro
+    // Agrupar por palpiteiro e somar pontos
     const resumo = {};
     dadosFiltrados.forEach(d => {
         if (!resumo[d.palpiteiro]) resumo[d.palpiteiro] = 0;
-        resumo[d.palpiteiro] += d.pontos;
+        resumo[d.palpiteiro] += d.pontos || 0;
     });
 
-    // Puxar nomes dos palpiteiros
-    const palpiteiroMap = {};
-    supabase.from('palpiteiros').select('*').then(({data})=>{
-        if(data) data.forEach(p => palpiteiroMap[p.id] = p.nome);
-
-        Object.keys(resumo).forEach(pid => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${palpiteiroMap[pid]||pid}</td>
-                            <td>${semanaSelecionada || '-'}</td>
-                            <td>${resumo[pid]}</td>`;
-            tbody.appendChild(tr);
-        });
-
-        atualizarGrafico(resumo);
-    });
+    tabelaRanking.innerHTML = '';
+    for (const [palpiteiroId, pontos] of Object.entries(resumo)) {
+        const nome = selectPalpiteiro.querySelector(`option[value="${palpiteiroId}"]`)?.textContent || palpiteiroId;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${nome}</td><td>${pontos}</td>`;
+        tabelaRanking.appendChild(tr);
+    }
 }
 
-function atualizarGrafico(resumo) {
-    const labels = Object.keys(resumo).map(pid => pid);
-    const data = Object.values(resumo);
+function atualizarGrafico() {
+    const semanaSelecionada = parseInt(selectSemana.value);
+    const palpiteiroSelecionado = selectPalpiteiro.value;
+    const acumulativo = chkAcumulativo.checked;
 
-    if(chart) chart.destroy();
+    let dadosFiltrados = rankingData;
 
-    chart = new Chart(document.getElementById('grafico-ranking'), {
-        type: 'bar',
+    if (acumulativo) {
+        dadosFiltrados = dadosFiltrados.filter(d => d.semana <= semanaSelecionada);
+    } else {
+        dadosFiltrados = dadosFiltrados.filter(d => d.semana === semanaSelecionada);
+    }
+
+    if (palpiteiroSelecionado) {
+        dadosFiltrados = dadosFiltrados.filter(d => d.palpiteiro === palpiteiroSelecionado);
+    }
+
+    // Agrupar por semana
+    const porSemana = {};
+    dadosFiltrados.forEach(d => {
+        if (!porSemana[d.semana]) porSemana[d.semana] = 0;
+        porSemana[d.semana] += d.pontos || 0;
+    });
+
+    const labels = Object.keys(porSemana);
+    const pontos = Object.values(porSemana);
+
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+        type: 'line',
         data: {
             labels,
             datasets: [{
                 label: 'Pontos',
-                data,
-                backgroundColor: 'rgba(54, 162, 235, 0.7)'
+                data: pontos,
+                borderColor: 'blue',
+                backgroundColor: 'rgba(0,0,255,0.2)',
+                fill: true
             }]
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false }
-            }
-        }
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
     });
 }
 
-btnAtualizar.addEventListener('click', atualizarTabela);
+// Eventos
+selectSemana.addEventListener('change', () => { atualizarTabela(); atualizarGrafico(); });
+selectPalpiteiro.addEventListener('change', () => { atualizarTabela(); atualizarGrafico(); });
+chkAcumulativo.addEventListener('change', () => { atualizarTabela(); atualizarGrafico(); });
 
-carregarPalpiteiros().then(() => carregarRanking());
+// Inicial
+carregarRanking();
