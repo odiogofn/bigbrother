@@ -1,41 +1,41 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Ranking</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="supabase.js"></script>
-<script src="ranking.js" defer></script>
+  <meta charset="utf-8" />
+  <title>Ranking - Jogo</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <h1>Ranking do Jogo</h1>
 
-<h1>Ranking do Jogo</h1>
-
-<div>
+  <div class="filtros">
     <label for="select-semana">Semana:</label>
     <select id="select-semana"></select>
 
     <label for="select-palpiteiro">Palpiteiro:</label>
     <select id="select-palpiteiro">
-        <option value="">Todos</option>
+      <option value="">Todos</option>
     </select>
 
-    <label for="chk-acumulativo">Acumulativo</label>
-    <input type="checkbox" id="chk-acumulativo">
-</div>
+    <label for="chk-acumulativo">
+      <input type="checkbox" id="chk-acumulativo"> Acumulativo
+    </label>
 
-<table id="tabela-ranking">
+    <button id="btn-atualizar">Atualizar</button>
+  </div>
+
+  <table id="tabela-ranking" class="tabela-ranking">
     <thead>
-        <tr>
-            <th>Palpiteiro</th>
-            <th>Pontos</th>
-        </tr>
+      <tr>
+        <th>Posição</th>
+        <th>Palpiteiro</th>
+        <th>Pontos</th>
+      </tr>
     </thead>
-    <tbody></tbody>
-</table>
+    <tbody id="ranking-tbody"></tbody>
+  </table>
 
-<canvas id="grafico-ranking" width="600" height="300"></canvas>
-
+  <!-- ranking.js importa supabase.js como módulo -->
+  <script type="module" src="ranking.js"></script>
 </body>
 </html>
