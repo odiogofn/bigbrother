@@ -1,33 +1,45 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <title>Ranking de Palpiteiros</title>
-  <link rel="stylesheet" href="style.css"> <!-- seu CSS externo -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="supabase.js"></script> <!-- conexão com supabase -->
+<meta charset="UTF-8">
+<title>Ranking - Jogo Grande Irmão</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-  <h1>🏆 Ranking de Palpiteiros</h1>
 
-  <label for="filtroPalpiteiro">Filtrar por participante:</label>
-  <select id="filtroPalpiteiro">
-    <option value="">Todos</option>
-  </select>
+<h1>Ranking do Jogo</h1>
 
-  <table id="rankingTable" border="1">
+<div>
+    <label for="filtro-semana">Semana:</label>
+    <select id="filtro-semana"></select>
+
+    <label for="filtro-palpiteiro">Palpiteiro:</label>
+    <select id="filtro-palpiteiro">
+        <option value="">Todos</option>
+    </select>
+
+    <label>
+        <input type="checkbox" id="acumulativo"> Acumulativo
+    </label>
+
+    <button id="btn-atualizar">Atualizar</button>
+</div>
+
+<table id="tabela-ranking">
     <thead>
-      <tr>
-        <th>Palpiteiro</th>
-        <th>Pontos Totais</th>
-      </tr>
+        <tr>
+            <th>Palpiteiro</th>
+            <th>Semana</th>
+            <th>Pontos</th>
+        </tr>
     </thead>
     <tbody></tbody>
-  </table>
+</table>
 
-  <h2>📊 Evolução por Semana</h2>
-  <canvas id="graficoSemanal" width="400" height="200"></canvas>
+<canvas id="grafico-ranking" width="800" height="400"></canvas>
 
-  <script src="ranking.js"></script>
+<script src="supabase.js"></script>
+<script src="ranking.js"></script>
 </body>
 </html>
