@@ -1,29 +1,118 @@
+// ---------- CARREGAR RANKING ----------
 async function carregarRanking() {
-  // 1. Buscar tudo
-  const { data: palpites } = await supabase.from("palpites").select("*");
-  const { data: gabaritos } = await supabase.from("gabarito").select("*");
-  const { data: pontosEventos } = await supabase.from("pontuacao").select("*");
-  const { data: palpiteiros } = await supabase.from("palpiteiros").select("id, nome");
+  try {
+    // Busca todos os dados já agregados na tabela auxiliar
+    const { data, error } = await supabase
+      .from("ranking_semana")
+      .select("*");
 
-  // 2. Criar acumulador
-  let ranking = palpiteiros.map(p => ({ id: p.id, nome: p.nome, pontos: 0 }));
+    if (error) {
+      console.error("Erro ao buscar ranking:", error.message);
+      return;
+    }
 
-  // 3. Para cada palpite, comparar com gabarito da mesma semana
-  palpites.forEach(p => {
-    const gabarito = gabaritos.find(g => g.semana === p.semana);
-    if (!gabarito) return;
+    if (!data || data.length === 0) {
+      console.warn("Nenhum dado encontrado no ranking");
+      return;
+    }
 
-    pontosEventos.forEach(ev => {
-      const campo = ev.evento.toLowerCase(); // exemplo: 'lider', 'anjo'...
-      if (p[campo] && gabarito[campo] && p[campo] === gabarito[campo]) {
-        let jogador = ranking.find(r => r.id === p.palpiteiro_id);
-        if (jogador) jogador.pontos += ev.pontos;
+    // ---------- Agrupar pontos totais por palpiteiro ----------
+    const pontosPorPalpiteiro = {};
+    data.forEach(row => {
+      if (!pontosPorPalpiteiro[row.palpiteiro]) {
+        pontosPorPalpiteiro[row.palpiteiro] = 0;
       }
+      pontosPorPalpiteiro[row.palpiteiro] += row.pontos_total;
     });
+
+    // Ordenar ranking
+    const ranking = Object.entries(pontosPorPalpiteiro)
+      .sort((a, b) => b[1] - a[1]);
+
+    // ---------- Atualizar tabela ----------
+    const tbody = document.querySelector("#rankingTable tbody");
+    tbody.innerHTML = "";
+    ranking.forEach(([palpiteiro, pontos]) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${palpiteiro}</td>
+        <td>${pontos}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // ---------- Popular filtro ----------
+    const filtroSelect = document.getElementById("filtroPalpiteiro");
+    filtroSelect.innerHTML = `<option value="">Todos</option>`;
+    ranking.forEach(([palpiteiro]) => {
+      const opt = document.createElement("option");
+      opt.value = palpiteiro;
+      opt.textContent = palpiteiro;
+      filtroSelect.appendChild(opt);
+    });
+
+    // ---------- Montar gráfico ----------
+    desenharGrafico(data);
+
+  } catch (err) {
+    console.error("Erro inesperado:", err);
+  }
+}
+
+// ---------- DESENHAR GRÁFICO ----------
+function desenharGrafico(data) {
+  const filtro = document.getElementById("filtroPalpiteiro").value;
+
+  let filtrado = data;
+  if (filtro) {
+    filtrado = data.filter(row => row.palpiteiro === filtro);
+  }
+
+  // Agrupar por semana (cada palpiteiro separado)
+  const porPalpiteiro = {};
+  filtrado.forEach(row => {
+    if (!porPalpiteiro[row.palpiteiro]) {
+      porPalpiteiro[row.palpiteiro] = {};
+    }
+    porPalpiteiro[row.palpiteiro][row.semana] = row.pontos_total;
   });
 
-  // 4. Ordenar por pontos
-  ranking.sort((a, b) => b.pontos - a.pontos);
+  const semanas = [...new Set(filtrado.map(r => r.semana))].sort((a, b) => a - b);
 
-  console.log("Ranking calculado:", ranking);
+  const datasets = Object.entries(porPalpiteiro).map(([palpiteiro, semanasPontos]) => {
+    return {
+      label: palpiteiro,
+      data: semanas.map(s => semanasPontos[s] || 0),
+      borderWidth: 2,
+      fill: false,
+      tension: 0.2
+    };
+  });
+
+  const ctx = document.getElementById("graficoSemanal").getContext("2d");
+  if (window.grafico) {
+    window.grafico.destroy();
+  }
+  window.grafico = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: semanas.map(s => `Semana ${s}`),
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "top" }
+      }
+    }
+  });
 }
+
+// ---------- EVENTOS ----------
+document.getElementById("filtroPalpiteiro").addEventListener("change", async () => {
+  const { data } = await supabase.from("ranking_semana").select("*");
+  desenharGrafico(data);
+});
+
+// ---------- INICIAR ----------
+carregarRanking();

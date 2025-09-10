@@ -1,23 +1,33 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <title>Ranking</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Ranking de Palpiteiros</title>
+  <link rel="stylesheet" href="style.css"> <!-- seu CSS externo -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="supabase.js"></script> <!-- conexão com supabase -->
 </head>
 <body>
-  <h1>Ranking de Palpiteiros</h1>
+  <h1>🏆 Ranking de Palpiteiros</h1>
 
-  <label for="semana-select">Acumulado até a semana:</label>
-  <select id="semana-select"></select>
-  <button id="btn-filtrar">Filtrar</button>
+  <label for="filtroPalpiteiro">Filtrar por participante:</label>
+  <select id="filtroPalpiteiro">
+    <option value="">Todos</option>
+  </select>
 
-  <table id="tabela-ranking">
-    <thead><tr><th>Posição</th><th>Palpiteiro</th><th>Pontos</th></tr></thead>
+  <table id="rankingTable" border="1">
+    <thead>
+      <tr>
+        <th>Palpiteiro</th>
+        <th>Pontos Totais</th>
+      </tr>
+    </thead>
     <tbody></tbody>
   </table>
 
-  <!-- NÃO incluir supabase.js aqui como tag <script> — ranking.js irá importar -->
-  <script type="module" src="ranking.js"></script>
+  <h2>📊 Evolução por Semana</h2>
+  <canvas id="graficoSemanal" width="400" height="200"></canvas>
+
+  <script src="ranking.js"></script>
 </body>
 </html>
