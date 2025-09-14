@@ -1,41 +1,33 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <title>Ranking - Jogo</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Ranking</title>
+  <link rel="stylesheet" href="style.css"> <!-- usa seu CSS externo -->
 </head>
 <body>
-  <h1>Ranking do Jogo</h1>
+  <h1>Ranking dos Palpiteiros</h1>
 
-  <div class="filtros">
-    <label for="select-semana">Semana:</label>
-    <select id="select-semana"></select>
+  <label for="filtroSemana">Semana:</label>
+  <select id="filtroSemana"></select>
 
-    <label for="select-palpiteiro">Palpiteiro:</label>
-    <select id="select-palpiteiro">
-      <option value="">Todos</option>
-    </select>
+  <label for="filtroPalpiteiro">Palpiteiro:</label>
+  <select id="filtroPalpiteiro">
+    <option value="">Todos</option>
+  </select>
 
-    <label for="chk-acumulativo">
-      <input type="checkbox" id="chk-acumulativo"> Acumulativo
-    </label>
-
-    <button id="btn-atualizar">Atualizar</button>
-  </div>
-
-  <table id="tabela-ranking" class="tabela-ranking">
+  <table id="tabelaRanking" border="1" cellpadding="5">
     <thead>
       <tr>
-        <th>Posição</th>
+        <th>Semana</th>
         <th>Palpiteiro</th>
         <th>Pontos</th>
       </tr>
     </thead>
-    <tbody id="ranking-tbody"></tbody>
+    <tbody></tbody>
   </table>
 
-  <!-- ranking.js importa supabase.js como módulo -->
-  <script type="module" src="ranking.js"></script>
+  <script src="supabase.js"></script>
+  <script src="ranking.js"></script>
 </body>
 </html>
