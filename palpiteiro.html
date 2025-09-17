@@ -21,6 +21,9 @@
     <div id="palpiteiro-panel" style="display:none;">
       <button id="palpiteiro-logout-btn" style="margin-bottom:12px;">Logout</button>
 
+      <!-- STATUS DA HORA DO PALPITE -->
+      <div id="palpite-status" style="font-weight:bold;margin-bottom:12px;"></div>
+
       <!-- ENVIO DE PALPITE -->
       <section id="palpite-envio">
         <h2>Enviar Palpite</h2>
@@ -50,7 +53,9 @@
     </div>
   </div>
 
+  <!-- Primeiro carrega o supabase.js, depois o palpiteiro.js -->
   <script type="module" src="supabase.js"></script>
   <script type="module" src="palpiteiro.js"></script>
 </body>
 </html>
+
