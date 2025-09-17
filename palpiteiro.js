@@ -38,9 +38,9 @@ loginBtn.addEventListener('click', async () => {
   loginArea.style.display = 'none';
   panel.style.display = 'block';
 
-  verificarLiberacaoPalpite();
-  carregarParticipantes();
-  carregarHistorico();
+  await verificarLiberacaoPalpite();
+  await carregarParticipantes();
+  await carregarHistorico();
 });
 
 // ======================= LOGOUT =======================
@@ -60,6 +60,13 @@ async function verificarLiberacaoPalpite() {
     .eq('id', 1)
     .single();
 
+  if (error) {
+    console.error('Erro ao verificar configuração:', error);
+    statusDiv.textContent = 'Erro ao verificar liberação do palpite';
+    palpiteSendBtn.disabled = true;
+    return;
+  }
+
   if (data && data.permitir_envio) {
     statusDiv.textContent = 'Hora do Palpite: Aberto';
     palpiteSendBtn.disabled = false;
@@ -71,9 +78,14 @@ async function verificarLiberacaoPalpite() {
 
 // ======================= CARREGAR PARTICIPANTES NOS SELECTS =======================
 async function carregarParticipantes() {
-  const { data: participantes } = await supabase
+  const { data: participantes, error } = await supabase
     .from('participantes')
     .select('id,nome');
+
+  if (error) {
+    console.error('Erro ao carregar participantes:', error);
+    return;
+  }
 
   if (!participantes) return;
 
@@ -114,10 +126,11 @@ palpiteSendBtn.addEventListener('click', async () => {
   }
 
   try {
+    // Inserção segura, listando explicitamente as colunas para evitar conflitos
     const { data, error } = await supabase
       .from('palpites')
       .insert([dados])
-      .select(); // retorna registro inserido
+      .select('id,palpiteiro_id,semana,' + CAMPOS.join(',') + ',criado_em');
 
     if (error) {
       console.error('Erro ao enviar palpite:', error);
@@ -137,11 +150,17 @@ palpiteSendBtn.addEventListener('click', async () => {
 async function carregarHistorico() {
   if (!palpiteiroId) return;
 
-  const { data: palpites } = await supabase
+  const { data: palpites, error } = await supabase
     .from('palpites')
-    .select('*')
+    .select('id,palpiteiro_id,semana,' + CAMPOS.join(',') + ',criado_em')
     .eq('palpiteiro_id', palpiteiroId)
     .order('semana', { ascending: true });
+
+  if (error) {
+    console.error('Erro ao carregar histórico:', error);
+    palpiteList.innerHTML = '<li>Erro ao carregar histórico</li>';
+    return;
+  }
 
   palpiteList.innerHTML = '';
   if (palpites && palpites.length > 0) {
