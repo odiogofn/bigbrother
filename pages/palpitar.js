@@ -1,80 +1,68 @@
-import { useEffect, useState } from 'react'
-
-const questions = [
-  { key: 'lider_id', label: 'Quem vai ser o líder?' },
-  { key: 'anjo_id', label: 'Quem vai ser o anjo?' },
-  { key: 'imunizado_id', label: 'Quem vai ser o imunizado?' },
-  { key: 'emparedado_id', label: 'Quem vai ser o emparedado?' },
-  { key: 'batevolta_id', label: 'Quem volta no bate e volta?' },
-  { key: 'eliminado_id', label: 'Quem vai ser eliminado?' },
-  { key: 'capitao_id', label: 'Quem será o capitão?' }
-]
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { supabase } from "../lib/supabase";
 
 export default function Palpitar() {
-  const [brothers, setBrothers] = useState([])
-  const [idx, setIdx] = useState(0)
-  const [answers, setAnswers] = useState({})
-  const [status, setStatus] = useState('')
+  const [user, setUser] = useState(null);
+  const [brothers, setBrothers] = useState([]);
+  const [palpite, setPalpite] = useState({
+    lider: "", anjo: "", imunizado: "", emparedado: "",
+    batevolta: "", eliminado: "", capitao: ""
+  });
+  const [palpiteLiberado, setPalpiteLiberado] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    fetch('/api/brothers').then(r => r.json()).then(setBrothers)
-  }, [])
+    const usuario = JSON.parse(localStorage.getItem("usuario"));
+    if (!usuario || usuario.tipo !== "palpiteiro") router.push("/login");
+    else {
+      setUser(usuario);
+      carregarBrothers();
+      carregarConfig();
+    }
+  }, []);
 
-  function choose(value) {
-    const key = questions[idx].key
-    setAnswers(prev => ({ ...prev, [key]: Number(value) }))
+  async function carregarBrothers() {
+    const { data } = await supabase.from("brothers").select("*");
+    setBrothers(data || []);
   }
 
-  function next() {
-    setIdx(i => Math.min(questions.length - 1, i + 1))
-  }
-  function prev() {
-    setIdx(i => Math.max(0, i - 1))
+  async function carregarConfig() {
+    const { data } = await supabase.from("configuracao").select("*").single();
+    if (data) setPalpiteLiberado(data.palpite_liberado);
   }
 
-  async function save() {
-    setStatus('Salvando...')
-    const res = await fetch('/api/addPalpite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ week_id: 1, ...answers }) // aqui assumimos week_id=1 (ajuste conforme seu fluxo)
-    })
-    const j = await res.json()
-    if (res.ok) setStatus('Palpite salvo!')
-    else setStatus('Erro: ' + (j.error?.message || JSON.stringify(j)))
+  async function enviarPalpite() {
+    if (!palpiteLiberado) return alert("Palpites não estão liberados.");
+    await supabase.from("palpites").insert([{ usuario_id: user.id, semana: 1, ...palpite }]);
+    alert("Palpite enviado!");
   }
 
-  if (!brothers) return null
+  if (!user) return <p>Carregando...</p>;
 
-  const q = questions[idx]
   return (
-    <div style={{ padding: 20 }}>
-      <h2>{q.label}</h2>
+    <div>
+      <h1>Área do Palpiteiro 🎯</h1>
+      <h2>Bem-vindo, {user.nome}</h2>
+      {!palpiteLiberado && <p>Os palpites ainda não estão liberados.</p>}
 
-      <div>
-        {brothers.map(b => (
-          <div key={b.id}>
-            <label>
-              <input
-                type="radio"
-                name="opt"
-                value={b.id}
-                checked={answers[q.key] === b.id}
-                onChange={() => choose(b.id)}
-              />
-              {' '}{b.name}
-            </label>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ marginTop: 12 }}>
-        <button onClick={prev} disabled={idx === 0}>Voltar</button>
-        <button onClick={next} style={{ marginLeft: 8 }}>Próxima</button>
-        <button onClick={save} style={{ marginLeft: 8 }}>Salvar Palpite</button>
-      </div>
-
-      <p>{status}</p>
+      {palpiteLiberado && (
+        <div>
+          {Object.keys(palpite).map((key) => (
+            <div key={key}>
+              <label>{key}:</label>
+              <select
+                value={palpite[key]}
+                onChange={(e) => setPalpite({ ...palpite, [key]: e.target.value })}
+              >
+                <option value="">Selecione</option>
+                {brothers.map((b) => <option key={b.id} value={b.nome}>{b.nome}</option>)}
+              </select>
+            </div>
+          ))}
+          <button onClick={enviarPalpite}>Enviar Palpite</button>
+        </div>
+      )}
     </div>
-  )
+  );
 }

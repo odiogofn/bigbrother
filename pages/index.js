@@ -1,13 +1,8 @@
-import Link from 'next/link'
-
 export default function Home() {
   return (
-    <main style={{ padding: 20 }}>
-      <h1>Meu Jogo — Home</h1>
-      <ul>
-        <li><Link href="/palpitar">Área do Palpiteiro</Link></li>
-        <li><Link href="/admin">Área do Admin</Link></li>
-      </ul>
-    </main>
-  )
+    <div>
+      <h1>Bem-vindo ao Sistema de Palpites 🎮</h1>
+      <p>Use o menu acima para fazer login ou cadastro.</p>
+    </div>
+  );
 }
