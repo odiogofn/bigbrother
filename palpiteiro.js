@@ -1,6 +1,6 @@
 import { supabase } from './supabase.js';
 
-const CAMPOS = ['lider','anjo','imune','emparedado','batevolta','eliminado','capitao','bonus'];
+const EVENTOS = ['lider','anjo','imune','emparedado','batevolta','eliminado','capitao','bonus'];
 
 // ELEMENTOS
 const loginArea = document.getElementById('login-area');
@@ -10,7 +10,6 @@ const logoutBtn = document.getElementById('palpiteiro-logout-btn');
 const palpiteSemana = document.getElementById('palpite-semana');
 const palpiteSendBtn = document.getElementById('palpite-send-btn');
 const palpiteList = document.getElementById('palpite-list');
-const statusDiv = document.getElementById('palpite-status');
 
 let palpiteiroId = null;
 
@@ -62,18 +61,11 @@ async function verificarLiberacaoPalpite() {
 
   if (error) {
     console.error('Erro ao verificar configuração:', error);
-    statusDiv.textContent = 'Erro ao verificar liberação do palpite';
     palpiteSendBtn.disabled = true;
     return;
   }
 
-  if (data && data.permitir_envio) {
-    statusDiv.textContent = 'Hora do Palpite: Aberto';
-    palpiteSendBtn.disabled = false;
-  } else {
-    statusDiv.textContent = 'Hora do Palpite: Fechado';
-    palpiteSendBtn.disabled = true;
-  }
+  palpiteSendBtn.disabled = !(data && data.permitir_envio);
 }
 
 // ======================= CARREGAR PARTICIPANTES NOS SELECTS =======================
@@ -82,15 +74,14 @@ async function carregarParticipantes() {
     .from('participantes')
     .select('id,nome');
 
-  if (error) {
+  if (error || !participantes) {
     console.error('Erro ao carregar participantes:', error);
     return;
   }
 
-  if (!participantes) return;
-
-  CAMPOS.forEach(campo => {
+  EVENTOS.forEach(campo => {
     const select = document.getElementById(`palpite-${campo}`);
+    if (!select) return;
     select.innerHTML = '';
     participantes.forEach(p => {
       const opt = document.createElement('option');
@@ -108,37 +99,31 @@ palpiteSendBtn.addEventListener('click', async () => {
   const semana = parseInt(palpiteSemana.value);
   if (!semana) return alert('Informe a semana');
 
-  // Cria objeto completo com todos os campos obrigatórios
-  let dados = {
+  // Cria objeto com todos os eventos
+  let palpite = {
     palpiteiro_id: palpiteiroId,
     semana,
     criado_em: new Date().toISOString()
   };
 
-  // Preenche todos os campos do palpite com os selects, evitando undefined
-  for (let campo of CAMPOS) {
-    const select = document.getElementById(`palpite-${campo}`);
-    if (!select || !select.value) {
-      alert(`Campo ${campo.toUpperCase()} está vazio`);
-      return;
-    }
-    dados[campo] = select.value;
+  for (let evento of EVENTOS) {
+    const select = document.getElementById(`palpite-${evento}`);
+    if (!select || !select.value) return alert(`Preencha o campo ${evento.toUpperCase()}`);
+    palpite[evento] = select.value;
   }
 
   try {
-    // Inserção segura, listando explicitamente as colunas para evitar conflitos
-    const { data, error } = await supabase
+    // Insert seguro, sem .select() que causa conflito
+    const { error } = await supabase
       .from('palpites')
-      .insert([dados])
-      .select('id,palpiteiro_id,semana,' + CAMPOS.join(',') + ',criado_em');
+      .insert([palpite], { returning: 'minimal' }); // retorna apenas status
 
     if (error) {
       console.error('Erro ao enviar palpite:', error);
       alert('Erro ao enviar palpite: ' + error.message);
     } else {
       alert('Palpite enviado com sucesso!');
-      console.log('Palpite inserido:', data);
-      carregarHistorico(); // atualiza histórico após envio
+      carregarHistorico();
     }
   } catch (err) {
     console.error('Erro inesperado:', err);
@@ -152,7 +137,7 @@ async function carregarHistorico() {
 
   const { data: palpites, error } = await supabase
     .from('palpites')
-    .select('id,palpiteiro_id,semana,' + CAMPOS.join(',') + ',criado_em')
+    .select(['id','semana','criado_em', ...EVENTOS])
     .eq('palpiteiro_id', palpiteiroId)
     .order('semana', { ascending: true });
 
@@ -163,13 +148,14 @@ async function carregarHistorico() {
   }
 
   palpiteList.innerHTML = '';
-  if (palpites && palpites.length > 0) {
-    palpites.forEach(p => {
-      const li = document.createElement('li');
-      li.textContent = `Semana ${p.semana}: ${CAMPOS.map(c => `${c.toUpperCase()}: ${p[c]}`).join(' | ')}`;
-      palpiteList.appendChild(li);
-    });
-  } else {
+  if (!palpites || palpites.length === 0) {
     palpiteList.innerHTML = '<li>Nenhum palpite feito ainda.</li>';
+    return;
   }
+
+  palpites.forEach(p => {
+    const li = document.createElement('li');
+    li.textContent = `Semana ${p.semana}: ` + EVENTOS.map(e => `${e.toUpperCase()}: ${p[e]}`).join(' | ');
+    palpiteList.appendChild(li);
+  });
 }
