@@ -1,7 +1,5 @@
 import { supabase } from './supabase.js';
 
-// Supondo que `supabase` já esteja importado do supabase.js
-let palpiteiroId = null;
 const CAMPOS = ['lider','anjo','imune','emparedado','batevolta','eliminado','capitao','bonus'];
 
 // ELEMENTOS
@@ -12,11 +10,16 @@ const logoutBtn = document.getElementById('palpiteiro-logout-btn');
 const palpiteSemana = document.getElementById('palpite-semana');
 const palpiteSendBtn = document.getElementById('palpite-send-btn');
 const palpiteList = document.getElementById('palpite-list');
+const statusDiv = document.getElementById('palpite-status');
 
-// LOGIN
+let palpiteiroId = null;
+
+// ======================= LOGIN =======================
 loginBtn.addEventListener('click', async () => {
   const nome = document.getElementById('palpiteiro-nome-login').value;
   const senha = document.getElementById('palpiteiro-senha-login').value;
+
+  if (!nome || !senha) return alert('Informe nome e senha');
 
   const { data, error } = await supabase
     .from('palpiteiros')
@@ -40,14 +43,16 @@ loginBtn.addEventListener('click', async () => {
   carregarHistorico();
 });
 
-// LOGOUT
+// ======================= LOGOUT =======================
 logoutBtn.addEventListener('click', () => {
   palpiteiroId = null;
   panel.style.display = 'none';
   loginArea.style.display = 'block';
+  palpiteSemana.value = '';
+  palpiteList.innerHTML = '';
 });
 
-// VERIFICAR se palpite está liberado
+// ======================= VERIFICAR HORA DO PALPITE =======================
 async function verificarLiberacaoPalpite() {
   const { data, error } = await supabase
     .from('configuracao')
@@ -55,22 +60,16 @@ async function verificarLiberacaoPalpite() {
     .eq('id', 1)
     .single();
 
-  let statusText = document.createElement('p');
-  statusText.id = 'palpite-status';
-  statusText.style.fontWeight = 'bold';
   if (data && data.permitir_envio) {
-    statusText.textContent = 'Hora do Palpite: Aberto';
+    statusDiv.textContent = 'Hora do Palpite: Aberto';
     palpiteSendBtn.disabled = false;
   } else {
-    statusText.textContent = 'Hora do Palpite: Fechado';
+    statusDiv.textContent = 'Hora do Palpite: Fechado';
     palpiteSendBtn.disabled = true;
   }
-
-  const envioSection = document.getElementById('palpite-envio');
-  envioSection.prepend(statusText);
 }
 
-// CARREGAR participantes nos selects
+// ======================= CARREGAR PARTICIPANTES NOS SELECTS =======================
 async function carregarParticipantes() {
   const { data: participantes } = await supabase
     .from('participantes')
@@ -90,27 +89,51 @@ async function carregarParticipantes() {
   });
 }
 
-// ENVIAR PALPITE
+// ======================= ENVIAR PALPITE =======================
 palpiteSendBtn.addEventListener('click', async () => {
+  if (!palpiteiroId) return alert('Você precisa logar primeiro');
+
   const semana = parseInt(palpiteSemana.value);
   if (!semana) return alert('Informe a semana');
 
-  let dados = { palpiteiro_id: palpiteiroId, semana, criado_em: new Date().toISOString() };
-  CAMPOS.forEach(campo => {
+  // Cria objeto completo com todos os campos obrigatórios
+  let dados = {
+    palpiteiro_id: palpiteiroId,
+    semana,
+    criado_em: new Date().toISOString()
+  };
+
+  // Preenche todos os campos do palpite com os selects, evitando undefined
+  for (let campo of CAMPOS) {
     const select = document.getElementById(`palpite-${campo}`);
+    if (!select || !select.value) {
+      alert(`Campo ${campo.toUpperCase()} está vazio`);
+      return;
+    }
     dados[campo] = select.value;
-  });
+  }
 
-  const { error } = await supabase.from('palpites').insert(dados);
+  try {
+    const { data, error } = await supabase
+      .from('palpites')
+      .insert([dados])
+      .select(); // retorna registro inserido
 
-  if (error) alert('Erro ao enviar palpite: ' + error.message);
-  else {
-    alert('Palpite enviado com sucesso!');
-    carregarHistorico();
+    if (error) {
+      console.error('Erro ao enviar palpite:', error);
+      alert('Erro ao enviar palpite: ' + error.message);
+    } else {
+      alert('Palpite enviado com sucesso!');
+      console.log('Palpite inserido:', data);
+      carregarHistorico(); // atualiza histórico após envio
+    }
+  } catch (err) {
+    console.error('Erro inesperado:', err);
+    alert('Erro inesperado ao enviar palpite');
   }
 });
 
-// CARREGAR histórico de palpites
+// ======================= CARREGAR HISTÓRICO =======================
 async function carregarHistorico() {
   if (!palpiteiroId) return;
 
