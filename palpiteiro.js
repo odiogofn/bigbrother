@@ -1,3 +1,5 @@
+import { supabase } from './supabase.js';
+
 // Supondo que `supabase` já esteja importado do supabase.js
 let palpiteiroId = null;
 const CAMPOS = ['lider','anjo','imune','emparedado','batevolta','eliminado','capitao','bonus'];
